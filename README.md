@@ -78,9 +78,12 @@ This command will execute the tests and provide a detailed log of the results. I
 
    * **Unknown path**:
      ```bash
-     curl http://localhost:3000/unknown/api
+     curl http://localhost:3000/service/unknown
      ```
-     This should return a `404 not found` error, indicating that the reverse proxy correctly handled the unknown route.
+     This should return:
+     ```
+     404 not found
+     ```
 
    * **Root path**:
      ```bash
