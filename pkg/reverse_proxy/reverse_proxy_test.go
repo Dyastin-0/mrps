@@ -1,6 +1,7 @@
 package reverseproxy_test
 
 import (
+	"bytes"
 	"io"
 	"log"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func logRequestResponse(resp *http.Response, err error) {
+func logRequestResponse(req *http.Request, resp *http.Response, err error) {
 	if err != nil {
 		log.Printf("Request failed: %v", err)
 		return
@@ -23,49 +24,63 @@ func logRequestResponse(resp *http.Response, err error) {
 		return
 	}
 
+	resp.Body = io.NopCloser(io.Reader(bytes.NewReader(body)))
+
+	log.Printf("Request to %s %s", req.Method, req.URL.String())
 	log.Printf("Response Status: %d", resp.StatusCode)
-	log.Printf("Response Headers: %v", resp.Header)
 	log.Printf("Response Body: %s", string(body))
 }
 
 func TestReverseProxyService(t *testing.T) {
-	mockService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello from the service!"))
-	}))
-	defer mockService.Close()
+	t.Run("Test /service/api", func(t *testing.T) {
+		mockService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello, from service"))
+		}))
+		defer mockService.Close()
 
-	mockService1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello from the service-1!"))
-	}))
-	defer mockService1.Close()
+		proxy := reverseproxy.New(mockService.URL)
+		proxyServer := httptest.NewServer(proxy)
+		defer proxyServer.Close()
 
-	proxy := reverseproxy.New(mockService.URL)
-	proxyServer := httptest.NewServer(proxy)
-	defer proxyServer.Close()
+		resp, err := http.Get(proxyServer.URL + "/service/api")
+		if err != nil {
+			t.Fatalf("Request failed: %v", err)
+		}
+		defer resp.Body.Close()
 
-	log.Printf("Testing /api/service")
-	resp, err := http.Get(proxyServer.URL + "/api/service")
-	if err != nil {
-		log.Printf("Request failed: %v", err)
-		return
-	}
-	defer resp.Body.Close()
+		logRequestResponse(resp.Request, resp, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	logRequestResponse(resp, err)
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Failed to read response body: %v", err)
+		}
+		assert.Equal(t, "Hello, from service", string(body))
+	})
 
-	proxy2 := reverseproxy.New(mockService1.URL)
-	proxyServer2 := httptest.NewServer(proxy2)
-	defer proxyServer2.Close()
+	t.Run("Test /service-1/api", func(t *testing.T) {
+		mockService1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello, from service-1"))
+		}))
+		defer mockService1.Close()
 
-	log.Printf("Testing /api/service-1")
-	resp2, err2 := http.Get(proxyServer2.URL + "/api/service-1")
-	if err2 != nil {
-		log.Printf("Request failed: %v", err2)
-		return
-	}
-	defer resp2.Body.Close()
+		proxy := reverseproxy.New(mockService1.URL)
+		proxyServer := httptest.NewServer(proxy)
+		defer proxyServer.Close()
 
-	logRequestResponse(resp2, err2)
-	assert.Equal(t, http.StatusOK, resp2.StatusCode)
+		resp, err := http.Get(proxyServer.URL + "/service-1/api")
+		if err != nil {
+			t.Fatalf("Request failed: %v", err)
+		}
+		defer resp.Body.Close()
+
+		logRequestResponse(resp.Request, resp, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Failed to read response body: %v", err)
+		}
+		assert.Equal(t, "Hello, from service-1", string(body))
+	})
 }
