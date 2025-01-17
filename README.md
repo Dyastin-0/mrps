@@ -44,6 +44,8 @@ The reverse proxy server will route requests based on the URL prefix:
 * `/service/api` will be routed to `service`
 * `/service-1/api` will be routed to `service-1`
 
+Check the `internal/config/config.go`.
+
 ## Testing the Reverse Proxy
 
 You can run the tests included with the project to ensure everything is functioning as expected.
