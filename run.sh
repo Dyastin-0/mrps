@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Starting reverse proxy server..."
+go run cmd/services/service/main.go &
+echo "Reverse proxy server is running."
+
 echo "Starting service..."
 go run cmd/services/service/main.go &
 echo "Service 0 is running."

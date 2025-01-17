@@ -1,4 +1,9 @@
 @echo off
+
+echo Starting reverse proxy server...
+start go run cmd/server/main.go
+echo Reverse proxy server is running.
+
 echo Starting service...
 start go run cmd/services/service/main.go
 echo Service is running.
