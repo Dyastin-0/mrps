@@ -13,13 +13,14 @@ import (
 )
 
 func main() {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Failed to load .env file: ", err)
 	}
 
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.Email = os.Getenv("CERT_EMAIL")
+	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
 	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
