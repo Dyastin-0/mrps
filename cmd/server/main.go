@@ -13,7 +13,6 @@ import (
 func main() {
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.Email = "mail@dyastin.tech"
-	certmagic.Default.Storage = &certmagic.FileStorage{Path: "certs"}
 
 	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
