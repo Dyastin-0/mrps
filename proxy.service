@@ -1,0 +1,15 @@
+[Unit]
+Description=Gitsense server
+After=network.target multi-user.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/gitsense
+ExecStart=/opt/gitsense/run
+Restart=always
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gitsense
+
+[Install]
+WantedBy=multi-user.target
