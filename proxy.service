@@ -1,15 +1,15 @@
 [Unit]
-Description=Gitsense server
+Description=Reverse Proxy Server
 After=network.target multi-user.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/opt/gitsense
-ExecStart=/opt/gitsense/run
+WorkingDirectory=/opt/reverse-Proxy
+ExecStart=/opt/reverse-proxy/run
 Restart=always
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=gitsense
+SyslogIdentifier=reverse-proxy
 
 [Install]
 WantedBy=multi-user.target
