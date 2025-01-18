@@ -35,7 +35,7 @@ domains:
 
 #### Routes Configuration
 
-Routes define how incoming requests are forwarded to backend services. Example:
+Routes define how incoming requests are routed to backend services. Example:
 
 ```yaml
 routes:
