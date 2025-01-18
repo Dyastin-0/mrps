@@ -1,3 +1,3 @@
 package config
 
-var Domains = DomainConfig{"dyastin.tech"}
+var Domains = DomainConfig{"reverse-proxy.dyastin.tech"}
