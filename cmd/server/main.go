@@ -26,7 +26,7 @@ func main() {
 
 	log.Println("Reverse proxy server is running on HTTPS")
 
-	//Cofigure domain at internal/config/config.go
+	//Cofigure domain at internal/config/domain.go
 	err = certmagic.HTTPS(config.Domains, mainRouter)
 	if err != nil {
 		log.Fatal("Failed to start HTTPS server: ", err)

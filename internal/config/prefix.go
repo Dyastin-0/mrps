@@ -5,5 +5,3 @@ var Prefixes = PrefixConfig{
 	"/app/gitsense":  "http://localhost:3002",
 	"/app/omnisense": "http://localhost:3003",
 }
-
-var Domains = DomainConfig{"dyastin.tech"}
