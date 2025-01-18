@@ -10,9 +10,10 @@ import (
 
 func ReverseProxy(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//Configure prefixes at internal/config/config.go
-		for prefix, target := range config.Prefixes {
-			if strings.HasPrefix(r.URL.Path, prefix) {
+		fullPath := r.Host + r.URL.Path
+
+		for route, target := range config.Routes {
+			if strings.HasPrefix(fullPath, route) {
 				proxy := reverse.New(target)
 				proxy.ServeHTTP(w, r)
 				return
