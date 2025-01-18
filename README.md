@@ -40,6 +40,8 @@ This will start two services and the reverse proxy server.
 1. Service: This service listens on port 3001 and responds with "Hello from service".
 2. Service 1: This service listens on port 3002 and responds with "Hello from service-1".
 
+These services are mainly for testing.
+
 The reverse proxy server will route requests based on the URL prefix:
 * `/service/api` will be routed to `service`
 * `/service-1/api` will be routed to `service-1`

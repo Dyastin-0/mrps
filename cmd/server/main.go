@@ -2,19 +2,27 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/router"
+	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
+
+	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
 )
 
 func main() {
-	mainRouter := chi.NewRouter()
+	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.Email = "mail@dyastin.tech"
+	certmagic.Default.Storage = &certmagic.FileStorage{Path: "certs"}
 
+	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
 
-	log.Println("Reverse proxy server is running on port 3000")
-	if err := http.ListenAndServe(":3000", mainRouter); err != nil {
-		log.Fatal("Server failed: ", err)
+	log.Println("Reverse proxy server is running on HTTPS")
+
+	//Cofigure domain at internal/config/config.go
+	err := certmagic.HTTPS(config.Domains, mainRouter)
+	if err != nil {
+		log.Fatal("Failed to start HTTPS server: ", err)
 	}
 }

@@ -40,7 +40,7 @@ func TestReverseProxyMiddleware(t *testing.T) {
 	}))
 	defer mockService1.Close()
 
-	config.ReverseProxy = map[string]string{
+	config.Prefixes = map[string]string{
 		"/service/api":   mockService.URL,
 		"/service-1/api": mockService1.URL,
 	}

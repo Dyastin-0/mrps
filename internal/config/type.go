@@ -1,3 +1,5 @@
 package config
 
-type ReverseProxyConfig map[string]string
+type PrefixConfig map[string]string
+
+type DomainConfig []string
