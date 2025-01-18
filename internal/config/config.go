@@ -10,7 +10,7 @@ import (
 var Routes RouteConfig
 var Domains DomainConfig
 
-func LoadConfig(filename string) error {
+func Load(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("could not open config file: %v", err)

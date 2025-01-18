@@ -18,7 +18,7 @@ func main() {
 		log.Fatal("Failed to load .env file: ", err)
 	}
 
-	err = config.LoadConfig("config.yaml")
+	err = config.Load("config.yaml")
 	if err != nil {
 		log.Fatal("Failed to load config file: ", err)
 	}
