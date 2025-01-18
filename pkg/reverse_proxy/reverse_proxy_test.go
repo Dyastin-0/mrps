@@ -26,15 +26,17 @@ func logRequestResponse(req *http.Request, resp *http.Response, err error) {
 
 	resp.Body = io.NopCloser(io.Reader(bytes.NewReader(body)))
 
-	log.Printf("Request to %s %s", req.Method, req.URL.String())
-	log.Printf("Response Status: %d", resp.StatusCode)
+	log.Printf("X-Custom-Header: %s", req.Header.Get("X-Custom-Header"))
 	log.Printf("Response Body: %s", string(body))
 }
 
-func TestReverseProxyService(t *testing.T) {
+func TestReverseProxy(t *testing.T) {
 	t.Run("Test /service/api", func(t *testing.T) {
 		mockService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Printf("Mock Service received X-Custom-Header: %s", r.Header.Get("X-Custom-Header"))
+			w.Header().Set("X-Custom-Header", r.Header.Get("X-Custom-Header"))
 			w.Write([]byte("Hello, from service"))
+			log.Printf("Mock Service sending body: Hello, from service")
 		}))
 		defer mockService.Close()
 
@@ -42,14 +44,23 @@ func TestReverseProxyService(t *testing.T) {
 		proxyServer := httptest.NewServer(proxy)
 		defer proxyServer.Close()
 
-		resp, err := http.Get(proxyServer.URL + "/service/api")
+		req, err := http.NewRequest("GET", proxyServer.URL+"/service/api", nil)
+		if err != nil {
+			t.Fatalf("Failed to create request: %v", err)
+		}
+		req.Header.Set("X-Custom-Header", "custom-value")
+		log.Printf("Sending request to /service/api with X-Custom-Header: %s", req.Header.Get("X-Custom-Header"))
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
 		if err != nil {
 			t.Fatalf("Request failed: %v", err)
 		}
 		defer resp.Body.Close()
 
-		logRequestResponse(resp.Request, resp, err)
+		logRequestResponse(req, resp, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, "custom-value", resp.Header.Get("X-Custom-Header"))
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -60,7 +71,10 @@ func TestReverseProxyService(t *testing.T) {
 
 	t.Run("Test /service-1/api", func(t *testing.T) {
 		mockService1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Printf("Mock Service 1 received X-Custom-Header: %s", r.Header.Get("X-Custom-Header"))
+			w.Header().Set("X-Custom-Header", r.Header.Get("X-Custom-Header"))
 			w.Write([]byte("Hello, from service-1"))
+			log.Printf("Mock Service 1 sending body: Hello, from service-1")
 		}))
 		defer mockService1.Close()
 
@@ -68,14 +82,23 @@ func TestReverseProxyService(t *testing.T) {
 		proxyServer := httptest.NewServer(proxy)
 		defer proxyServer.Close()
 
-		resp, err := http.Get(proxyServer.URL + "/service-1/api")
+		req, err := http.NewRequest("GET", proxyServer.URL+"/service-1/api", nil)
+		if err != nil {
+			t.Fatalf("Failed to create request: %v", err)
+		}
+		req.Header.Set("X-Custom-Header", "custom-value")
+		log.Printf("Sending request to /service-1/api with X-Custom-Header: %s", req.Header.Get("X-Custom-Header"))
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
 		if err != nil {
 			t.Fatalf("Request failed: %v", err)
 		}
 		defer resp.Body.Close()
 
-		logRequestResponse(resp.Request, resp, err)
+		logRequestResponse(req, resp, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, "custom-value", resp.Header.Get("X-Custom-Header"))
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
