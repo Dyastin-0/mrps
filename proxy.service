@@ -4,7 +4,7 @@ After=network.target multi-user.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/opt/reverse-Proxy
+WorkingDirectory=/opt/reverse-proxy
 ExecStart=/opt/reverse-proxy/run
 Restart=always
 StandardOutput=journal
