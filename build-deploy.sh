@@ -8,7 +8,7 @@ ENV_FILE="./.env"
 ENV_PATH=$OUTPUT_DIR/.env
 YAML_FILE="./config.yaml"
 YAML_PATH=$OUTPUT_DIR/config.yaml
-SERVICE_FILE="./proxy.service"
+SERVICE_FILE="proxy.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_FILE"
 
 copy_file() {
@@ -24,7 +24,7 @@ copy_file() {
     fi
 }
 
-copy_file $SERVICE_FILE $SERVICE_PATH
+copy_file ./$SERVICE_FILE $SERVICE_PATH
 copy_file $YAML_FILE $YAML_PATH
 
 sudo mkdir -p $OUTPUT_DIR
