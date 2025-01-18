@@ -2,12 +2,6 @@
 
 This project implements a reverse proxy server that routes requests to different services based on the URL prefix. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
 
-## Overview
-
-The reverse proxy server operates using two main configuration components:
-1. **Domains Configuration**: Defines the domain names that the proxy will handle
-2. **Routes Configuration**: Specifies how incoming requests should be directed to backend services
-
 ## Features
 
 - Dynamic request routing based on URL prefixes
@@ -41,7 +35,7 @@ domains:
 
 #### Routes Configuration
 
-Routes define how incoming requests are forwarded to backend services. Example:
+Routes define how incoming requests are routed to backend services. Example:
 
 ```yaml
 routes:
@@ -63,29 +57,36 @@ The server automatically manages SSL certificates through Let's Encrypt:
 
 #### Option 1: Direct Run
 ```bash
-go run main.go
+go run cmd/server/main.go
 ```
 
-#### Option 2: SystemD Deployment
-The project includes a build-deploy script that automates the deployment process and sets up the server as a SystemD service:
+#### Option 2: Systemd Deployment
+The project includes a build-deploy script that automates the deployment process and sets up the server as a systemd service:
 
 1. Run the deployment script:
 ```bash
+chmod +x ./build-deploy.sh
 ./build-deploy.sh
 ```
 
 This script will:
 - Build the Go binary
-- Create a SystemD service file
 - Install and enable the service
 - Start the server
 
+You can configure the `proxy.serivce` as needed, but you need to keep the:
+```
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+```
+as the revere proxy server need to bind on priveleged ports, `80` and `443`.
+
 To check the service status:
 ```bash
-systemctl status reverse-proxy
+systemctl status proxy
 ```
 
 To view logs:
 ```bash
-journalctl -u reverse-proxy -f
+journalctl -u proxy -f
 ```
