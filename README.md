@@ -1,100 +1,91 @@
 # Reverse Proxy Server
 
-This project implements a reverse proxy server that routes requests to different services based on the URL prefix. The server listens for requests and proxies them to the appropriate target service defined in the configuration.
+This project implements a reverse proxy server that routes requests to different services based on the URL prefix. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
+
+## Overview
+
+The reverse proxy server operates using two main configuration components:
+1. **Domains Configuration**: Defines the domain names that the proxy will handle
+2. **Routes Configuration**: Specifies how incoming requests should be directed to backend services
+
+## Features
+
+- Dynamic request routing based on URL prefixes
+- Automatic SSL/TLS certificate management via Let's Encrypt
+- Support for multiple domains
+- Configurable routing rules
+- Zero-downtime certificate renewal
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Go](https://golang.org/dl/) installed on your machine.
+- [Go](https://golang.org/dl/) installed on your machine
+- Domain names pointed to your server's IP address (for SSL certificates)
+- Port 80 and 443 available for HTTP/HTTPS traffic
 
-### Running the Services
+### Configuration
 
-To run the reverse proxy server and services locally, you can use the provided batch script (`run.bat`) for Windows or shell script (`run.sh`) for Unix-like systems.
+Configurations are stored on the root's `config.yaml`.
 
-#### Windows (`run.bat`)
+#### Domain Configuration
 
-1. Open a command prompt (`cmd`) and navigate to the project directory.
-2. Run the batch script:
+The domains configuration specifies which domains the proxy will handle. Example:
 
-```bash
-./run.bat
+```yaml
+domains:
+  - domain.com
+  - api.domain.com
+  - sub.domain.com
 ```
 
-This will start two services and the reverse proxy server.
+#### Routes Configuration
 
-#### Unix-like systems (`run.sh`)
+Routes define how incoming requests are forwarded to backend services. Example:
 
-1. Open a terminal and navigate to the project directory.
-2. Run the shell script:
-
-```bash
-chmod +x ./run.sh
-./run.sh
+```yaml
+routes:
+  "domain.com": "http://localhost:4000"
+  "domain.com/api": "http://localhost:4001"
 ```
 
-This will start two services and the reverse proxy server.
+### SSL Certificates
 
-### Services
+The server automatically manages SSL certificates through Let's Encrypt:
+- Certificates are obtained when the server starts
+- Automatic renewal before expiration
+- Certificates are cached locally for reuse
 
-1. Service: This service listens on port 3001 and responds with "Hello from service".
-2. Service 1: This service listens on port 3002 and responds with "Hello from service-1".
+### Running the Server
 
-These services are mainly for testing.
+1. Set up your configuration file
+2. You have two options to run the server:
 
-The reverse proxy server will route requests based on the URL prefix:
-* `/service/api` will be routed to `service`
-* `/service-1/api` will be routed to `service-1`
-
-Check the `internal/config/config.go`.
-
-## Testing the Reverse Proxy
-
-You can run the tests included with the project to ensure everything is functioning as expected.
-
-- Run the tests using Go's testing framework. Navigate to the root of the project and execute the following:
-
+#### Option 1: Direct Run
 ```bash
-go test -v ./...
+go run main.go
 ```
 
-This command will execute the tests and provide a detailed log of the results. It will verify the correct routing of requests to the appropriate services and check that the proxy server handles requests properly.
+#### Option 2: SystemD Deployment
+The project includes a build-deploy script that automates the deployment process and sets up the server as a SystemD service:
 
-- Alternatively, you can also test the reverse proxy manually by using a tool like `curl` or a browser. Below are the endpoints you can test:
+1. Run the deployment script:
+```bash
+./build-deploy.sh
+```
 
-   * **Service**:
-     ```bash
-     curl http://localhost:3000/service/api
-     ```
-     This should return:
-     ```
-     Hello from service
-     ```
+This script will:
+- Build the Go binary
+- Create a SystemD service file
+- Install and enable the service
+- Start the server
 
-   * **Service 1**:
-     ```bash
-     curl http://localhost:3000/service-1/api
-     ```
-     This should return:
-     ```
-     Hello from service-1
-     ```
+To check the service status:
+```bash
+systemctl status reverse-proxy
+```
 
-   * **Unknown path**:
-     ```bash
-     curl http://localhost:3000/service/unknown
-     ```
-     This should return:
-     ```
-     404 not found
-     ```
-
-   * **Root path**:
-     ```bash
-     curl http://localhost:3000
-     ``` 
-
-     This should return:
-     ```
-     Hello, from reverse proxy server
-     ```
+To view logs:
+```bash
+journalctl -u reverse-proxy -f
+```

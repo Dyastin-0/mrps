@@ -1,0 +1,10 @@
+routes:
+  "gitsense.dyastin.tech/api": "http://localhost:4000"
+  "gitsense.dyastin.tech": "http://localhost:4001"
+
+domains:
+  - "dyastin.tech"
+  - "gitsense.dyastin.tech"
+  - "filespace.dyastin.tech"
+  - "omnisense.dyastin.tech"
+  - "filmpin.dyastin.tech"

@@ -6,6 +6,8 @@ MAIN_PACKAGE="./cmd/server/main.go"
 BINARY_NAME="run"
 ENV_FILE="./.env"
 ENV_PATH=$OUTPUT_DIR/.env
+YAML_FILE="./config.yaml"
+YAML_PATH=$OUTPUT_DIR/config.yaml
 SERVICE_FILE="proxy.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_FILE"
 

@@ -18,6 +18,11 @@ func main() {
 		log.Fatal("Failed to load .env file: ", err)
 	}
 
+	err = config.LoadConfig("config.yaml")
+	if err != nil {
+		log.Fatal("Failed to load config file: ", err)
+	}
+
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.Email = os.Getenv("CERT_EMAIL")
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
