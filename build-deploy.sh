@@ -51,10 +51,4 @@ else
 	echo "$APP: Service started"
 fi
 
-echo "$APP: Restarting Caddy server..."
-sudo systemctl restart caddy
-echo "$APP: Caddy restarted"
-
-echo "$APP: Service build and deployment complete"
-
 sudo systemctl status $SERVICE_FILE
