@@ -11,13 +11,6 @@ import (
 )
 
 func RateLimiter(next http.Handler) http.Handler {
-	type client struct {
-		limiter  *rate.Limiter
-		lastSeen time.Time
-	}
-
-	var clients = make(map[string]*client)
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
@@ -26,19 +19,19 @@ func RateLimiter(next http.Handler) http.Handler {
 			return
 		}
 
-		if _, found := clients[ip]; !found {
-			clients[ip] = &client{
-				limiter: rate.NewLimiter(config.RateLimit.Rate, config.RateLimit.Burst),
+		if _, found := config.Clients[ip]; !found {
+			config.Clients[ip] = &config.Client{
+				Limiter: rate.NewLimiter(config.RateLimit.Rate, config.RateLimit.Burst),
 			}
 		}
 
-		if !clients[ip].limiter.Allow() {
+		if !config.Clients[ip].Limiter.Allow() {
 			log.Printf("Rate limit exceeded for IP: %s", ip)
 			http.Error(w, "too many request 💔\n", http.StatusTooManyRequests)
 			return
 		}
 
-		clients[ip].lastSeen = time.Now()
+		config.Clients[ip].LastRequest = time.Now()
 
 		next.ServeHTTP(w, r)
 	})

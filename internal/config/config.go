@@ -10,6 +10,7 @@ import (
 var Routes RouteConfig
 var Domains DomainConfig
 var RateLimit RateLimitConfig
+var Clients = make(map[string]*Client)
 
 func Load(filename string) error {
 	file, err := os.Open(filename)
