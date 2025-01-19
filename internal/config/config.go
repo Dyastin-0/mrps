@@ -9,6 +9,7 @@ import (
 
 var Routes RouteConfig
 var Domains DomainConfig
+var RateLimit RateLimitConfig
 
 func Load(filename string) error {
 	file, err := os.Open(filename)
@@ -18,8 +19,9 @@ func Load(filename string) error {
 	defer file.Close()
 
 	configData := struct {
-		Routes  RouteConfig  `yaml:"routes"`
-		Domains DomainConfig `yaml:"domains"`
+		Routes    RouteConfig     `yaml:"routes"`
+		Domains   DomainConfig    `yaml:"domains"`
+		RateLimit RateLimitConfig `yaml:"rate_limit"`
 	}{}
 
 	decoder := yaml.NewDecoder(file)
@@ -29,6 +31,7 @@ func Load(filename string) error {
 
 	Routes = configData.Routes
 	Domains = configData.Domains
+	RateLimit = configData.RateLimit
 
 	return nil
 }

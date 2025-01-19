@@ -8,3 +8,7 @@ domains:
   - "filespace.dyastin.tech"
   - "omnisense.dyastin.tech"
   - "filmpin.dyastin.tech"
+
+rate_limit:
+  burst: 2
+  rate: 2

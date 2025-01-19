@@ -11,6 +11,7 @@ func New() chi.Router {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
+	router.Use(middleware.RateLimiter)
 	router.Use(middleware.ReverseProxy)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
