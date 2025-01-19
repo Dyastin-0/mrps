@@ -8,6 +8,7 @@ This project implements a reverse proxy server that routes requests to different
 - Automatic SSL/TLS certificate management via Let's Encrypt
 - Support for multiple domains
 - Configurable routing rules
+- Rate limiting with cooldown
 - Zero-downtime certificate renewal
 
 ## Getting Started
@@ -42,6 +43,29 @@ routes:
   "domain.com": "http://localhost:4000"
   "domain.com/api": "http://localhost:4001"
 ```
+
+#### Rate Limiting
+
+Rate limiting defines how many request a client can do in a specified timeframe. Example:
+
+```yaml
+rate_limit:
+  burst: 50
+  rate: 10
+  cooldown: 60
+```
+
+`burst` Maximum requests allowed in a short period (e.g., 50). This enables handling sudden traffic spikes.
+
+`rate` Requests per second at which tokens are replenished (e.g., 10).
+
+`cooldown` Time (in seconds) a client must wait after exhausting the burst limit.
+
+#### How it Works
+
+- `burst`: Client can make up to burst requests (50 in the example) without hitting the limit.
+- `rate`: After the burst, requests are limited to rate tokens per second (10 in this example).
+- `cooldown`: After exceeding the burst, the client must wait for the cooldown period (60 seconds) before making more requests.
 
 ### SSL Certificates
 
