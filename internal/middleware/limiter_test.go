@@ -12,8 +12,9 @@ import (
 
 func TestPerClientRateLimiter(t *testing.T) {
 	config.RateLimit = config.RateLimitConfig{
-		Burst: 2,
-		Rate:  2,
+		Burst:    2,
+		Rate:     2,
+		Cooldown: 1000,
 	}
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -29,10 +30,28 @@ func TestPerClientRateLimiter(t *testing.T) {
 		waitBetweenReqs time.Duration
 	}{
 		{
-			name:            "Exceed rate limit",
+			name:            "Exceed rate limit quickly",
+			requestCount:    5,
+			expectedResults: []int{http.StatusOK, http.StatusOK, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusTooManyRequests},
+			waitBetweenReqs: 100 * time.Millisecond,
+		},
+		{
+			name:            "Stay within rate limit",
+			requestCount:    4,
+			expectedResults: []int{http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
+			waitBetweenReqs: 600 * time.Millisecond,
+		},
+		{
+			name:            "Recover after cooldown",
+			requestCount:    6,
+			expectedResults: []int{http.StatusOK, http.StatusOK, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusOK},
+			waitBetweenReqs: 100 * time.Millisecond,
+		},
+		{
+			name:            "Test burst behavior",
 			requestCount:    3,
 			expectedResults: []int{http.StatusOK, http.StatusOK, http.StatusTooManyRequests},
-			waitBetweenReqs: 100 * time.Millisecond,
+			waitBetweenReqs: 200 * time.Millisecond,
 		},
 	}
 
@@ -56,7 +75,7 @@ func TestPerClientRateLimiter(t *testing.T) {
 				defer resp.Body.Close()
 
 				if resp.StatusCode != tt.expectedResults[i] {
-					t.Errorf("Request %d: Expected status %d, got %d", i+1, tt.expectedResults[i], resp.StatusCode)
+					t.Errorf("Name: %s, Request %d: Expected status %d, got %d", tt.name, i+1, tt.expectedResults[i], resp.StatusCode)
 				}
 
 				if i < tt.requestCount-1 {
@@ -64,5 +83,8 @@ func TestPerClientRateLimiter(t *testing.T) {
 				}
 			}
 		})
+
+		// Wait for the cooldown to reset
+		time.Sleep(1 * time.Second)
 	}
 }
