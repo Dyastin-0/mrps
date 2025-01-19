@@ -12,8 +12,9 @@ type RouteConfig map[string]string
 type DomainConfig []string
 
 type RateLimitConfig struct {
-	Burst int        `yaml:"burst"`
-	Rate  rate.Limit `yaml:"rate"`
+	Burst    int           `yaml:"burst"`
+	Rate     rate.Limit    `yaml:"rate"`
+	Cooldown time.Duration `yaml:"cooldown"`
 }
 
 type Client struct {

@@ -12,3 +12,4 @@ domains:
 rate_limit:
   burst: 50
   rate: 10
+  cooldown: 60000

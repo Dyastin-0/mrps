@@ -36,7 +36,8 @@ func RateLimiter(next http.Handler) http.Handler {
 		}
 
 		if !config.Clients[ip].Limiter.Allow() {
-			cooldownDuration := config.Cooldowns.DefaultWaitTime
+			//You can also use the default cooldown time: config.Cooldowns.DefaultWaitTime
+			cooldownDuration := config.RateLimit.Cooldown
 
 			config.Cooldowns.MU.Lock()
 			config.Cooldowns.Client[ip] = time.Now().Add(cooldownDuration)
