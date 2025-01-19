@@ -27,7 +27,7 @@ func RateLimiter(next http.Handler) http.Handler {
 
 		if !config.Clients[ip].Limiter.Allow() {
 			log.Printf("Rate limit exceeded for IP: %s", ip)
-			http.Error(w, "too many request 💔\n", http.StatusTooManyRequests)
+			http.Error(w, "too many request 💔", http.StatusTooManyRequests)
 			return
 		}
 
