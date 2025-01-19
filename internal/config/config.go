@@ -39,5 +39,7 @@ func Load(filename string) error {
 	Domains = configData.Domains
 	RateLimit = configData.RateLimit
 
+	RateLimit.Cooldown = time.Duration(RateLimit.Cooldown) * time.Millisecond
+
 	return nil
 }
