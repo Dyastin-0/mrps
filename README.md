@@ -1,6 +1,6 @@
 # Reverse Proxy Server
 
-This project implements a reverse proxy server that routes requests to different services based on the URL prefix. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
+This project implements a reverse proxy server that routes requests to different services based on the URL. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
 
 ## Features
 
