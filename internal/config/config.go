@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -11,6 +12,10 @@ var Routes RouteConfig
 var Domains DomainConfig
 var RateLimit RateLimitConfig
 var Clients = make(map[string]*Client)
+var Cooldowns = CoolDownConfig{
+	DefaultWaitTime: 1 * time.Minute,
+	Client:          make(map[string]time.Time),
+}
 
 func Load(filename string) error {
 	file, err := os.Open(filename)

@@ -19,6 +19,16 @@ func RateLimiter(next http.Handler) http.Handler {
 			return
 		}
 
+		config.Cooldowns.MU.Lock()
+		cooldownEnd, inCooldown := config.Cooldowns.Client[ip]
+		config.Cooldowns.MU.Unlock()
+
+		if inCooldown && time.Now().Before(cooldownEnd) {
+			w.Header().Set("Retry-After", cooldownEnd.Format(time.RFC1123))
+			http.Error(w, "Too many requests. Try again later ⏳", http.StatusTooManyRequests)
+			return
+		}
+
 		if _, found := config.Clients[ip]; !found {
 			config.Clients[ip] = &config.Client{
 				Limiter: rate.NewLimiter(config.RateLimit.Rate, config.RateLimit.Burst),
@@ -26,8 +36,14 @@ func RateLimiter(next http.Handler) http.Handler {
 		}
 
 		if !config.Clients[ip].Limiter.Allow() {
-			log.Printf("Rate limit exceeded for IP: %s", ip)
-			http.Error(w, "too many request 💔", http.StatusTooManyRequests)
+			cooldownDuration := config.Cooldowns.DefaultWaitTime
+
+			config.Cooldowns.MU.Lock()
+			config.Cooldowns.Client[ip] = time.Now().Add(cooldownDuration)
+			config.Cooldowns.MU.Unlock()
+
+			w.Header().Set("Retry-After", time.Now().Add(cooldownDuration).Format(time.RFC1123))
+			http.Error(w, "too many requests 💔", http.StatusTooManyRequests)
 			return
 		}
 
