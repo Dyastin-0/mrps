@@ -79,7 +79,7 @@ You can configure the `proxy.serivce` as needed, but you need to keep the:
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 ```
-as the revere proxy server need to bind on privileged ports, `80` and `443`.
+as the reverse proxy server needs to bind on privileged ports, `80` and `443`.
 
 To check the service status:
 ```bash
