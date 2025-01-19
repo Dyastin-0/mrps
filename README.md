@@ -9,7 +9,7 @@ This project implements a reverse proxy server that routes requests to different
 - Zero-downtime certificate renewal
 - Support for multiple domains
 - Configurable routing rules
-- Rate limiting with cooldown
+- Global rate limiting with cooldown
 
 ## Getting Started
 
