@@ -6,10 +6,10 @@ This project implements a reverse proxy server that routes requests to different
 
 - Dynamic request routing based on URL prefixes
 - Automatic SSL/TLS certificate management via Let's Encrypt
+- Zero-downtime certificate renewal
 - Support for multiple domains
 - Configurable routing rules
 - Rate limiting with cooldown
-- Zero-downtime certificate renewal
 
 ## Getting Started
 
