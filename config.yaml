@@ -11,4 +11,4 @@ domains:
 
 rate_limit:
   burst: 50
-  rate: 1
+  rate: 25
