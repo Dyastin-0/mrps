@@ -35,7 +35,7 @@ domains:
 
 #### Routes Configuration
 
-Routes define how incoming requests are routed to backend services. Example:
+Routes define how incoming requests are routed different services. Example:
 
 ```yaml
 routes:
@@ -45,7 +45,7 @@ routes:
 
 ### SSL Certificates
 
-The server automatically manages SSL certificates through Let's Encrypt:
+The server automatically manages SSL certificates through Let's Encrypt using [certmagic](https://github.com/caddyserver/certmagic):
 - Certificates are obtained when the server starts
 - Automatic renewal before expiration
 - Certificates are cached locally for reuse
@@ -61,7 +61,7 @@ go run cmd/server/main.go
 ```
 
 #### Option 2: Systemd Deployment
-The project includes a build-deploy script that automates the deployment process and sets up the server as a systemd service:
+There's a `build-deploy.sh` script that automates the deployment process and sets up the server as a systemd service:
 
 1. Run the deployment script:
 ```bash
@@ -74,7 +74,7 @@ This script will:
 - Install and enable the service
 - Start the server
 
-You can configure the `proxy.serivce` as needed, but you need to keep the:
+You can configure the `proxy.service` as needed, but you need to keep the:
 ```
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
