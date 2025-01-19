@@ -52,14 +52,14 @@ Rate limiting defines how many request a client can do in a specified timeframe.
 rate_limit:
   burst: 50
   rate: 10
-  cooldown: 60
+  cooldown: 60000
 ```
 
-`burst` Maximum requests allowed in a short period (e.g., 50). This enables handling sudden traffic spikes.
+`burst` Maximum requests allowed in a short period. This enables handling sudden traffic spikes.
 
-`rate` Requests per second at which tokens are replenished (e.g., 10).
+`rate` Requests per second at which tokens are replenished.
 
-`cooldown` Time (in seconds) a client must wait after exhausting the burst limit.
+`cooldown` Time (in milliseconds) a client must wait after exhausting the burst limit.
 
 #### How it Works
 
