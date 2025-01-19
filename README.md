@@ -28,9 +28,9 @@ The domains configuration specifies which domains the proxy will handle. Example
 
 ```yaml
 domains:
-  - domain.com
-  - api.domain.com
-  - sub.domain.com
+  - "domain.com"
+  - "api.domain.com"
+  - "sub.domain.com"
 ```
 
 #### Routes Configuration
