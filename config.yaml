@@ -15,6 +15,6 @@ domains:
   - "filmpin.dyastin.tech"
 
 rate_limit:
-  burst: 50
+  burst: 60
   rate: 20
   cooldown: 60000
