@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
-	reverse "github.com/Dyastin-0/reverse-proxy-server/pkg/reverse_proxy"
+	reverseproxy "github.com/Dyastin-0/reverse-proxy-server/pkg/reverse_proxy"
 )
 
 func ReverseProxy(next http.Handler) http.Handler {
@@ -14,7 +14,7 @@ func ReverseProxy(next http.Handler) http.Handler {
 
 		for route, target := range config.Routes {
 			if strings.HasPrefix(fullPath, route) {
-				proxy := reverse.New(target)
+				proxy := reverseproxy.New(target)
 				proxy.ServeHTTP(w, r)
 				return
 			}
