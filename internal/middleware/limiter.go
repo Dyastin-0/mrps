@@ -25,7 +25,7 @@ func RateLimiter(next http.Handler) http.Handler {
 
 		if inCooldown && time.Now().Before(cooldownEnd) {
 			w.Header().Set("Retry-After", cooldownEnd.Format(time.RFC1123))
-			http.Error(w, "Too many requests. Try again later ⏳", http.StatusTooManyRequests)
+			http.Error(w, "too many requests ⏳💔, calm down", http.StatusTooManyRequests)
 			return
 		}
 
