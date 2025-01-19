@@ -10,5 +10,5 @@ domains:
   - "filmpin.dyastin.tech"
 
 rate_limit:
-  burst: 2
-  rate: 2
+  burst: 10
+  rate: 1
