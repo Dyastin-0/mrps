@@ -4,7 +4,7 @@ This project implements a reverse proxy server that routes requests to different
 
 ## Features
 
-- Dynamic request routing based on URL prefixes
+- Dynamic request routing based on domain + prefix
 - Automatic SSL/TLS certificate management via Let's Encrypt
 - Zero-downtime certificate renewal
 - Support for multiple domains
