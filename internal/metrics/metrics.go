@@ -15,7 +15,7 @@ var (
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "endpoint", "domain"},
+		[]string{"method", "endpoint"},
 	)
 
 	RequestDuration = prometheus.NewHistogramVec(
@@ -24,7 +24,7 @@ var (
 			Help:    "Histogram of request durations",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method", "endpoint", "domain"},
+		[]string{"method", "endpoint"},
 	)
 
 	ActiveRequests = prometheus.NewGauge(
