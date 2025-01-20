@@ -10,6 +10,7 @@ This project implements an HTTP/HTTPS reverse proxy server that routes requests 
 - Support for multiple domains
 - Configurable routing rules
 - Global rate limiting with cooldown
+- Scrappable metrics
 
 ## Getting Started
 
@@ -113,4 +114,35 @@ systemctl status proxy
 To view logs:
 ```bash
 journalctl -u proxy -f
+```
+
+### Metrics
+
+The reverse proxy server exposes Prometheus-compatible metrics at the /metrics endpoint to help monitor the server's performance.
+
+#### Custom Metrics
+
+1. `http_requests_total`
+  - Type: Counter
+  - Description: Total number of HTTP requests processed by the server.
+  - Labels:
+    - method: HTTP method (GET, POST, etc.)
+    - endpoint: The URL path of the request.
+2. `http_request_duration_seconds`
+  - Type: Histogram
+  - Description: Measures the duration of HTTP requests in seconds.
+  - Labels:
+    - method: HTTP method (GET, POST, etc.)
+    - endpoint: The URL path of the request.
+3. `http_active_requests`
+  - Type: Gauge
+  - Description: Number of currently active HTTP requests being processed by the server.
+
+#### Scraping Metrics
+Prometheus can scrape these metrics by configuring the server's /metrics endpoint as a target. Example scrape configuration in Prometheus:
+```yaml
+scrape_configs:
+  - job_name: 'reverse_proxy'
+    static_configs:
+      - targets: ['localhost:80'] #HTTP, since the reverse proxy server binded on it
 ```
