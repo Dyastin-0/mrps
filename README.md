@@ -143,6 +143,7 @@ Prometheus can scrape these metrics by configuring the server's /metrics endpoin
 ```yaml
 scrape_configs:
   - job_name: 'reverse_proxy'
+    scheme: 'http'
     static_configs:
       - targets: ['localhost:80'] #HTTP, since the reverse proxy server binded on it
 ```
