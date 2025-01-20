@@ -145,5 +145,5 @@ scrape_configs:
   - job_name: 'reverse_proxy'
     scheme: 'http'
     static_configs:
-      - targets: ['localhost:80'] #HTTP, since the reverse proxy server is binded on it
+      - targets: ['domain.com']
 ```
