@@ -36,7 +36,7 @@ domains:
 
 #### Routes Configuration
 
-Routes define how incoming requests are routed different services. Example:
+Routes define how incoming requests are routed to different services. Example:
 
 ```yaml
 routes:
