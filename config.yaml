@@ -10,6 +10,7 @@ routes:
 
 domains:
   - "dyastin.tech"
+  - "metrics.dyastin.tech"
   - "gitsense.dyastin.tech"
   - "filespace.dyastin.tech"
   - "omnisense.dyastin.tech"
