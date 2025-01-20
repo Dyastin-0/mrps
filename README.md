@@ -1,11 +1,11 @@
 # Reverse Proxy Server
 
-This project implements a reverse proxy server that routes requests to different services based on the URL prefix. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
+This project implements an HTTP/HTTPS reverse proxy server that routes requests to different services based on the URL. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
 
 ## Features
 
-- Dynamic request routing based on URL prefixes
-- Automatic SSL/TLS certificate management via Let's Encrypt
+- Dynamic request routing based on domain + prefix
+- Automatic TLS certificate management via Let's Encrypt
 - Zero-downtime certificate renewal
 - Support for multiple domains
 - Configurable routing rules
@@ -36,7 +36,7 @@ domains:
 
 #### Routes Configuration
 
-Routes define how incoming requests are routed different services. Example:
+Routes define how incoming requests are routed to different services. Example:
 
 ```yaml
 routes:
@@ -67,9 +67,9 @@ rate_limit:
 - `rate`: After the burst, requests are limited to rate tokens per second (10 in this example).
 - `cooldown`: After exceeding the burst, the client must wait for the cooldown period (60 seconds) before making more requests.
 
-### SSL Certificates
+### TLS Certificates
 
-The server automatically manages SSL certificates through Let's Encrypt using [certmagic](https://github.com/caddyserver/certmagic):
+The server automatically manages TLS certificates through Let's Encrypt using [certmagic](https://github.com/caddyserver/certmagic):
 - Certificates are obtained when the server starts
 - Automatic renewal before expiration
 - Certificates are cached locally for reuse
