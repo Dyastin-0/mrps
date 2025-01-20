@@ -1,4 +1,4 @@
-package middleware_test
+package reverseproxy_test
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/middleware"
+	"github.com/Dyastin-0/reverse-proxy-server/internal/limiter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,7 +45,7 @@ func TestReverseProxyMiddleware(t *testing.T) {
 		"/service-1/api": mockService1.URL,
 	}
 
-	handler := middleware.ReverseProxy(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := limiter.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Not Found handler received X-Custom-Header: %s",
 			r.Header.Get("X-Custom-Header"))
 		http.Error(w, "not found", http.StatusNotFound)

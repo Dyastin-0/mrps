@@ -1,4 +1,4 @@
-package middleware
+package reverseproxy
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	reverseproxy "github.com/Dyastin-0/reverse-proxy-server/pkg/reverse_proxy"
 )
 
-func ReverseProxy(next http.Handler) http.Handler {
+func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fullPath := r.Host + r.URL.Path
 

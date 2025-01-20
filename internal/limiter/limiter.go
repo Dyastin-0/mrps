@@ -1,4 +1,4 @@
-package middleware
+package limiter
 
 import (
 	"log"
@@ -10,7 +10,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func RateLimiter(next http.Handler) http.Handler {
+func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {

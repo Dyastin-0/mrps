@@ -1,4 +1,4 @@
-package middleware
+package logger
 
 import (
 	"net/http"
@@ -6,6 +6,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func Logger(next http.Handler) http.Handler {
+func Handler(next http.Handler) http.Handler {
 	return middleware.Logger(next)
 }

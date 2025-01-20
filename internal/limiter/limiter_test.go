@@ -1,4 +1,4 @@
-package middleware_test
+package limiter_test
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/middleware"
+	"github.com/Dyastin-0/reverse-proxy-server/internal/limiter"
 )
 
 func TestPerClientRateLimiter(t *testing.T) {
@@ -21,7 +21,7 @@ func TestPerClientRateLimiter(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	limiter := middleware.RateLimiter(handler)
+	limiter := limiter.Handler(handler)
 
 	tests := []struct {
 		name            string
