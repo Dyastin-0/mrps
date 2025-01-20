@@ -7,11 +7,13 @@ routes:
   "filmpin.dyastin.tech/api": "http://localhost:5001"
   "filmpin.dyastin.tech": "http://localhost:5002"
   "metrics.dyastin.tech": "http://localhost:3000"
-  "metrics.dyastin.tech/prometheus": "http://localhost:3000"
+  "metrics.dyastin.tech": "http://localhost:3000"
+  "prometheus.dyastin.tech": "http://localhost:9090"
 
 domains:
   - "dyastin.tech"
   - "metrics.dyastin.tech"
+  - "prometheus.dyastin.tech"
   - "gitsense.dyastin.tech"
   - "filespace.dyastin.tech"
   - "omnisense.dyastin.tech"
