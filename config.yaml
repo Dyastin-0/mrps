@@ -6,7 +6,7 @@ routes:
   "omnisense.dyastin.tech": "http://localhost:4004"
   "filmpin.dyastin.tech/api": "http://localhost:5001"
   "filmpin.dyastin.tech": "http://localhost:5002"
-  "dyastin.tech/metrics": "http://localhost:3000"
+  "metrics.dyastin.tech": "http://localhost:3000"
 
 domains:
   - "dyastin.tech"
