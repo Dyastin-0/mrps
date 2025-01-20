@@ -145,5 +145,5 @@ scrape_configs:
   - job_name: 'reverse_proxy'
     scheme: 'http'
     static_configs:
-      - targets: ['domain.com']
+      - targets: ['domain.com'] #Domain should not be used in the routing to access the /metrics endpoint
 ```
