@@ -24,6 +24,14 @@ This project implements an HTTP/HTTPS reverse proxy server that routes requests 
 
 Configurations are stored on the root's `config.yaml`.
 
+#### Email
+
+Used for Let's Encrypt configuration 
+
+```yaml
+email: "your@email.com"
+```
+
 #### Domain Configuration
 
 The domains configuration specifies which domains the proxy will handle. Example:
@@ -45,7 +53,7 @@ routes:
   "domain.com/api": "http://localhost:4001"
 ```
 
-#### Rate Limiting
+#### Rate Limiting Configuration
 
 Rate limiting defines how many request a client can do in a specified timeframe. Example:
 
