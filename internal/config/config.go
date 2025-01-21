@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var Email EmailConfig
 var Routes RouteConfig
 var Domains DomainConfig
 var RateLimit RateLimitConfig
@@ -28,6 +29,7 @@ func Load(filename string) error {
 		Routes    RouteConfig     `yaml:"routes"`
 		Domains   DomainConfig    `yaml:"domains"`
 		RateLimit RateLimitConfig `yaml:"rate_limit"`
+		Email     EmailConfig     `yaml:"email"`
 	}{}
 
 	decoder := yaml.NewDecoder(file)
@@ -38,6 +40,7 @@ func Load(filename string) error {
 	Routes = configData.Routes
 	Domains = configData.Domains
 	RateLimit = configData.RateLimit
+	Email = configData.Email
 
 	RateLimit.Cooldown = time.Duration(RateLimit.Cooldown) * time.Millisecond
 

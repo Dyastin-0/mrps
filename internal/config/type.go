@@ -7,6 +7,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
+type EmailConfig string
+
 type RouteConfig map[string]string
 
 type DomainConfig []string

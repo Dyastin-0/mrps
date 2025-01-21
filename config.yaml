@@ -17,6 +17,8 @@ domains:
   - "omnisense.dyastin.tech"
   - "filmpin.dyastin.tech"
 
+email: "mail@dyastin.tech"
+
 rate_limit:
   burst: 80
   rate: 20
