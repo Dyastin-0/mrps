@@ -1,10 +1,10 @@
 package metrics
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -15,7 +15,7 @@ var (
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "host"},
+		[]string{"method", "host", "code"},
 	)
 
 	RequestDuration = prometheus.NewHistogramVec(
@@ -24,7 +24,7 @@ var (
 			Help:    "Histogram of request durations",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method", "host"},
+		[]string{"method", "host", "code"},
 	)
 
 	ActiveRequests = prometheus.NewGauge(
@@ -45,19 +45,27 @@ func Handler() http.HandlerFunc {
 	return promhttp.Handler().ServeHTTP
 }
 
+func (w *ResponseWriter) WriteHeader(statusCode int) {
+	w.StatusCode = statusCode
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
 func UpdateHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		method := r.Method
 		host := r.Host
+
 		ActiveRequests.Inc()
 		defer ActiveRequests.Dec()
 
-		rec := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+		rec := &ResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
+
 		next.ServeHTTP(rec, r)
 
 		duration := time.Since(start).Seconds()
-		RequestCount.WithLabelValues(method, host).Inc()
+
+		RequestCount.WithLabelValues(method, host, fmt.Sprint(rec.StatusCode)).Inc()
 		RequestDuration.WithLabelValues(method, host).Observe(duration)
 	})
 }
