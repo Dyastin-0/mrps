@@ -60,12 +60,13 @@ func UpdateHandler(next http.Handler) http.Handler {
 		defer ActiveRequests.Dec()
 
 		rec := &ResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
+		code := fmt.Sprint(rec.StatusCode)
 
 		next.ServeHTTP(rec, r)
 
 		duration := time.Since(start).Seconds()
 
-		RequestCount.WithLabelValues(method, host, fmt.Sprint(rec.StatusCode)).Inc()
-		RequestDuration.WithLabelValues(method, host).Observe(duration)
+		RequestCount.WithLabelValues(method, host, code).Inc()
+		RequestDuration.WithLabelValues(method, host, code).Observe(duration)
 	})
 }
