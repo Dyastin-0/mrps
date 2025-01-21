@@ -20,6 +20,6 @@ domains:
 email: "mail@dyastin.tech"
 
 rate_limit:
-  burst: 80
-  rate: 20
+  burst: 5
+  rate: 10
   cooldown: 60000
