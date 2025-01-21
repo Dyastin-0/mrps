@@ -1,7 +1,9 @@
 package metrics
 
 import (
+	"bufio"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -45,9 +47,23 @@ func Handler() http.HandlerFunc {
 	return promhttp.Handler().ServeHTTP
 }
 
+func NewWrapResponseWriter(w http.ResponseWriter) *ResponseWriter {
+	return &ResponseWriter{
+		ResponseWriter: w,
+		StatusCode:     http.StatusOK,
+	}
+}
+
 func (w *ResponseWriter) WriteHeader(statusCode int) {
 	w.StatusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (rw *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hijacker, ok := rw.ResponseWriter.(http.Hijacker); ok {
+		return hijacker.Hijack()
+	}
+	return nil, nil, fmt.Errorf("ResponseWriter does not support Hijack")
 }
 
 func UpdateHandler(next http.Handler) http.Handler {
@@ -59,7 +75,7 @@ func UpdateHandler(next http.Handler) http.Handler {
 		ActiveRequests.Inc()
 		defer ActiveRequests.Dec()
 
-		rec := &ResponseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
+		rec := NewWrapResponseWriter(w)
 
 		next.ServeHTTP(rec, r)
 
