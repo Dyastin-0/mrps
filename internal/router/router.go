@@ -14,8 +14,8 @@ func New() chi.Router {
 	router := chi.NewRouter()
 
 	router.Use(logger.Handler)
-	router.Use(limiter.Handler)
 	router.Use(metrics.UpdateHandler)
+	router.Use(limiter.Handler)
 	router.Use(reverseproxy.Handler)
 
 	router.Get("/metrics", metrics.Handler())
