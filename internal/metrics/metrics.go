@@ -15,7 +15,7 @@ var (
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "endpoint"},
+		[]string{"method", "endpoint", "host"},
 	)
 
 	RequestDuration = prometheus.NewHistogramVec(
@@ -24,7 +24,7 @@ var (
 			Help:    "Histogram of request durations",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method", "endpoint"},
+		[]string{"method", "endpoint", "host"},
 	)
 
 	ActiveRequests = prometheus.NewGauge(
@@ -48,6 +48,9 @@ func Handler() http.HandlerFunc {
 func UpdateHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		method := r.Method
+		endpoint := r.URL.Path
+		host := r.Host
 		ActiveRequests.Inc()
 		defer ActiveRequests.Dec()
 
@@ -55,7 +58,7 @@ func UpdateHandler(next http.Handler) http.Handler {
 		next.ServeHTTP(rec, r)
 
 		duration := time.Since(start).Seconds()
-		RequestCount.WithLabelValues(r.Method, r.URL.Path).Inc()
-		RequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration)
+		RequestCount.WithLabelValues(method, endpoint, host).Inc()
+		RequestDuration.WithLabelValues(method, endpoint, host).Observe(duration)
 	})
 }
