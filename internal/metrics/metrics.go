@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+var mu sync.Mutex
 
 var (
 	RequestCount = prometheus.NewCounterVec(
@@ -82,7 +85,9 @@ func UpdateHandler(next http.Handler) http.Handler {
 		code := fmt.Sprint(rec.StatusCode)
 		duration := time.Since(start).Seconds()
 
+		mu.Lock()
 		RequestCount.WithLabelValues(method, host, code).Inc()
 		RequestDuration.WithLabelValues(method, host, code).Observe(duration)
+		mu.Unlock()
 	})
 }
