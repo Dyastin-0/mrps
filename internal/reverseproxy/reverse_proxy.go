@@ -10,13 +10,18 @@ import (
 
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fullPath := r.Host + r.URL.Path
+		host := strings.ToLower(r.Host)
+		if host == "" { // Used for mocking in tests
+			host = "localhost" // Omit these lines in production
+		} //
+		path := r.URL.Path
 
-		for route, target := range config.Routes {
-			if strings.HasPrefix(fullPath, route) {
-				proxy := reverseproxy.New(target)
-				proxy.ServeHTTP(w, r)
-				return
+		if domainConfig, exists := config.Routes[host]; exists {
+			for routePath, proxyTarget := range domainConfig.Routes {
+				if strings.HasPrefix(path, routePath) {
+					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
+					return
+				}
 			}
 		}
 

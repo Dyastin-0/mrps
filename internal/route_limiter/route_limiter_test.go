@@ -1,27 +1,37 @@
-package limiter_test
+package routelimiter
 
 import (
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/limiter"
 )
 
-func TestPerClientRateLimiter(t *testing.T) {
-	config.GlobalRateLimit = config.RateLimitConfig{
-		Burst:    2,
-		Rate:     2,
-		Cooldown: 1000,
+func setupMockConfig() {
+	config.Clients = make(map[string]map[string]*config.Client)
+	config.Cooldowns = config.CoolDownConfig{
+		DomainMutex: make(map[string]*sync.Mutex),
+		Client:      make(map[string]map[string]time.Time),
 	}
+}
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+func TestDomainHandler(t *testing.T) {
+	setupMockConfig()
 
-	limiter := limiter.Handler(handler)
+	config.Routes = make(map[string]config.Config)
+	routeConfig := config.Config{
+		RateLimit: config.RateLimitConfig{
+			Rate:            2,
+			Burst:           2,
+			Cooldown:        1000,
+			DefaultCooldown: 1 * time.Second,
+		},
+	}
+	config.Routes["localhost"] = routeConfig
+	config.Cooldowns.DomainMutex["localhost"] = &sync.Mutex{}
 
 	tests := []struct {
 		name            string
@@ -57,34 +67,28 @@ func TestPerClientRateLimiter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server := httptest.NewServer(limiter)
-			defer server.Close()
-
-			client := &http.Client{}
+			handler := DomainHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			}))
 
 			for i := 0; i < tt.requestCount; i++ {
-				req, err := http.NewRequest("GET", server.URL, nil)
+				req, err := http.NewRequest("GET", "/", nil)
 				if err != nil {
-					t.Fatalf("Error creating request: %v", err)
+					t.Fatal(err)
 				}
 
-				resp, err := client.Do(req)
-				if err != nil {
-					t.Fatalf("Error sending request: %v", err)
-				}
-				defer resp.Body.Close()
+				rr := httptest.NewRecorder()
+				handler.ServeHTTP(rr, req)
 
-				if resp.StatusCode != tt.expectedResults[i] {
-					t.Errorf("Name: %s, Request %d: Expected status %d, got %d", tt.name, i+1, tt.expectedResults[i], resp.StatusCode)
+				if rr.Code != tt.expectedResults[i] {
+					t.Errorf("Name: %s, Expected status %d but got %d for request %d", tt.name, tt.expectedResults[i], rr.Code, i+1)
 				}
 
 				if i < tt.requestCount-1 {
 					time.Sleep(tt.waitBetweenReqs)
 				}
 			}
+			time.Sleep(2 * time.Second)
 		})
-
-		// Wait for the cooldown to reset
-		time.Sleep(1 * time.Second)
 	}
 }

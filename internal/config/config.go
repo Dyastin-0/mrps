@@ -3,19 +3,22 @@ package config
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
-var Email EmailConfig
-var Routes RouteConfig
-var Domains DomainConfig
-var RateLimit RateLimitConfig
-var Clients = make(map[string]*Client)
+var Email string
+var Routes RoutesConfig
+var Domains []string
+var GlobalRateLimit RateLimitConfig
+var Clients = make(map[string]map[string]*Client)
 var Cooldowns = CoolDownConfig{
+	MU:              &sync.Mutex{},
 	DefaultWaitTime: 1 * time.Minute,
-	Client:          make(map[string]time.Time),
+	DomainMutex:     make(map[string]*sync.Mutex),
+	Client:          make(map[string]map[string]time.Time),
 }
 
 func Load(filename string) error {
@@ -26,10 +29,9 @@ func Load(filename string) error {
 	defer file.Close()
 
 	configData := struct {
-		Routes    RouteConfig     `yaml:"routes"`
-		Domains   DomainConfig    `yaml:"domains"`
+		Routes    RoutesConfig    `yaml:"routes"`
+		Email     string          `yaml:"email"`
 		RateLimit RateLimitConfig `yaml:"rate_limit"`
-		Email     EmailConfig     `yaml:"email"`
 	}{}
 
 	decoder := yaml.NewDecoder(file)
@@ -38,11 +40,18 @@ func Load(filename string) error {
 	}
 
 	Routes = configData.Routes
-	Domains = configData.Domains
-	RateLimit = configData.RateLimit
 	Email = configData.Email
+	GlobalRateLimit = configData.RateLimit
 
-	RateLimit.Cooldown = time.Duration(RateLimit.Cooldown) * time.Millisecond
+	GlobalRateLimit.Cooldown *= time.Millisecond
+	for domain, cfg := range Routes {
+		Domains = append(Domains, domain)
+		cfg.RateLimit.Cooldown *= time.Millisecond
+		cfg.RateLimit.DefaultCooldown *= Cooldowns.DefaultWaitTime
+		Routes[domain] = cfg
+
+		Cooldowns.DomainMutex[domain] = &sync.Mutex{}
+	}
 
 	return nil
 }
