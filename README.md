@@ -46,6 +46,14 @@ routes:
       burst: 100
       rate: 50
       cooldown: 60000
+"sub.domain.com":
+    routes:
+      "/api": "http://localhost:9090" 
+      "/": "http://localhost:3000"
+    rate_limit:
+      burst: 10
+      rate: 5
+      cooldown: 60000
 ```
 
 #### Rate Limiting Configuration
