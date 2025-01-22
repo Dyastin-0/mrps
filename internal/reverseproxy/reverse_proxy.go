@@ -18,7 +18,6 @@ func Handler(next http.Handler) http.Handler {
 			for routePath, proxyTarget := range domainConfig.Routes {
 				if strings.HasPrefix(path, routePath) {
 					log.Println("[DEBUG] Proxying request to", proxyTarget)
-					r.URL.Path = strings.TrimPrefix(r.URL.Path, routePath)
 					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
 					return
 				}
