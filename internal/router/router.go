@@ -20,8 +20,6 @@ func New() chi.Router {
 	router.Use(routelimiter.Handler)
 	router.Use(reverseproxy.Handler)
 
-	router.Get("/metrics", metrics.Handler())
-
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, from reverse proxy server 🚀\n"))
 	})

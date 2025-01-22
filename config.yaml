@@ -32,6 +32,7 @@ routes:
       cooldown: 60000
   "metrics.dyastin.tech":
     routes:
+      "/metrics": "http://localhost:7070"
       "/": "http://localhost:3000"
     rate_limit:
       burst: 100
