@@ -53,7 +53,5 @@ func Load(filename string) error {
 		Cooldowns.DomainMutex[domain] = &sync.Mutex{}
 	}
 
-	Domains = append(Domains, "dyastin.tech") //temporarily add this domain, will be removed later
-
 	return nil
 }
