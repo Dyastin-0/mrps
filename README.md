@@ -4,7 +4,7 @@ This project implements an HTTP/HTTPS reverse proxy server that routes requests 
 
 ## Features
 
-- Dynamic request routing based on domain + prefix
+- Dynamic request routing based on domain and prefixes
 - Automatic TLS certificate management via Let's Encrypt
 - Zero-downtime certificate renewal
 - Support for multiple domains
@@ -148,5 +148,5 @@ scrape_configs:
   - job_name: 'reverse_proxy'
     scheme: 'http'
     static_configs:
-      - targets: ['domain.com']
+      - targets: ['localhost:7070'] # default port, you can change it from the /cmd/server/main.go
 ```
