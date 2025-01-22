@@ -11,7 +11,7 @@ import (
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
-		path := r.URL.Path
+		path := strings.TrimSuffix(r.URL.Path, "/")
 
 		if domainConfig, exists := config.Routes[host]; exists {
 			for routePath, proxyTarget := range domainConfig.Routes {
