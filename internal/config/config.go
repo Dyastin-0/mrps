@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -67,7 +68,7 @@ func Load(filename string) error {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
 
-		// Sorting the routes for this domain by the path (you can customize the sorting logic here)
+		// Sorting the routes for this domain by the depth of the path
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
@@ -76,8 +77,10 @@ func Load(filename string) error {
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
-		// Sorting by path alphabetically, you can modify this if you need a different order
-		sort.Strings(sortedRoutes)
+		// Sort the routes by their path depth (longer paths will come first)
+		sort.Slice(sortedRoutes, func(i, j int) bool {
+			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
+		})
 
 		// Reassign the sorted routes back to the domain
 		sortedConfig := make(map[string]string)
