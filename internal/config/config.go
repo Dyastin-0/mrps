@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"sync"
 	"time"
 
@@ -19,6 +20,18 @@ var Cooldowns = CoolDownConfig{
 	DefaultWaitTime: 1 * time.Minute,
 	DomainMutex:     make(map[string]*sync.Mutex),
 	Client:          make(map[string]map[string]time.Time),
+}
+
+func isValidDomain(domain string) bool {
+	return regexp.MustCompile(`^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$`).MatchString(domain)
+}
+
+func isValidEmail(email string) bool {
+	return regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(email)
+}
+
+func isValidPath(path string) bool {
+	return regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path)
 }
 
 func Load(filename string) error {
@@ -39,12 +52,26 @@ func Load(filename string) error {
 		return fmt.Errorf("could not decode YAML: %v", err)
 	}
 
+	if !isValidEmail(configData.Email) {
+		return fmt.Errorf("invalid email: %s", configData.Email)
+	}
+
 	Routes = configData.Routes
 	Email = configData.Email
 	GlobalRateLimit = configData.RateLimit
 
 	GlobalRateLimit.Cooldown *= time.Millisecond
 	for domain, cfg := range Routes {
+		if !isValidDomain(domain) {
+			return fmt.Errorf("invalid domain: %s", domain)
+		}
+
+		for route := range cfg.Routes {
+			if !isValidPath(route) {
+				return fmt.Errorf("invalid path: %s", route)
+			}
+		}
+
 		Domains = append(Domains, domain)
 		cfg.RateLimit.Cooldown *= time.Millisecond
 		cfg.RateLimit.DefaultCooldown *= Cooldowns.DefaultWaitTime

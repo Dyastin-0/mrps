@@ -22,7 +22,7 @@ routes:
       cooldown: 60000
   "filespace.dyastin.tech":
     routes:
-      "/api/v2": "http://localhost:3004"
+      "/api/v2/": "http://localhost:3004"
       "/": "http://localhost:5005"
     rate_limit:
       burst: 100
