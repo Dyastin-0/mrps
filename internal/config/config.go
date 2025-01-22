@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"sync"
 	"time"
 
@@ -66,18 +67,30 @@ func Load(filename string) error {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
 
+		// Sorting the routes for this domain by the path (you can customize the sorting logic here)
+		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
 				return fmt.Errorf("invalid path: %s", route)
 			}
+			sortedRoutes = append(sortedRoutes, route)
 		}
+
+		// Sorting by path alphabetically, you can modify this if you need a different order
+		sort.Strings(sortedRoutes)
+
+		// Reassign the sorted routes back to the domain
+		sortedConfig := make(map[string]string)
+		for _, route := range sortedRoutes {
+			sortedConfig[route] = cfg.Routes[route]
+		}
+		cfg.Routes = sortedConfig
 
 		Domains = append(Domains, domain)
 		cfg.RateLimit.Cooldown *= time.Millisecond
 		cfg.RateLimit.DefaultCooldown *= Cooldowns.DefaultWaitTime
 
 		Routes[domain] = cfg
-
 		Cooldowns.DomainMutex[domain] = &sync.Mutex{}
 	}
 
