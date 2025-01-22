@@ -9,7 +9,7 @@ This project implements an HTTP/HTTPS reverse proxy server that routes requests 
 - Zero-downtime certificate renewal
 - Support for multiple domains
 - Configurable routing rules
-- Global rate limiting with cooldown
+- Global and domain-based rate limiting 
 - Scrappable metrics
 
 ## Getting Started
@@ -32,30 +32,25 @@ Used for Let's Encrypt configuration
 email: "your@email.com"
 ```
 
-#### Domain Configuration
-
-The domains configuration specifies which domains the proxy will handle. Example:
-
-```yaml
-domains:
-  - "domain.com"
-  - "api.domain.com"
-  - "sub.domain.com"
-```
-
 #### Routes Configuration
 
 Routes define how incoming requests are routed to different services. Example:
 
 ```yaml
 routes:
-  "domain.com": "http://localhost:4000"
-  "domain.com/api": "http://localhost:4001"
+  "domain.com":
+    routes:
+      "/api": "http://localhost:8080" 
+      "/": "http://localhost:9090"
+    rate_limit:
+      burst: 100
+      rate: 50
+      cooldown: 60000
 ```
 
 #### Rate Limiting Configuration
 
-Rate limiting defines how many request a client can do in a specified timeframe. Example:
+Rate limiting defines how many request a client can do in a specified timeframe, applicable to domain and global scope. Example:
 
 ```yaml
 rate_limit:
@@ -153,5 +148,5 @@ scrape_configs:
   - job_name: 'reverse_proxy'
     scheme: 'http'
     static_configs:
-      - targets: ['domain.com'] #Domain should not be used in the routing to access the /metrics endpoint
+      - targets: ['domain.com']
 ```
