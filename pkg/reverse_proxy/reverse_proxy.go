@@ -20,5 +20,13 @@ func New(target string) http.Handler {
 		req.URL.Path = targetURL.Path + req.URL.Path
 		req.Host = targetURL.Host
 	}
+
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		resp.Header.Set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+		resp.Header.Set("Pragma", "no-cache")
+		resp.Header.Set("Expires", "0")
+		return nil
+	}
+
 	return proxy
 }
