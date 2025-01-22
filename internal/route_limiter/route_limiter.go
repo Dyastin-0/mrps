@@ -10,7 +10,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func DomainHandler(next http.Handler) http.Handler {
+func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
 		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
