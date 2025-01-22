@@ -13,7 +13,7 @@ func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
 		path := r.URL.Path
-
+		log.Println("====================================")
 		if domainConfig, exists := config.Routes[host]; exists {
 			for routePath, proxyTarget := range domainConfig.Routes {
 				log.Println("[DEBUG] Current path", routePath)
