@@ -25,7 +25,7 @@ func main() {
 	}
 
 	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.Email = string(config.Email)
+	certmagic.DefaultACME.Email = string(config.Misc.Email)
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
 	mainRouter := chi.NewRouter()
@@ -52,8 +52,8 @@ func startMetricsServer() {
 
 	metricsRouter.Handle("/metrics", promhttp.Handler())
 
-	log.Println("Metrics service is running on port 9090")
-	err := http.ListenAndServe(":7070", metricsRouter)
+	log.Println("Metrics service is running on port:" + config.Misc.MetricsPort)
+	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
 	if err != nil {
 		log.Fatal("Failed to start metrics server: ", err)
 	}

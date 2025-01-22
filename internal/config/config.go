@@ -12,7 +12,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var Email string
 var Routes RoutesConfig
 var Domains []string
 var GlobalRateLimit RateLimitConfig
@@ -23,6 +22,7 @@ var Cooldowns = CoolDownConfig{
 	DomainMutex:     make(map[string]*sync.Mutex),
 	Client:          make(map[string]map[string]time.Time),
 }
+var Misc MiscConfig
 
 func isValidDomain(domain string) bool {
 	return regexp.MustCompile(`^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
@@ -45,7 +45,7 @@ func Load(filename string) error {
 
 	configData := struct {
 		Routes    RoutesConfig    `yaml:"routes"`
-		Email     string          `yaml:"email"`
+		Misc      MiscConfig      `yaml:"misc"`
 		RateLimit RateLimitConfig `yaml:"rate_limit"`
 	}{}
 
@@ -54,12 +54,12 @@ func Load(filename string) error {
 		return fmt.Errorf("could not decode YAML: %v", err)
 	}
 
-	if !isValidEmail(configData.Email) {
-		return fmt.Errorf("invalid email: %s", configData.Email)
+	if !isValidEmail(configData.Misc.Email) {
+		return fmt.Errorf("invalid email: %s", configData.Misc.Email)
 	}
 
 	Routes = configData.Routes
-	Email = configData.Email
+	Misc = configData.Misc
 	GlobalRateLimit = configData.RateLimit
 
 	GlobalRateLimit.Cooldown *= time.Millisecond

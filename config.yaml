@@ -39,9 +39,11 @@ routes:
       rate: 50
       cooldown: 60000
 
-email: "mail@dyastin.tech"
-
 rate_limit:
   burst: 100
   rate: 50
   cooldown: 60000
+
+misc:
+  email: "mail@dyastin.tech"
+  metrics_port: 7070

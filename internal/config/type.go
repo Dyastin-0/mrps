@@ -7,9 +7,14 @@ import (
 	"golang.org/x/time/rate"
 )
 
-type EmailConfig string
 type RoutesConfig map[string]Config
 type RouteConfig map[string]string
+
+type MiscConfig struct {
+	Email       string `yaml:"email"`
+	MetricsPort string `yaml:"metrics_port"`
+}
+
 type Config struct {
 	Routes       RouteConfig `yaml:"routes"`
 	SortedRoutes []string

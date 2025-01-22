@@ -53,8 +53,8 @@ rate_limit:
 		t.Fatalf("config.Load() failed: %v", err)
 	}
 
-	if config.Email != "mail@dyastin.tech" {
-		t.Errorf("expected Email to be 'mail@dyastin.tech', got '%s'", config.Email)
+	if config.Misc.Email != "mail@dyastin.tech" {
+		t.Errorf("expected Email to be 'mail@dyastin.tech', got '%s'", config.Misc.Email)
 	}
 
 	expectedGlobalCooldown := 60 * time.Second
