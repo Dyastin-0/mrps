@@ -19,8 +19,6 @@ func New(target string) http.Handler {
 		req.URL.Host = targetURL.Host
 		req.URL.Path = targetURL.Path + req.URL.Path
 		req.Host = targetURL.Host
-
-		log.Println("[DEBUG] Proxying request to", targetURL, req.URL.Path)
 	}
 
 	return proxy
