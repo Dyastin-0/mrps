@@ -75,6 +75,8 @@ func Load(filename string) error {
 		Domains = append(Domains, domain)
 		cfg.RateLimit.Cooldown *= time.Millisecond
 		cfg.RateLimit.DefaultCooldown *= Cooldowns.DefaultWaitTime
+		cfg.MU = &sync.Mutex{}
+
 		Routes[domain] = cfg
 
 		Cooldowns.DomainMutex[domain] = &sync.Mutex{}

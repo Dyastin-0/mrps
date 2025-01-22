@@ -11,6 +11,7 @@ type EmailConfig string
 type RoutesConfig map[string]Config
 type RouteConfig map[string]string
 type Config struct {
+	MU        *sync.Mutex
 	Routes    RouteConfig     `yaml:"routes"`
 	RateLimit RateLimitConfig `yaml:"rate_limit"`
 }

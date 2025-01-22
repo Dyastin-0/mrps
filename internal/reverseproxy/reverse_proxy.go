@@ -15,10 +15,12 @@ func Handler(next http.Handler) http.Handler {
 		path := r.URL.Path
 
 		if domainConfig, exists := config.Routes[host]; exists {
+			domainConfig.MU.Lock()
 			for routePath, proxyTarget := range domainConfig.Routes {
 				if strings.HasPrefix(path, routePath) {
 					log.Println("[DEBUG] Proxying request to", proxyTarget)
 					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
+					domainConfig.MU.Unlock()
 					return
 				}
 			}
