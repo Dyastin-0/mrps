@@ -17,7 +17,7 @@ func Handler(next http.Handler) http.Handler {
 		if domainConfig, exists := config.Routes[host]; exists {
 			for routePath, proxyTarget := range domainConfig.Routes {
 				if strings.HasPrefix(path, routePath) {
-					log.Println("[DEBUG] Proxying request to", routePath)
+					log.Println("[DEBUG] matched path", routePath, "Request path", path)
 					log.Println("[DEBUG] Proxying request to", proxyTarget)
 					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
 					return
