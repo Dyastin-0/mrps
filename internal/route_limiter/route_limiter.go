@@ -15,10 +15,6 @@ func Handler(next http.Handler) http.Handler {
 		host := r.Host
 		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-		if host == "" {
-			host = "localhost"
-		}
-
 		if config.Cooldowns.DomainMutex[host] == nil {
 			config.Cooldowns.DomainMutex[host] = &sync.Mutex{}
 		}

@@ -68,6 +68,8 @@ func TestPerClientRateLimiter(t *testing.T) {
 					t.Fatalf("Error creating request: %v", err)
 				}
 
+				req.Host = "localhost"
+
 				resp, err := client.Do(req)
 				if err != nil {
 					t.Fatalf("Error sending request: %v", err)

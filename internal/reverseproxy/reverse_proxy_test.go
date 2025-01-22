@@ -50,6 +50,7 @@ func TestReverseProxyMiddleware(t *testing.T) {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 		req.Header.Set("X-Custom-Header", "custom-value")
+		req.Host = "localhost"
 
 		recorder := httptest.NewRecorder()
 		handler.ServeHTTP(recorder, req)
@@ -66,6 +67,7 @@ func TestReverseProxyMiddleware(t *testing.T) {
 			t.Fatalf("Failed to create request: %v", err)
 		}
 		req.Header.Set("X-Custom-Header", "custom-value")
+		req.Host = "localhost"
 
 		recorder := httptest.NewRecorder()
 		handler.ServeHTTP(recorder, req)

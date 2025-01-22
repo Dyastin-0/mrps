@@ -11,9 +11,6 @@ import (
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
-		if host == "" { // Used for mocking in tests
-			host = "localhost" // Omit these lines in production
-		} //
 		path := r.URL.Path
 
 		if domainConfig, exists := config.Routes[host]; exists {

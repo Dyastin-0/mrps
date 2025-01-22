@@ -77,6 +77,8 @@ func TestDomainHandler(t *testing.T) {
 					t.Fatal(err)
 				}
 
+				req.Host = "localhost"
+
 				rr := httptest.NewRecorder()
 				handler.ServeHTTP(rr, req)
 
