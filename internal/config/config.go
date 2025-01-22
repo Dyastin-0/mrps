@@ -68,7 +68,9 @@ func Load(filename string) error {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
 
-		// Sorting the routes for this domain by the depth of the path
+		//Sort the routes based on the length of the path, essentially by part depth
+		//This is to ensure that the most specific routes are checked first
+		//Since map iteration order is random
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
@@ -77,21 +79,17 @@ func Load(filename string) error {
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
-		// Sort the routes by their path depth (longer paths will come first)
 		sort.Slice(sortedRoutes, func(i, j int) bool {
 			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
 		})
 
-		// Assign the sorted routes to the SortedRoutes field
 		cfg.SortedRoutes = sortedRoutes
 
-		// Create a sorted map of routes if you need the map structure still
 		sortedConfig := make(RouteConfig)
 		for _, route := range sortedRoutes {
 			sortedConfig[route] = cfg.Routes[route]
 		}
 
-		// Reassign the sorted map back to Routes for the domain
 		cfg.Routes = sortedConfig
 
 		Domains = append(Domains, domain)
