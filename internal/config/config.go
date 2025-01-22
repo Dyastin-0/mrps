@@ -25,7 +25,7 @@ var Cooldowns = CoolDownConfig{
 }
 
 func isValidDomain(domain string) bool {
-	return regexp.MustCompile(`^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zAZ]{2,}$`).MatchString(domain)
+	return regexp.MustCompile(`^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
 }
 
 func isValidEmail(email string) bool {
@@ -68,7 +68,7 @@ func Load(filename string) error {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
 
-		//sort routes by path depth
+		// Sorting the routes for this domain by the depth of the path
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
@@ -76,17 +76,22 @@ func Load(filename string) error {
 			}
 			sortedRoutes = append(sortedRoutes, route)
 		}
+
+		// Sort the routes by their path depth (longer paths will come first)
 		sort.Slice(sortedRoutes, func(i, j int) bool {
 			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
 		})
 
-		// Rebuild the routes map after sorting
-		sortedConfig := make(map[string]string)
+		// Assign the sorted routes to the SortedRoutes field
+		cfg.SortedRoutes = sortedRoutes
+
+		// Create a sorted map of routes if you need the map structure still
+		sortedConfig := make(RouteConfig)
 		for _, route := range sortedRoutes {
 			sortedConfig[route] = cfg.Routes[route]
 		}
 
-		// Update the Routes map with sorted routes
+		// Reassign the sorted map back to Routes for the domain
 		cfg.Routes = sortedConfig
 
 		Domains = append(Domains, domain)

@@ -11,8 +11,9 @@ type EmailConfig string
 type RoutesConfig map[string]Config
 type RouteConfig map[string]string
 type Config struct {
-	Routes    RouteConfig     `yaml:"routes"`
-	RateLimit RateLimitConfig `yaml:"rate_limit"`
+	Routes       RouteConfig `yaml:"routes"`
+	SortedRoutes []string
+	RateLimit    RateLimitConfig `yaml:"rate_limit"`
 }
 
 type RateLimitConfig struct {
