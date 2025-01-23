@@ -14,8 +14,15 @@ func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
 
-		// If the rate limit is not set, assume there is no rate limit
-		if config.Routes[host].RateLimit.Burst == 0 || config.Routes[host].RateLimit.Rate == 0 {
+		routeConfigPtr := config.DomainTrie.Match(host)
+		if routeConfigPtr == nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+
+		routeConfig := *routeConfigPtr
+
+		if routeConfig.RateLimit.Burst == 0 || routeConfig.RateLimit.Rate == 0 {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -41,19 +48,18 @@ func Handler(next http.Handler) http.Handler {
 		}
 
 		if _, found := config.Clients[host][ip]; !found {
-			routeConfig := config.Routes[host]
 			config.Clients[host][ip] = &config.Client{
 				Limiter: rate.NewLimiter(routeConfig.RateLimit.Rate, routeConfig.RateLimit.Burst),
 			}
 		}
 
 		if !config.Clients[host][ip].Limiter.Allow() {
-			cooldownDuration := config.Routes[host].RateLimit.Cooldown
+			cooldownDuration := routeConfig.RateLimit.Cooldown
 			if cooldownDuration == 0 {
 				// If the cooldown is not set, use the default cooldown
 				// There is no interface for the default cooldown in the config
 				// Set the route's cooldown in the config to override the default cooldown
-				cooldownDuration = config.Routes[host].RateLimit.DefaultCooldown
+				cooldownDuration = routeConfig.RateLimit.DefaultCooldown
 			}
 
 			if config.Cooldowns.Client[host] == nil {

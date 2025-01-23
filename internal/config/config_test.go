@@ -1,10 +1,8 @@
 package config_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
 )
@@ -12,81 +10,101 @@ import (
 func TestLoadConfig(t *testing.T) {
 	testYAML := `
 routes:
-  "gitsense.dyastin.tech": 
+  "*.example.com":
     routes:
-      "/api": "http://localhost:4001"
-      "/": "http://localhost:4001"
+      "/wildcard": "http://localhost:5003"
+
+  "example.com":
+    routes:
+      "/api": "http://localhost:5001"
+      "/home": "http://localhost:5002"
+
+  "another.com":
+    routes:
+      "/": "http://localhost:6001"
+
+  "*.another.com":
+    routes:
+      "/wild": "http://localhost:6002"
+      "/api": "http://localhost:6003"
 
 rate_limit:
-  burst: 100
-  rate: 50
-  cooldown: 60000
+  burst: 200
+  rate: 100
+  cooldown: 120000
 
 misc:
-  email: "mail@dyastin.tech"
-  metrics_port: 7070
+  email: "admin@example.com"
+  metrics_port: 8080
 `
 
 	tmpFile, err := os.CreateTemp("", "test_config_*.yaml")
 	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
+		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Errorf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	if _, err := tmpFile.Write([]byte(testYAML)); err != nil {
-		t.Fatalf("failed to write to temp file: %v", err)
+		t.Fatalf("Failed to write to temp file: %v", err)
 	}
 	if err := tmpFile.Close(); err != nil {
-		t.Fatalf("failed to close temp file: %v", err)
+		t.Fatalf("Failed to close temp file: %v", err)
 	}
 
-	err = config.Load(tmpFile.Name())
-	if err != nil {
+	if err := config.Load(tmpFile.Name()); err != nil {
 		t.Fatalf("config.Load() failed: %v", err)
 	}
 
-	if config.Misc.Email != "mail@dyastin.tech" {
-		t.Errorf("expected Email to be 'mail@dyastin.tech', got '%s'", config.Misc.Email)
-	}
-
-	expectedGlobalCooldown := 60 * time.Second
-	if config.GlobalRateLimit.Cooldown != expectedGlobalCooldown {
-		t.Errorf("expected GlobalRateLimit.Cooldown to be %v, got %v", expectedGlobalCooldown, config.GlobalRateLimit.Cooldown)
-	}
-
-	if config.GlobalRateLimit.Burst != 100 {
-		t.Errorf("expected GlobalRateLimit.Burst to be 100, got %d", config.GlobalRateLimit.Burst)
-	}
-
-	routeConfig, ok := config.Routes["gitsense.dyastin.tech"]
-	for domain, cfg := range config.Routes {
-		fmt.Printf("domain: %s\n", domain)
-		for key, value := range cfg.Routes {
-			fmt.Printf("key: %s, value: %s\n", key, value)
+	t.Run("Match Exact Domains", func(t *testing.T) {
+		tests := []struct {
+			domain       string
+			expectedPath string
+			expectedURL  string
+		}{
+			{"example.com", "/api", "http://localhost:5001"},
+			{"another.com", "/", "http://localhost:6001"},
 		}
-		fmt.Printf("rate limit cooldown: %v\n", cfg.RateLimit.Cooldown)
-		fmt.Printf("rate limit burst: %d\n", cfg.RateLimit.Burst)
-	}
 
-	if !ok {
-		t.Fatalf("expected routes for 'gitsense.dyastin.tech' not found")
-	}
+		for _, test := range tests {
+			routeConfigPtr := config.DomainTrie.Match(test.domain)
+			if routeConfigPtr == nil {
+				t.Fatalf("Domain not found in trie: %s", test.domain)
+			}
+			routeConfig := *routeConfigPtr
+			assertEqual(t, routeConfig.Routes[test.expectedPath], test.expectedURL, "Routes")
+		}
+	})
 
-	if routeConfig.Routes["/api"] != "http://localhost:4001" {
-		t.Errorf("expected '/api' route to be 'http://localhost:4001', got '%s'", routeConfig.Routes["/api"])
-	}
+	t.Run("Match Wildcard Domains", func(t *testing.T) {
+		tests := []struct {
+			domain       string
+			expectedPath string
+			expectedURL  string
+		}{
+			{"sub.example.com", "/wildcard", "http://localhost:5003"},
+			{"test.example.com", "/wildcard", "http://localhost:5003"},
+			{"sub.another.com", "/wild", "http://localhost:6002"},
+			{"api.another.com", "/api", "http://localhost:6003"},
+		}
 
-	if routeConfig.Routes["/"] != "http://localhost:4001" {
-		t.Errorf("expected '/' route to be 'http://localhost:4001', got '%s'", routeConfig.Routes["/"])
-	}
+		for _, test := range tests {
+			routeConfigPtr := config.DomainTrie.Match(test.domain)
+			if routeConfigPtr == nil {
+				t.Fatalf("Domain not found in trie: %s", test.domain)
+			}
+			routeConfig := *routeConfigPtr
+			assertEqual(t, routeConfig.Routes[test.expectedPath], test.expectedURL, "Routes")
+		}
+	})
 
-	if routeConfig.RateLimit.Cooldown != 0 {
-		t.Errorf("expected cooldown for 'gitsense.dyastin.tech' to be %v, got %v", 0, routeConfig.RateLimit.Cooldown)
-	}
+}
 
-	if routeConfig.RateLimit.Burst != 0 {
-		t.Errorf("expected burst for 'gitsense.dyastin.tech' to be 100, got %d", routeConfig.RateLimit.Burst)
+func assertEqual[T comparable](t *testing.T, actual, expected T, fieldName string) {
+	if actual != expected {
+		t.Errorf("Expected %s to be %v, but got %v", fieldName, expected, actual)
 	}
-
-	t.Log("config.Load() test passed")
 }

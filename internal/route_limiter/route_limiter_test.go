@@ -16,13 +16,18 @@ func setupMockConfig() {
 		DomainMutex: make(map[string]*sync.Mutex),
 		Client:      make(map[string]map[string]time.Time),
 	}
+	// Initialize the DomainTrie
+	config.DomainTrie = config.NewDomainTrie()
 }
 
 func TestDomainHandler(t *testing.T) {
 	setupMockConfig()
 
-	config.Routes = make(map[string]config.Config)
+	// Configure the DomainTrie with rate-limiting
 	routeConfig := config.Config{
+		Routes: config.RouteConfig{
+			"/": "http://localhost",
+		},
 		RateLimit: config.RateLimitConfig{
 			Rate:            2,
 			Burst:           2,
@@ -30,7 +35,7 @@ func TestDomainHandler(t *testing.T) {
 			DefaultCooldown: 1 * time.Second,
 		},
 	}
-	config.Routes["localhost"] = routeConfig
+	config.DomainTrie.Insert("localhost", &routeConfig)
 	config.Cooldowns.DomainMutex["localhost"] = &sync.Mutex{}
 
 	tests := []struct {
@@ -90,6 +95,7 @@ func TestDomainHandler(t *testing.T) {
 					time.Sleep(tt.waitBetweenReqs)
 				}
 			}
+			// Allow cooldown recovery between test runs
 			time.Sleep(2 * time.Second)
 		})
 	}

@@ -12,8 +12,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var Routes RoutesConfig
 var Domains []string
+var DomainTrie = NewDomainTrie()
 var GlobalRateLimit RateLimitConfig
 var Clients = make(map[string]map[string]*Client)
 var Cooldowns = CoolDownConfig{
@@ -25,7 +25,7 @@ var Cooldowns = CoolDownConfig{
 var Misc MiscConfig
 
 func isValidDomain(domain string) bool {
-	return regexp.MustCompile(`^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
+	return regexp.MustCompile(`^([a-zA-Z0-9\*]+(-[a-zA-Z0-9\*]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
 }
 
 func isValidEmail(email string) bool {
@@ -34,6 +34,65 @@ func isValidEmail(email string) bool {
 
 func isValidPath(path string) bool {
 	return regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path)
+}
+
+func (t *DomainTrieConfig) Insert(domain string, config *Config) {
+	parts := strings.Split(domain, ".")
+	node := t.Root
+
+	// Traverse the trie in reverse
+	for i := len(parts) - 1; i >= 0; i-- {
+		part := parts[i]
+
+		// Handle wildcard nodes.
+		if part == "*" {
+			if _, exists := node.Children["*"]; !exists {
+				node.Children["*"] = &TrieNode{
+					Children:   make(map[string]*TrieNode),
+					IsWildcard: true,
+				}
+			}
+			node = node.Children["*"]
+		} else {
+			if _, exists := node.Children[part]; !exists {
+				node.Children[part] = &TrieNode{
+					Children: make(map[string]*TrieNode),
+				}
+			}
+			node = node.Children[part]
+		}
+	}
+
+	// Assign the configuration at the final node.
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	node.Config = config
+}
+
+func (t *DomainTrieConfig) Match(domain string) **Config {
+	parts := strings.Split(domain, ".")
+	node := t.Root
+
+	// Traverse the trie in reverse
+	for i := len(parts) - 1; i >= 0; i-- {
+		part := parts[i]
+
+		// Exact match
+		if childNode, exists := node.Children[part]; exists {
+			node = childNode
+			continue
+		}
+
+		// Wildcard match
+		if wildcardNode, exists := node.Children["*"]; exists {
+			node = wildcardNode
+			continue
+		}
+
+		return nil
+	}
+
+	return &node.Config
 }
 
 func Load(filename string) error {
@@ -58,16 +117,17 @@ func Load(filename string) error {
 		return fmt.Errorf("invalid email: %s", configData.Misc.Email)
 	}
 
-	Routes = configData.Routes
 	Misc = configData.Misc
 	GlobalRateLimit = configData.RateLimit
 
 	GlobalRateLimit.Cooldown *= time.Millisecond
 
-	for domain, cfg := range Routes {
+	for domain, cfg := range configData.Routes {
 		if !isValidDomain(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
+
+		Domains = append(Domains, domain)
 
 		//This slice is used to access the Routes based on path depth
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
@@ -92,13 +152,12 @@ func Load(filename string) error {
 
 		cfg.Routes = sortedConfig
 
-		Domains = append(Domains, domain)
 		cfg.RateLimit.Cooldown *= time.Millisecond
-
 		cfg.RateLimit.DefaultCooldown = Cooldowns.DefaultWaitTime
 
-		Routes[domain] = cfg
 		Cooldowns.DomainMutex[domain] = &sync.Mutex{}
+
+		DomainTrie.Insert(domain, &cfg)
 	}
 
 	return nil

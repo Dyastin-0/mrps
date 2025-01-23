@@ -9,12 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReverseProxyMiddleware(t *testing.T) {
+func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
+	// Create mock services
 	mockService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		for header, values := range r.Header {
-			if header != "Accept-Encoding" && header != "User-Agent" {
-				w.Header().Set(header, values[0])
-			}
+			w.Header().Set(header, values[0])
 		}
 		w.Write([]byte("Hello from the service!"))
 	}))
@@ -22,28 +21,30 @@ func TestReverseProxyMiddleware(t *testing.T) {
 
 	mockService1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		for header, values := range r.Header {
-			if header != "Accept-Encoding" && header != "User-Agent" {
-				w.Header().Set(header, values[0])
-			}
+			w.Header().Set(header, values[0])
 		}
 		w.Write([]byte("Hello from the mockService1!"))
 	}))
-	defer mockService.Close()
+	defer mockService1.Close()
 
-	config.Routes = config.RoutesConfig{
-		"localhost": {
-			Routes: map[string]string{
-				"/api":  mockService.URL,
-				"/mock": mockService1.URL,
-			},
+	// Initialize DomainTrie
+	config.DomainTrie = config.NewDomainTrie()
+	conf := &config.Config{
+		Routes: config.RouteConfig{
+			"/api":  mockService.URL,
+			"/mock": mockService1.URL,
 		},
 	}
+	conf.SortedRoutes = []string{"/api", "/mock"}
+	config.DomainTrie.Insert("localhost", conf)
 
+	// Create reverse proxy handler
 	handler := Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("not found\n"))
 	}))
 
+	// Test cases
 	t.Run("Test /api with header", func(t *testing.T) {
 		req, err := http.NewRequest("GET", "/api", nil)
 		if err != nil {
@@ -61,7 +62,7 @@ func TestReverseProxyMiddleware(t *testing.T) {
 		assert.Equal(t, "Hello from the service!", recorder.Body.String())
 	})
 
-	t.Run("Test /api with header", func(t *testing.T) {
+	t.Run("Test /mock with header", func(t *testing.T) {
 		req, err := http.NewRequest("GET", "/mock", nil)
 		if err != nil {
 			t.Fatalf("Failed to create request: %v", err)

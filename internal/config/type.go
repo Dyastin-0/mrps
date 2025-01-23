@@ -40,3 +40,22 @@ type Client struct {
 	Limiter     *rate.Limiter
 	LastRequest time.Time
 }
+
+type TrieNode struct {
+	Children   map[string]*TrieNode
+	Config     *Config
+	IsWildcard bool
+}
+
+type DomainTrieConfig struct {
+	Root *TrieNode
+	mu   sync.RWMutex
+}
+
+func NewDomainTrie() *DomainTrieConfig {
+	return &DomainTrieConfig{
+		Root: &TrieNode{
+			Children: make(map[string]*TrieNode),
+		},
+	}
+}

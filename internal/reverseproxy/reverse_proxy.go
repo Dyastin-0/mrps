@@ -13,15 +13,18 @@ func Handler(next http.Handler) http.Handler {
 		host := strings.ToLower(r.Host)
 		path := r.URL.Path
 
-		if domainConfig, exists := config.Routes[host]; exists {
-			for _, routePath := range domainConfig.SortedRoutes {
+		configPtr := config.DomainTrie.Match(host)
+		if configPtr != nil {
+			config := *configPtr
+			for _, routePath := range config.SortedRoutes {
 				if strings.HasPrefix(path, routePath) {
-					proxyTarget := domainConfig.Routes[routePath]
+					proxyTarget := config.Routes[routePath]
 					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
 					return
 				}
 			}
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }
