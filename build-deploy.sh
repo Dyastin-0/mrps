@@ -4,8 +4,6 @@ APP="Reverse Proxy"
 OUTPUT_DIR="/opt/reverse-proxy"
 MAIN_PACKAGE="./cmd/server/main.go"
 BINARY_NAME="run"
-ENV_FILE="./.env"
-ENV_PATH=$OUTPUT_DIR/.env
 YAML_FILE="./config.yaml"
 YAML_PATH=$OUTPUT_DIR/config.yaml
 SERVICE_FILE="proxy.service"
@@ -37,8 +35,6 @@ else
     echo "$APP: Build failed. Check errors above."
     exit 1
 fi
-
-copy_file $ENV_FILE $ENV_PATH
 
 echo "$APP: Reloading systemd daemon..."
 sudo systemctl daemon-reload
