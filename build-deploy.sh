@@ -1,7 +1,7 @@
 #!/bin/bash
 
 APP="Reverse Proxy"
-OUTPUT_DIR="/opt/reverse-proxy"
+OUTPUT_DIR="/opt/mrps"
 MAIN_PACKAGE="./cmd/server/main.go"
 BINARY_NAME="mrps"
 YAML_FILE="./config.yaml"
