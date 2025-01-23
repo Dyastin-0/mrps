@@ -3,7 +3,7 @@
 APP="Reverse Proxy"
 OUTPUT_DIR="/opt/reverse-proxy"
 MAIN_PACKAGE="./cmd/server/main.go"
-BINARY_NAME="run"
+BINARY_NAME="mrps"
 YAML_FILE="./config.yaml"
 YAML_PATH=$OUTPUT_DIR/config.yaml
 SERVICE_FILE="proxy.service"

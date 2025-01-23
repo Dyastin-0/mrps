@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/opt/reverse-proxy
-ExecStart=/opt/reverse-proxy/run
+WorkingDirectory=/opt/mrps
+ExecStart=/opt/mrps/mrps
 Restart=always
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
