@@ -79,6 +79,36 @@ rate_limit:
 - `rate`: After the burst, requests are limited to rate tokens per second (10 in this example).
 - `cooldown`: After exceeding the burst, the client must wait for the cooldown period (60 seconds) before making more requests.
 
+### Routing Rules
+
+The routing rules are simple and configurable.
+
+```yaml
+routes:                                        # All domains are configure here
+  "domain.com":                                # <- Domain name
+      routes:                                 
+        "/api" : "http://localhost:3000"       # <- path : dest
+        "/metrics" : "http://localhost:9090"   # <- path : dest
+  "sub.domain.com":                                
+      routes:                                 
+        "/api" : "http://localhost:3000"       
+        "/metrics" : "http://localhost:9090"
+```
+
+You can also use wild cards:
+
+```yaml
+routes:                                       
+  "*.domain.com":                              # <- Any sub-domain will be routed here                              
+      routes:                                  # will ignore the base domain
+        "/api" : "http://localhost:3000"       # unless configured below
+        "/metrics" : "http://localhost:9090"   
+  "domain.com":                                
+      routes:                                 
+        "/api" : "http://localhost:3000"       
+        "/metrics" : "http://localhost:9090"
+```
+
 ### TLS Certificates
 
 The server automatically manages TLS certificates through Let's Encrypt using [certmagic](https://github.com/caddyserver/certmagic):
