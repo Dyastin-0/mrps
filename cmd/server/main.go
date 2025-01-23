@@ -7,19 +7,13 @@ import (
 	"github.com/Dyastin-0/reverse-proxy-server/internal/router"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
-	"github.com/joho/godotenv"
 
 	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Failed to load .env file: ", err)
-	}
-
-	err = config.Load("config.yaml")
+	err := config.Load("config.yaml")
 	if err != nil {
 		log.Fatal("Failed to load config file: ", err)
 	}
