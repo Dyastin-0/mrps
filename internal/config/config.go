@@ -63,14 +63,13 @@ func Load(filename string) error {
 	GlobalRateLimit = configData.RateLimit
 
 	GlobalRateLimit.Cooldown *= time.Millisecond
+
 	for domain, cfg := range Routes {
 		if !isValidDomain(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
 
-		//Sort the routes based on the length of the path, essentially by part depth
-		//This is to ensure that the most specific routes are checked first
-		//Since map iteration order is random
+		//This slice is used to access the Routes based on path depth
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
@@ -79,6 +78,7 @@ func Load(filename string) error {
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
+		//Sort the routes by the number of path segments in descending order
 		sort.Slice(sortedRoutes, func(i, j int) bool {
 			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
 		})
@@ -94,7 +94,8 @@ func Load(filename string) error {
 
 		Domains = append(Domains, domain)
 		cfg.RateLimit.Cooldown *= time.Millisecond
-		cfg.RateLimit.DefaultCooldown *= Cooldowns.DefaultWaitTime
+
+		cfg.RateLimit.DefaultCooldown = Cooldowns.DefaultWaitTime
 
 		Routes[domain] = cfg
 		Cooldowns.DomainMutex[domain] = &sync.Mutex{}

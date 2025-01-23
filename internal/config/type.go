@@ -8,18 +8,14 @@ import (
 )
 
 type RoutesConfig map[string]Config
-type RouteConfig map[string]string
-
-type MiscConfig struct {
-	Email       string `yaml:"email"`
-	MetricsPort string `yaml:"metrics_port"`
-}
 
 type Config struct {
 	Routes       RouteConfig `yaml:"routes"`
 	SortedRoutes []string
 	RateLimit    RateLimitConfig `yaml:"rate_limit"`
 }
+
+type RouteConfig map[string]string
 
 type RateLimitConfig struct {
 	Burst           int           `yaml:"burst"`
@@ -33,6 +29,11 @@ type CoolDownConfig struct {
 	DomainMutex     map[string]*sync.Mutex
 	Client          map[string]map[string]time.Time
 	DefaultWaitTime time.Duration
+}
+
+type MiscConfig struct {
+	Email       string `yaml:"email"`
+	MetricsPort string `yaml:"metrics_port"`
 }
 
 type Client struct {

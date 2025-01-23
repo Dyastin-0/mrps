@@ -13,6 +13,13 @@ import (
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
+
+		// If the rate limit is not set, assume there is no rate limit
+		if config.Routes[host].RateLimit.Burst == 0 || config.Routes[host].RateLimit.Rate == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 		if config.Cooldowns.DomainMutex[host] == nil {
@@ -43,6 +50,9 @@ func Handler(next http.Handler) http.Handler {
 		if !config.Clients[host][ip].Limiter.Allow() {
 			cooldownDuration := config.Routes[host].RateLimit.Cooldown
 			if cooldownDuration == 0 {
+				// If the cooldown is not set, use the default cooldown
+				// There is no interface for the default cooldown in the config
+				// Set the route's cooldown in the config to override the default cooldown
 				cooldownDuration = config.Routes[host].RateLimit.DefaultCooldown
 			}
 

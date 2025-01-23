@@ -11,6 +11,12 @@ import (
 
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If the rate limit is not set, assume there is no rate limit
+		if config.GlobalRateLimit.Burst == 0 || config.GlobalRateLimit.Rate == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 		config.Cooldowns.MU.Lock()

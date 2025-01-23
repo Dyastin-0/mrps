@@ -16,23 +16,15 @@ routes:
     routes:
       "/api": "http://localhost:4001"
       "/": "http://localhost:4001"
-    rate_limit:
-      burst: 100
-      rate: 50
-      cooldown: 60000
-  "filespace.dyastin.tech":
-    routes:
-      "/api/v2/": "http://localhost:3004"
-      "/": "http://localhost:5005"
-    rate_limit:
-      burst: 100
-      rate: 50
-      cooldown: 60000
-email: "mail@dyastin.tech"
+
 rate_limit:
   burst: 100
   rate: 50
   cooldown: 60000
+
+misc:
+  email: "mail@dyastin.tech"
+  metrics_port: 7070
 `
 
 	tmpFile, err := os.CreateTemp("", "test_config_*.yaml")
@@ -88,12 +80,11 @@ rate_limit:
 		t.Errorf("expected '/' route to be 'http://localhost:4001', got '%s'", routeConfig.Routes["/"])
 	}
 
-	domainCooldown := 60 * time.Second
-	if routeConfig.RateLimit.Cooldown != domainCooldown {
-		t.Errorf("expected cooldown for 'gitsense.dyastin.tech' to be %v, got %v", domainCooldown, routeConfig.RateLimit.Cooldown)
+	if routeConfig.RateLimit.Cooldown != 0 {
+		t.Errorf("expected cooldown for 'gitsense.dyastin.tech' to be %v, got %v", 0, routeConfig.RateLimit.Cooldown)
 	}
 
-	if routeConfig.RateLimit.Burst != 100 {
+	if routeConfig.RateLimit.Burst != 0 {
 		t.Errorf("expected burst for 'gitsense.dyastin.tech' to be 100, got %d", routeConfig.RateLimit.Burst)
 	}
 
