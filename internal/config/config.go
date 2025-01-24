@@ -123,7 +123,7 @@ func Load(filename string) error {
 
 		Domains = append(Domains, domain)
 
-		//This slice is used to access the Routes based on path depth
+		//This slice is used to access the Routes sequentially based on the number of path segments
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
