@@ -140,7 +140,7 @@ func Load(filename string) error {
 			if len(iParts) != len(jParts) {
 				return len(iParts) > len(jParts)
 			}
-			return sortedRoutes[i] != "/" && sortedRoutes[j] == "/"
+			return len(iParts[0]) > len(jParts[0])
 		})
 
 		cfg.SortedRoutes = sortedRoutes
