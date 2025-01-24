@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	err := config.Load("config.yaml")
+	err := config.Load("mrps.yaml")
 	if err != nil {
 		log.Fatal("Failed to load config file: ", err)
 	}
