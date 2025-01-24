@@ -129,6 +129,7 @@ func Load(filename string) error {
 			if !isValidPath(route) {
 				return fmt.Errorf("invalid path: %s", route)
 			}
+			fmt.Println("Route: " + route)
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
