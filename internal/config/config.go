@@ -40,8 +40,6 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 				node.Children["*"] = &TrieNode{
 					Children:   make(map[string]*TrieNode),
 					IsWildcard: true,
-					//Wild cards have access to the config
-					Config: config,
 				}
 				t.mu.Unlock()
 			}
@@ -49,7 +47,6 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 		} else {
 			if _, exists := node.Children[part]; !exists {
 				node.Children[part] = &TrieNode{
-					//Any non-exact match node does not have access to the config
 					Children: make(map[string]*TrieNode),
 				}
 			}
@@ -120,6 +117,9 @@ func Load(filename string) error {
 		if !isValidDomain(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
+		if strings.Contains(domain, "*") && strings.Index(domain, "*") != len(domain)-1 {
+			return fmt.Errorf("wildcard must be at the end of the domain: %s", domain)
+		}
 
 		Domains = append(Domains, domain)
 
@@ -129,6 +129,7 @@ func Load(filename string) error {
 			if !isValidPath(route) {
 				return fmt.Errorf("invalid path: %s", route)
 			}
+
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
