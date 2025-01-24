@@ -44,8 +44,6 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 	for i := len(parts) - 1; i >= 0; i-- {
 		part := parts[i]
 
-		fmt.Println(part)
-
 		// Handle wildcard nodes
 		if part == "*" {
 			if _, exists := node.Children["*"]; !exists {

@@ -1,7 +1,6 @@
 package reverseproxy
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -19,8 +18,7 @@ func Handler(next http.Handler) http.Handler {
 			config := *configPtr
 			for _, routePath := range config.SortedRoutes {
 				if strings.HasPrefix(path, routePath) {
-					proxyTarget := strings.TrimSuffix(config.Routes[routePath], "/")
-					fmt.Print("DEBUG: ", proxyTarget)
+					proxyTarget := config.Routes[routePath]
 					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
 					return
 				}
