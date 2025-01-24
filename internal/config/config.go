@@ -24,18 +24,6 @@ var Cooldowns = CoolDownConfig{
 }
 var Misc MiscConfig
 
-func isValidDomain(domain string) bool {
-	return regexp.MustCompile(`^([a-zA-Z0-9\*]+(-[a-zA-Z0-9\*]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
-}
-
-func isValidEmail(email string) bool {
-	return regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(email)
-}
-
-func isValidPath(path string) bool {
-	return regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path)
-}
-
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 	parts := strings.Split(domain, ".")
 	node := t.Root
@@ -146,7 +134,13 @@ func Load(filename string) error {
 
 		//Sort the routes by the number of path segments in descending order
 		sort.Slice(sortedRoutes, func(i, j int) bool {
-			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
+			iParts := strings.Split(sortedRoutes[i], "/")
+			jParts := strings.Split(sortedRoutes[j], "/")
+
+			if len(iParts) != len(jParts) {
+				return len(iParts) > len(jParts)
+			}
+			return sortedRoutes[i] != "/" && sortedRoutes[j] == "/"
 		})
 
 		cfg.SortedRoutes = sortedRoutes
@@ -167,4 +161,16 @@ func Load(filename string) error {
 	}
 
 	return nil
+}
+
+func isValidDomain(domain string) bool {
+	return regexp.MustCompile(`^([a-zA-Z0-9\*]+(-[a-zA-Z0-9\*]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
+}
+
+func isValidEmail(email string) bool {
+	return regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(email)
+}
+
+func isValidPath(path string) bool {
+	return regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path)
 }
