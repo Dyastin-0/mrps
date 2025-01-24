@@ -4,8 +4,8 @@ APP="Reverse Proxy"
 OUTPUT_DIR="/opt/mrps"
 MAIN_PACKAGE="./cmd/server/main.go"
 BINARY_NAME="mrps"
-YAML_FILE="./config.yaml"
-YAML_PATH=$OUTPUT_DIR/config.yaml
+YAML_FILE="./mrps.yaml"
+YAML_PATH=$OUTPUT_DIR/mrps.yaml
 SERVICE_FILE="mrps.service"
 SERVICE_PATH="/etc/systemd/system/$SERVICE_FILE"
 
