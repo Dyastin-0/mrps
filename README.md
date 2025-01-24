@@ -84,7 +84,7 @@ rate_limit:
 The routing rules are simple and configurable.
 
 ```yaml
-routes:                                        # All domains are configure here
+routes:                                        # <- All domains are configured here
   "domain.com":                                # <- Domain name
       routes:                                 
         "/api" : "http://localhost:3000"       # <- path : dest
@@ -103,7 +103,7 @@ routes:
       routes:                                  # will ignore the base domain
         "/api" : "http://localhost:3000"       # unless configured below
         "/metrics" : "http://localhost:9090"   
-  "domain.com":                                
+  "domain.com":                                # <- Base domain     
       routes:                                 
         "/api" : "http://localhost:3000"       
         "/metrics" : "http://localhost:9090"

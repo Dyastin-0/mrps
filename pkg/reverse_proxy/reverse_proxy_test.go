@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	reverseproxy "github.com/Dyastin-0/reverse-proxy-server/pkg/reverse_proxy"
+	reverseproxy "github.com/Dyastin-0/mrps/pkg/reverse_proxy"
 	"github.com/stretchr/testify/assert"
 )
 

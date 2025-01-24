@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Dyastin-0/reverse-proxy-server/internal/router"
+	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
+	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 

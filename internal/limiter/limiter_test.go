@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/limiter"
+	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/limiter"
 )
 
 func TestPerClientRateLimiter(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
+	"github.com/Dyastin-0/mrps/internal/config"
 )
 
 func setupMockConfig() {

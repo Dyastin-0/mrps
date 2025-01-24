@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Dyastin-0/reverse-proxy-server/internal/config"
+	"github.com/Dyastin-0/mrps/internal/config"
 	"golang.org/x/time/rate"
 )
 

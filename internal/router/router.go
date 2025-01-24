@@ -3,11 +3,11 @@ package router
 import (
 	"net/http"
 
-	"github.com/Dyastin-0/reverse-proxy-server/internal/limiter"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/logger"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/metrics"
-	"github.com/Dyastin-0/reverse-proxy-server/internal/reverseproxy"
-	routelimiter "github.com/Dyastin-0/reverse-proxy-server/internal/route_limiter"
+	"github.com/Dyastin-0/mrps/internal/limiter"
+	"github.com/Dyastin-0/mrps/internal/logger"
+	"github.com/Dyastin-0/mrps/internal/metrics"
+	"github.com/Dyastin-0/mrps/internal/reverseproxy"
+	routelimiter "github.com/Dyastin-0/mrps/internal/route_limiter"
 	"github.com/go-chi/chi/v5"
 )
 
