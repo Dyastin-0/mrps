@@ -18,6 +18,8 @@ func Handler(next http.Handler) http.Handler {
 		if configPtr != nil {
 			config := *configPtr
 			for _, routePath := range config.SortedRoutes {
+				fmt.Println(routePath, path)
+				fmt.Println(strings.HasPrefix(path, routePath))
 				if strings.HasPrefix(path, routePath) {
 					fmt.Println("Proxying to", routePath)
 					proxyTarget := config.Routes[routePath]
