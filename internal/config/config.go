@@ -44,18 +44,26 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 	for i := len(parts) - 1; i >= 0; i-- {
 		part := parts[i]
 
-		// Handle wildcard nodes.
+		fmt.Println(part)
+
+		// Handle wildcard nodes
 		if part == "*" {
 			if _, exists := node.Children["*"]; !exists {
+				fmt.Println("Wildcard")
+				t.mu.Lock()
 				node.Children["*"] = &TrieNode{
 					Children:   make(map[string]*TrieNode),
 					IsWildcard: true,
+					//Wild cards have access to the config
+					Config: config,
 				}
+				t.mu.Unlock()
 			}
 			node = node.Children["*"]
 		} else {
 			if _, exists := node.Children[part]; !exists {
 				node.Children[part] = &TrieNode{
+					//Any non-exact match node does not have access to the config
 					Children: make(map[string]*TrieNode),
 				}
 			}
@@ -63,7 +71,7 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 		}
 	}
 
-	// Assign the configuration at the final node.
+	// Assign the configuration at the final node, exact math
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	node.Config = config

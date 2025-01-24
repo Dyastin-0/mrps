@@ -10,9 +10,10 @@ import (
 func TestLoadConfig(t *testing.T) {
 	testYAML := `
 routes:
-  "*.example.com":
+  "metrics.*.example.com":
     routes:
       "/wildcard": "http://localhost:5003"
+      "/metrics": "http://localhost:5004"
 
   "example.com":
     routes:
@@ -36,6 +37,7 @@ rate_limit:
 misc:
   email: "admin@example.com"
   metrics_port: 8080
+
 `
 
 	tmpFile, err := os.CreateTemp("", "test_config_*.yaml")
@@ -86,7 +88,7 @@ misc:
 			expectedURL  string
 		}{
 			{"sub.example.com", "/wildcard", "http://localhost:5003"},
-			{"test.example.com", "/wildcard", "http://localhost:5003"},
+			{"metrics.any.example.com", "/metrics", "http://localhost:5004"},
 			{"sub.another.com", "/wild", "http://localhost:6002"},
 			{"api.another.com", "/api", "http://localhost:6003"},
 		}
@@ -97,6 +99,10 @@ misc:
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
 			routeConfig := *routeConfigPtr
+			if routeConfig == nil {
+				t.Errorf("Route config is nil for domain: %s", test.domain)
+				return
+			}
 			assertEqual(t, routeConfig.Routes[test.expectedPath], test.expectedURL, "Routes")
 		}
 	})
