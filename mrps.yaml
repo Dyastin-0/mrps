@@ -25,7 +25,7 @@ routes:
   "filmpin.dyastin.tech":
     routes:
       "/api": "http://localhost:5001"
-      "/socket.io": "http://localhost:5001"
+      "/socket.io/": "http://localhost:5001"
       "/": "http://localhost:5002"
     rate_limit:
       burst: 100
