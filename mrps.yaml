@@ -38,6 +38,13 @@ routes:
       burst: 100
       rate: 50
       cooldown: 60000
+  "dyastin.tech":
+    routes:
+      "/": "http://localhost:4002"
+    rate_limit:
+      burst: 100
+      rate: 50
+      cooldown: 60000
 
 
 rate_limit:
