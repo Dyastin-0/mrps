@@ -9,7 +9,7 @@ domains:
           replace_val: "/$1"
       "/":
         dest: "http://localhost:4001"
-        rewrite: {}  # or omit the rewrite if not needed
+        rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
@@ -18,7 +18,7 @@ domains:
     routes:
       "/api/v2":
         dest: "http://localhost:3004"
-        rewrite: {}  # or omit if no rewrite needed
+        rewrite: {}
       "/":
         dest: "http://localhost:5005"
         rewrite: {}
@@ -68,8 +68,6 @@ domains:
       burst: 100
       rate: 50
       cooldown: 60000
-
-
 
 rate_limit:
   burst: 100
