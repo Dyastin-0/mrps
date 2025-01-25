@@ -9,8 +9,6 @@ SERVICE_PATH := /etc/systemd/system/$(SERVICE_FILE)
 
 .PHONY: all build install copy_files systemd_reload service_restart service_start status
 
-all: install
-
 install: copy_files build systemd_reload service_restart status
 
 build:
