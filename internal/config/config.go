@@ -94,7 +94,7 @@ func Load(filename string) error {
 	defer file.Close()
 
 	configData := struct {
-		Domains   DomainsConfig   `yaml:"domains"`
+		Routes    RoutesConfig    `yaml:"routes"`
 		Misc      MiscConfig      `yaml:"misc"`
 		RateLimit RateLimitConfig `yaml:"rate_limit"`
 	}{}
@@ -113,7 +113,7 @@ func Load(filename string) error {
 
 	GlobalRateLimit.Cooldown *= time.Millisecond
 
-	for domain, cfg := range configData.Domains {
+	for domain, cfg := range configData.Routes {
 		if !isValidDomain(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}

@@ -5,21 +5,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-
-	"github.com/Dyastin-0/mrps/internal/config"
 )
 
 func New(target string) http.Handler {
 	targetURL, err := url.Parse(target)
 	if err != nil {
 		log.Fatalf("Failed to parse target URL: %v", err)
-	}
-
-	domainConfigPtr := config.DomainTrie.Match(targetURL.Host)
-
-	if domainConfigPtr == nil {
-		log.Fatalf("No domain config found for %s", targetURL.Host)
-		return nil
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)

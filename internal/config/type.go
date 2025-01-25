@@ -7,7 +7,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-type DomainsConfig map[string]Config
+type RoutesConfig map[string]Config
 
 type Config struct {
 	Routes       RouteConfig `yaml:"routes"`
