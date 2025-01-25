@@ -87,12 +87,16 @@ The routing rules are simple and configurable.
 routes:                                        # <- All domains are configured here
   "domain.com":                                # <- Domain name
       routes:                                 
-        "/api" : "http://localhost:3000"       # <- path : dest
-        "/metrics" : "http://localhost:9090"   # <- path : dest
+        "/api":
+            dest: "http://localhost:3000"      # <- path : dest
+        "/metrics":
+            dest: "http://localhost:9090"   # <- path : dest
   "sub.domain.com":                                
       routes:                                 
-        "/api" : "http://localhost:3000"       
-        "/metrics" : "http://localhost:9090"
+        "/api":
+            dest: "http://localhost:3001"      # <- path : dest
+        "/metrics":
+            dest: "http://localhost:8080"   
 ```
 
 You can also use wild cards:
@@ -101,12 +105,64 @@ You can also use wild cards:
 routes:                                       
   "*.domain.com":                              # <- Any sub-domain will be routed here                              
       routes:                                  # will ignore the base domain
-        "/api" : "http://localhost:3000"       # unless configured below
-        "/metrics" : "http://localhost:9090"   
+        "/api":                                # unless configured below    
+            dest: "http://localhost:3001"      # <- path : dest
+        "/metrics":
+            dest: "http://localhost:8080"  
   "domain.com":                                # <- Base domain     
       routes:                                 
-        "/api" : "http://localhost:3000"       
-        "/metrics" : "http://localhost:9090"
+        "/api":                                # unless configured below    
+            dest: "http://localhost:3001"      # <- path : dest
+        "/metrics":
+            dest: "http://localhost:8080" 
+```
+
+#### Path Rewrites
+
+There's two types of rewrites available, regex and prefix.
+
+```yaml
+routes:                                       
+  "domain.com":                                                       
+      routes:                                  
+        "/api/v1":                               
+            dest: "http://localhost:3001"
+            rewrite:
+              type: "regex"
+              value: "^/api/v1/(.*)$"          # <- will be rewritten to /
+              replace_val: "/$1"
+        "/metrics":
+            dest: "http://localhost:8080"  
+  "sub.domain.com":                                                       
+      routes:                                  
+        "/api/v1":                               
+            dest: "http://localhost:3001"
+            rewrite:
+              type: "regex"
+              value: "^/api/v1/(.*)$"          # <- will be rewritten to /api/v2
+              replace_val: "/api/v2/$1"
+        "/metrics":
+            dest: "http://localhost:8080"  
+  "sub.domain.com":                                                       
+      routes:                                  
+        "/api/v1":                               
+            dest: "http://localhost:3001"
+            rewrite:
+              type: "prefix"
+              value: "/api/v1"                 # <- will be rewritten to /
+              replace_val: ""
+        "/metrics":
+            dest: "http://localhost:8080"  
+  "sub.domain.com":                                                       
+      routes:                                  
+        "/api/v1":                               
+            dest: "http://localhost:3001"
+            rewrite:
+              type: "prefix"
+              value: "/api/v1"                 # <- will be rewritten to /new/path
+              replace_val: "/new/path"
+        "/metrics":
+            dest: "http://localhost:8080"  
 ```
 
 ### TLS Certificates
