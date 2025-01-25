@@ -26,7 +26,9 @@ func New(target string) http.Handler {
 		rw := rewriter.New(rr)
 
 		rewrittenPath := rw.RewritePath(req.URL.Path)
-		fmt.Println(rewrittenPath)
+		fmt.Println("Rule: ", rr.ReplaceVal, rr.Value, rr.Type)
+		fmt.Println("Original: ", req.URL.Path)
+		fmt.Println("Rewritten: ", rewrittenPath)
 		req.URL.Path = rewrittenPath
 
 		req.Host = targetURL.Host
