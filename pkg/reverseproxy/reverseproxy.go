@@ -22,6 +22,7 @@ func New(target string) http.Handler {
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
 		configPtr := *config.DomainTrie.Match(req.Host)
+		fmt.Println("Path: ", req.URL.Path)
 		rr := configPtr.Routes[req.URL.Path].RewriteRule
 		rw := rewriter.New(rr)
 
