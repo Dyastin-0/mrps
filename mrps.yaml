@@ -7,49 +7,68 @@ domains:
           type: "regex"
           value: "^/api/(.*)$"
           replace_val: "/$1"
-      "/": "http://localhost:4001"
+      "/":
+        dest: "http://localhost:4001"
+        rewrite: {}  # or omit the rewrite if not needed
     rate_limit:
       burst: 15
       rate: 10
       cooldown: 60000
   "filespace.dyastin.tech":
     routes:
-      "/api/v2": "http://localhost:3004"
-      "/": "http://localhost:5005"
+      "/api/v2":
+        dest: "http://localhost:3004"
+        rewrite: {}  # or omit if no rewrite needed
+      "/":
+        dest: "http://localhost:5005"
+        rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
       cooldown: 60000
   "omnisense.dyastin.tech":
     routes:
-      "/": "http://localhost:4004"
+      "/":
+        dest: "http://localhost:4004"
+        rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
       cooldown: 60000
   "filmpin.dyastin.tech":
     routes:
-      "/socket.io": "http://localhost:5001"
-      "/api": "http://localhost:5001"
-      "/": "http://localhost:5002"
+      "/socket.io":
+        dest: "http://localhost:5001"
+        rewrite: {}
+      "/api":
+        dest: "http://localhost:5001"
+        rewrite: {}
+      "/":
+        dest: "http://localhost:5002"
+        rewrite: {}
     rate_limit:
       burst: 100
       rate: 50
       cooldown: 60000
   "metrics.dyastin.tech":
     routes:
-      "/": "http://localhost:3000"
+      "/":
+        dest: "http://localhost:3000"
+        rewrite: {}
     rate_limit:
       burst: 100
       rate: 50
       cooldown: 60000
   "dyastin.tech":
     routes:
-      "/": "http://localhost:4002"
+      "/":
+        dest: "http://localhost:4002"
+        rewrite: {}
     rate_limit:
       burst: 100
       rate: 50
       cooldown: 60000
+
 
 
 rate_limit:
