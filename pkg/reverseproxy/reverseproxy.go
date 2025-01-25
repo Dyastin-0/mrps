@@ -1,6 +1,7 @@
 package reverseproxy
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -24,6 +25,7 @@ func New(target string) http.Handler {
 		rr := configPtr.Routes[req.URL.Path].RewriteRule
 		rw := rewriter.New(rr)
 		req.URL.Path = targetURL.Path + rw.RewritePath(req.URL.Path)
+		fmt.Println(req.URL.Path)
 
 		req.Header.Set("X-Forwarded-Host", targetURL.Host)
 		req.Header.Set("X-Forwarded-Proto", targetURL.Scheme)
