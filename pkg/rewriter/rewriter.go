@@ -1,6 +1,7 @@
 package rewriter
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -26,6 +27,8 @@ func (rw *Rewriter) RewritePath(path string) string {
 			path = re.ReplaceAllString(path, "/$1")
 		}
 	}
+
+	fmt.Println(path)
 	return path
 }
 
