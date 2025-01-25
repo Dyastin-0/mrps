@@ -5,8 +5,8 @@ domains:
         dest: "http://localhost:4000"
         rewrite:
           type: "regex"
-          value: "^/api/(.*)$"
-          replace_val: "//$1"
+          value: "^/api/v1/(.*)$"
+          replace_val: "/$1"
       "/":
         dest: "http://localhost:4001"
         rewrite: {}
