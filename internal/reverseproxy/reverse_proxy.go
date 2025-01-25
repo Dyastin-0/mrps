@@ -19,7 +19,7 @@ func Handler(next http.Handler) http.Handler {
 			for _, routePath := range config.SortedRoutes {
 				if strings.HasPrefix(path, routePath) {
 					proxyTarget := config.Routes[routePath].Dest
-					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
+					reverseproxy.New(proxyTarget, routePath).ServeHTTP(w, r)
 					return
 				}
 			}
