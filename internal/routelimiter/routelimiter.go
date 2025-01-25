@@ -15,13 +15,9 @@ func Handler(next http.Handler) http.Handler {
 		host := r.Host
 
 		routeConfigPtr := config.DomainTrie.Match(host)
-		if routeConfigPtr == nil {
-			http.Error(w, "not found", http.StatusNotFound)
-			return
-		}
-
 		routeConfig := *routeConfigPtr
 
+		// If the rate limit is not set, assume there is no rate limit
 		if routeConfig.RateLimit.Burst == 0 || routeConfig.RateLimit.Rate == 0 {
 			next.ServeHTTP(w, r)
 			return

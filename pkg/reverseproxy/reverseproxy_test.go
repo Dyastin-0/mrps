@@ -1,4 +1,4 @@
-package reverseproxy_test
+package reverseproxy
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	reverseproxy "github.com/Dyastin-0/mrps/pkg/reverse_proxy"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,7 +39,7 @@ func TestReverseProxy(t *testing.T) {
 		}))
 		defer mockService.Close()
 
-		proxy := reverseproxy.New(mockService.URL)
+		proxy := New(mockService.URL)
 		proxyServer := httptest.NewServer(proxy)
 		defer proxyServer.Close()
 
@@ -78,7 +77,7 @@ func TestReverseProxy(t *testing.T) {
 		}))
 		defer mockService1.Close()
 
-		proxy := reverseproxy.New(mockService1.URL)
+		proxy := New(mockService1.URL)
 		proxyServer := httptest.NewServer(proxy)
 		defer proxyServer.Close()
 

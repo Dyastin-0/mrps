@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/config"
-	reverseproxy "github.com/Dyastin-0/mrps/pkg/reverse_proxy"
+	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
 )
 
 func Handler(next http.Handler) http.Handler {

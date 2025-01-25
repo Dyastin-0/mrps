@@ -10,7 +10,7 @@ import (
 func TestLoadConfig(t *testing.T) {
 	testYAML := `
 routes:
-  "metrics.*.example.com":
+  "*.example.com":
     routes:
       "/wildcard": "http://localhost:5003"
       "/metrics": "http://localhost:5004"
@@ -88,7 +88,7 @@ misc:
 			expectedURL  string
 		}{
 			{"sub.example.com", "/wildcard", "http://localhost:5003"},
-			{"metrics.any.example.com", "/metrics", "http://localhost:5004"},
+			{"any.example.com", "/metrics", "http://localhost:5004"},
 			{"sub.another.com", "/wild", "http://localhost:6002"},
 			{"api.another.com", "/api", "http://localhost:6003"},
 		}

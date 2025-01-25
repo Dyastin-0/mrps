@@ -117,7 +117,7 @@ func Load(filename string) error {
 		if !isValidDomain(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
-		if strings.Contains(domain, "*") && strings.Index(domain, "*") != len(domain)-1 {
+		if strings.Contains(domain, "*") && strings.Index(domain, "*") != 0 {
 			return fmt.Errorf("wildcard must be at the end of the domain: %s", domain)
 		}
 
