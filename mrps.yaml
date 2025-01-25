@@ -1,7 +1,7 @@
 domains:
   "gitsense.dyastin.tech": 
     routes:
-      "/api":
+      "/api/v1":
         dest: "http://localhost:4000"
         rewrite:
           type: "regex"
