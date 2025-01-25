@@ -77,7 +77,7 @@ misc:
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
 			routeConfig := *routeConfigPtr
-			assertEqual(t, routeConfig.Routes[test.expectedPath], test.expectedURL, "Routes")
+			assertEqual(t, routeConfig.Routes[test.expectedPath].Dest, test.expectedURL, "Routes")
 		}
 	})
 
@@ -103,7 +103,7 @@ misc:
 				t.Errorf("Route config is nil for domain: %s", test.domain)
 				return
 			}
-			assertEqual(t, routeConfig.Routes[test.expectedPath], test.expectedURL, "Routes")
+			assertEqual(t, routeConfig.Routes[test.expectedPath].Dest, test.expectedURL, "Routes")
 		}
 	})
 

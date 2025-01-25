@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"golang.org/x/time/rate"
 )
 
@@ -15,7 +16,12 @@ type Config struct {
 	RateLimit    RateLimitConfig `yaml:"rate_limit"`
 }
 
-type RouteConfig map[string]string
+type RouteConfig map[string]PathConfig
+
+type PathConfig struct {
+	Dest        string               `yaml:"dest"`
+	RewriteRule rewriter.RewriteRule `yaml:"rewrite"`
+}
 
 type RateLimitConfig struct {
 	Burst           int           `yaml:"burst"`

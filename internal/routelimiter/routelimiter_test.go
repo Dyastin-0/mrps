@@ -26,7 +26,7 @@ func TestDomainHandler(t *testing.T) {
 	// Configure the DomainTrie with rate-limiting
 	routeConfig := config.Config{
 		Routes: config.RouteConfig{
-			"/": "http://localhost",
+			"/": config.PathConfig{Dest: "http://localhost"},
 		},
 		RateLimit: config.RateLimitConfig{
 			Rate:            2,

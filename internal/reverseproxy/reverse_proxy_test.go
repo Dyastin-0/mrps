@@ -31,8 +31,8 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 	config.DomainTrie = config.NewDomainTrie()
 	conf := &config.Config{
 		Routes: config.RouteConfig{
-			"/api":  mockService.URL,
-			"/mock": mockService1.URL,
+			"/api":  config.PathConfig{Dest: mockService.URL},
+			"/mock": config.PathConfig{Dest: mockService1.URL},
 		},
 	}
 	conf.SortedRoutes = []string{"/api", "/mock"}

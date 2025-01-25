@@ -1,12 +1,12 @@
 package reverseproxy
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
+	"github.com/Dyastin-0/mrps/pkg/rewriter"
 )
 
 func Handler(next http.Handler) http.Handler {
@@ -18,11 +18,11 @@ func Handler(next http.Handler) http.Handler {
 		if configPtr != nil {
 			config := *configPtr
 			for _, routePath := range config.SortedRoutes {
-				fmt.Println(routePath, path)
-				fmt.Println(strings.HasPrefix(path, routePath))
 				if strings.HasPrefix(path, routePath) {
-					fmt.Println("Proxying to", routePath)
-					proxyTarget := config.Routes[routePath]
+					rr := config.Routes[routePath].RewriteRule
+					rw := rewriter.New(rr)
+					// Will return the original path if no rewrite rule is present
+					proxyTarget := rw.RewritePath(r.URL.Path)
 					reverseproxy.New(proxyTarget).ServeHTTP(w, r)
 					return
 				}
