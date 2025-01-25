@@ -35,7 +35,6 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 		// Handle wildcard nodes
 		if part == "*" {
 			if _, exists := node.Children["*"]; !exists {
-				fmt.Println("Wildcard")
 				t.mu.Lock()
 				node.Children["*"] = &TrieNode{
 					Children:   make(map[string]*TrieNode),
