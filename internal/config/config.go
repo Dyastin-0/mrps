@@ -94,7 +94,7 @@ func Load(filename string) error {
 	defer file.Close()
 
 	configData := struct {
-		Routes    RoutesConfig    `yaml:"routes"`
+		Routes    DomainsConfig   `yaml:"domains"`
 		Misc      MiscConfig      `yaml:"misc"`
 		RateLimit RateLimitConfig `yaml:"rate_limit"`
 	}{}
