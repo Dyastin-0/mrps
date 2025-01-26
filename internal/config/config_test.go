@@ -12,69 +12,74 @@ import (
 func TestLoadComplexConfig(t *testing.T) {
 	testYAML := `
 domains:
-  "gitsense.dyastin.tech": 
+  gitsense.dyastin.tech:
     routes:
-      "/api/v1":
+      /api/v1:
         dest: "http://localhost:4000"
         rewrite:
           type: "regex"
           value: "^/api/v1/(.*)$"
           replace_val: "/$1"
-      "/":
+      /:
         dest: "http://localhost:4001"
         rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
       cooldown: 60000
-  "filespace.dyastin.tech":
+
+  filespace.dyastin.tech:
     routes:
-      "/api/v2":
+      /api/v2:
         dest: "http://localhost:3004"
         rewrite: {}
-      "/":
+      /:
         dest: "http://localhost:5005"
         rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
       cooldown: 60000
-  "omnisense.dyastin.tech":
+
+  omnisense.dyastin.tech:
     routes:
-      "/":
+      /:
         dest: "http://localhost:4004"
         rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
       cooldown: 60000
-  "filmpin.dyastin.tech":
+
+  filmpin.dyastin.tech:
     routes:
-      "/socket.io":
+      /socket.io:
         dest: "http://localhost:5001"
         rewrite: {}
-      "/api":
+      /api:
         dest: "http://localhost:5001"
         rewrite: {}
-      "/":
+      /:
         dest: "http://localhost:5002"
         rewrite: {}
     rate_limit:
       burst: 100
       rate: 50
       cooldown: 60000
-  "metrics.dyastin.tech":
+
+  metrics.dyastin.tech:
     routes:
-      "/":
+      /:
         dest: "http://localhost:3000"
         rewrite: {}
     rate_limit:
       burst: 100
       rate: 50
       cooldown: 60000
-  "dyastin.tech":
+
+  dyastin.tech:
     routes:
-      "/":
+      /:
         dest: "http://localhost:4002"
         rewrite: {}
     rate_limit:
