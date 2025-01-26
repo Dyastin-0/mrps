@@ -62,7 +62,7 @@ domains:
   "dyastin.tech":
     routes:
       "/":
-        dest: "http://localhost:9090"
+        dest: "http://localhost:4002"
         rewrite: {}
     rate_limit:
       burst: 100
