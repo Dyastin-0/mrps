@@ -4,11 +4,10 @@ This project implements an HTTP/HTTPS reverse proxy server that routes requests 
 
 ## Features
 
-- Dynamic request routing based on domain and prefixes
-- Automatic TLS certificate management via Let's Encrypt
-- Zero-downtime certificate renewal
-- Support for multiple domains
+- Dynamic routing
+- Automatic HTTPS
 - Configurable routing rules
+- Path rewrites
 - Global and domain-based rate limiting 
 - Scrappable metrics
 
@@ -37,7 +36,7 @@ email: "your@email.com"
 Routes define how incoming requests are routed to different services. Example:
 
 ```yaml
-routes:
+domains:
   "domain.com":
     routes:
       "/api": "http://localhost:8080" 
@@ -84,13 +83,13 @@ rate_limit:
 The routing rules are simple and configurable.
 
 ```yaml
-routes:                                        # <- All domains are configured here
+domains:                                       # <- All domains are configured here
   "domain.com":                                # <- Domain name
       routes:                                 
         "/api":
             dest: "http://localhost:3000"      # <- path : dest
         "/metrics":
-            dest: "http://localhost:9090"   # <- path : dest
+            dest: "http://localhost:9090"      # <- path : dest
   "sub.domain.com":                                
       routes:                                 
         "/api":
@@ -102,7 +101,7 @@ routes:                                        # <- All domains are configured h
 You can also use wild cards:
 
 ```yaml
-routes:                                       
+domains:                                       
   "*.domain.com":                              # <- Any sub-domain will be routed here                              
       routes:                                  # will ignore the base domain
         "/api":                                # unless configured below    
@@ -122,7 +121,7 @@ routes:
 There's two types of rewrites available, regex and prefix.
 
 ```yaml
-routes:                                       
+domains:                                       
   "domain.com":                                                       
       routes:                                  
         "/api/v1":                               
@@ -174,44 +173,26 @@ The server automatically manages TLS certificates through Let's Encrypt using [c
 
 ### Running the Server
 
-1. Set up your configuration file
-2. You have two options to run the server:
+There's a makefile provided which you can use to build the binary and run the server as a service.
 
-#### Option 1: Direct Run
-```bash
-go run cmd/server/main.go
-```
+`make build` will build the binary on the specified path.
 
-#### Option 2: Systemd Deployment
-There's a `build-deploy.sh` script that automates the deployment process and sets up the server as a systemd service:
+`make copy_config` will copy the ***mrps.yaml*** and ***mrps.service*** to the specified path.
 
-1. Run the deployment script:
-```bash
-chmod +x ./build-deploy.sh
-./build-deploy.sh
-```
+`make reload` will reload ***systemd***.
 
-This script will:
-- Build the Go binary
-- Install and enable the service
-- Start the server
+`make restart` will restart the ***mrps.service***.
 
-You can configure the `proxy.service` as needed, but you need to keep the:
+`make start` will start the ***mrps.service***.
+
+use `make install` to do everything.
+
+You can configure the `mrps.service` as needed, but you need to keep the:
 ```
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 ```
 as the reverse proxy server needs to bind on privileged ports, `80` and `443`.
-
-To check the service status:
-```bash
-systemctl status proxy
-```
-
-To view logs:
-```bash
-journalctl -u proxy -f
-```
 
 ### Metrics
 
@@ -242,5 +223,12 @@ scrape_configs:
   - job_name: 'reverse_proxy'
     scheme: 'http'
     static_configs:
-      - targets: ['localhost:7070'] # default port, you can change it from the /cmd/server/main.go
+      - targets: ['localhost:7070']
+```
+
+to change the port, define it on `mrps.yaml`:
+
+```yaml
+misc:
+  metrics_port:8080
 ```

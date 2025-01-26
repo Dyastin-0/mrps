@@ -7,9 +7,9 @@ YAML_PATH := $(OUTPUT_DIR)/mrps.yaml
 SERVICE_FILE := mrps.service
 SERVICE_PATH := /etc/systemd/system/$(SERVICE_FILE)
 
-.PHONY: all build install copy_files systemd_reload service_restart service_start status
+.PHONY: all build install  copy_config  reload restart start status
 
-install: copy_files build systemd_reload service_restart status
+install:  copy_config build reload restart status
 
 build:
 	@echo "$(APP): Building the binary..."
@@ -22,7 +22,7 @@ build:
 		exit 1; \
 	fi
 
-copy_files:
+ copy_config:
 	@echo "$(APP): Copying files..."
 	@sudo cp $(YAML_FILE) $(YAML_PATH)
 	@if [ $$? -eq 0 ]; then \
@@ -39,21 +39,21 @@ copy_files:
 		exit 1; \
 	fi
 
-systemd_reload:
+ reload:
 	@echo "$(APP): Reloading systemd daemon..."
 	@sudo systemctl daemon-reload
 	@echo "$(APP): Daemon reloaded"
 
-service_restart:
+restart:
 	@if systemctl is-active --quiet $(SERVICE_FILE); then \
 		echo "$(APP): Restarting the service..."; \
 		sudo systemctl restart $(SERVICE_FILE); \
 		echo "$(APP): Service restarted"; \
 	else \
-		$(MAKE) service_start; \
+		$(MAKE) start; \
 	fi
 
-service_start:
+start:
 	@echo "$(APP): Starting the service..."
 	@sudo systemctl start $(SERVICE_FILE)
 	@echo "$(APP): Service started"
