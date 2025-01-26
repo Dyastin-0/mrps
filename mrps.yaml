@@ -52,8 +52,8 @@ domains:
       cooldown: 60000
   "metrics.dyastin.tech":
     routes:
-      "/prmetheus":
-        dest: "http://localhost:5001"
+      "/prometheus":
+        dest: "http://localhost:9090"
         rewrite: {}
       "/":
         dest: "http://localhost:3000"
