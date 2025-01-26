@@ -3,41 +3,93 @@ package config_test
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/Dyastin-0/mrps/internal/config"
+	"golang.org/x/time/rate"
 )
 
-func TestLoadConfig(t *testing.T) {
+func TestLoadComplexConfig(t *testing.T) {
 	testYAML := `
-routes:
-  "*.example.com":
+domains:
+  "gitsense.dyastin.tech": 
     routes:
-      "/wildcard": "http://localhost:5003"
-      "/metrics": "http://localhost:5004"
-
-  "example.com":
+      "/api/v1":
+        dest: "http://localhost:4000"
+        rewrite:
+          type: "regex"
+          value: "^/api/v1/(.*)$"
+          replace_val: "/$1"
+      "/":
+        dest: "http://localhost:4001"
+        rewrite: {}
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  "filespace.dyastin.tech":
     routes:
-      "/api": "http://localhost:5001"
-      "/home": "http://localhost:5002"
-
-  "another.com":
+      "/api/v2":
+        dest: "http://localhost:3004"
+        rewrite: {}
+      "/":
+        dest: "http://localhost:5005"
+        rewrite: {}
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  "omnisense.dyastin.tech":
     routes:
-      "/": "http://localhost:6001"
-
-  "*.another.com":
+      "/":
+        dest: "http://localhost:4004"
+        rewrite: {}
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  "filmpin.dyastin.tech":
     routes:
-      "/wild": "http://localhost:6002"
-      "/api": "http://localhost:6003"
+      "/socket.io":
+        dest: "http://localhost:5001"
+        rewrite: {}
+      "/api":
+        dest: "http://localhost:5001"
+        rewrite: {}
+      "/":
+        dest: "http://localhost:5002"
+        rewrite: {}
+    rate_limit:
+      burst: 100
+      rate: 50
+      cooldown: 60000
+  "metrics.dyastin.tech":
+    routes:
+      "/":
+        dest: "http://localhost:3000"
+        rewrite: {}
+    rate_limit:
+      burst: 100
+      rate: 50
+      cooldown: 60000
+  "dyastin.tech":
+    routes:
+      "/":
+        dest: "http://localhost:4002"
+        rewrite: {}
+    rate_limit:
+      burst: 100
+      rate: 50
+      cooldown: 60000
 
 rate_limit:
-  burst: 200
-  rate: 100
-  cooldown: 120000
+  burst: 100
+  rate: 50
+  cooldown: 60000
 
 misc:
-  email: "admin@example.com"
-  metrics_port: 8080
-
+  email: "mail@dyastin.tech"
+  metrics_port: 7070
 `
 
 	tmpFile, err := os.CreateTemp("", "test_config_*.yaml")
@@ -61,14 +113,22 @@ misc:
 		t.Fatalf("config.Load() failed: %v", err)
 	}
 
-	t.Run("Match Exact Domains", func(t *testing.T) {
+	t.Run("Validate Domain Configurations", func(t *testing.T) {
 		tests := []struct {
 			domain       string
-			expectedPath string
-			expectedURL  string
+			path         string
+			expectedDest string
 		}{
-			{"example.com", "/api", "http://localhost:5001"},
-			{"another.com", "/", "http://localhost:6001"},
+			{"gitsense.dyastin.tech", "/api/v1", "http://localhost:4000"},
+			{"gitsense.dyastin.tech", "/", "http://localhost:4001"},
+			{"filespace.dyastin.tech", "/api/v2", "http://localhost:3004"},
+			{"filespace.dyastin.tech", "/", "http://localhost:5005"},
+			{"omnisense.dyastin.tech", "/", "http://localhost:4004"},
+			{"filmpin.dyastin.tech", "/socket.io", "http://localhost:5001"},
+			{"filmpin.dyastin.tech", "/api", "http://localhost:5001"},
+			{"filmpin.dyastin.tech", "/", "http://localhost:5002"},
+			{"metrics.dyastin.tech", "/", "http://localhost:3000"},
+			{"dyastin.tech", "/", "http://localhost:4002"},
 		}
 
 		for _, test := range tests {
@@ -77,20 +137,24 @@ misc:
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
 			routeConfig := *routeConfigPtr
-			assertEqual(t, routeConfig.Routes[test.expectedPath].Dest, test.expectedURL, "Routes")
+			dest := routeConfig.Routes[test.path].Dest
+			assertEqual(t, dest, test.expectedDest, "Destinations")
 		}
 	})
 
-	t.Run("Match Wildcard Domains", func(t *testing.T) {
+	t.Run("Validate Rate Limits", func(t *testing.T) {
 		tests := []struct {
-			domain       string
-			expectedPath string
-			expectedURL  string
+			domain           string
+			expectedBurst    int
+			expectedRate     rate.Limit
+			expectedCooldown time.Duration
 		}{
-			{"sub.example.com", "/wildcard", "http://localhost:5003"},
-			{"any.example.com", "/metrics", "http://localhost:5004"},
-			{"sub.another.com", "/wild", "http://localhost:6002"},
-			{"api.another.com", "/api", "http://localhost:6003"},
+			{"gitsense.dyastin.tech", 15, 10, 60000 * time.Millisecond},
+			{"filespace.dyastin.tech", 15, 10, 60000 * time.Millisecond},
+			{"omnisense.dyastin.tech", 15, 10, 60000 * time.Millisecond},
+			{"filmpin.dyastin.tech", 100, 50, 60000 * time.Millisecond},
+			{"metrics.dyastin.tech", 100, 50, 60000 * time.Millisecond},
+			{"dyastin.tech", 100, 50, 60000 * time.Millisecond},
 		}
 
 		for _, test := range tests {
@@ -99,11 +163,9 @@ misc:
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
 			routeConfig := *routeConfigPtr
-			if routeConfig == nil {
-				t.Errorf("Route config is nil for domain: %s", test.domain)
-				return
-			}
-			assertEqual(t, routeConfig.Routes[test.expectedPath].Dest, test.expectedURL, "Routes")
+			assertEqual(t, routeConfig.RateLimit.Burst, test.expectedBurst, "Burst")
+			assertEqual(t, routeConfig.RateLimit.Rate, test.expectedRate, "Rate")
+			assertEqual(t, routeConfig.RateLimit.Cooldown, test.expectedCooldown, "Cooldown")
 		}
 	})
 
