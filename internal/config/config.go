@@ -102,8 +102,11 @@ func Load(filename string) error {
 	}
 
 	Misc = configData.Misc
-	GlobalRateLimit = configData.RateLimit
+	if Misc.MetricsPort == "" {
+		Misc.MetricsPort = "7070"
+	}
 
+	GlobalRateLimit = configData.RateLimit
 	GlobalRateLimit.Cooldown *= time.Millisecond
 
 	for domain, cfg := range configData.Domains {
