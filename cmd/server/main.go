@@ -25,6 +25,8 @@ func main() {
 	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
 
+	go config.Watch("mrps.yaml")
+
 	go startReverseProxyServer(mainRouter)
 
 	go startMetricsServer()

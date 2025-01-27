@@ -12,11 +12,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var Domains []string
-var DomainTrie = NewDomainTrie()
-var ClientMngr = sync.Map{}
-var GlobalRateLimit RateLimitConfig
-var Misc MiscConfig
+var (
+	Domains         []string
+	DomainTrie      = NewDomainTrie()
+	ClientMngr      = sync.Map{}
+	GlobalRateLimit RateLimitConfig
+	Misc            MiscConfig
+	MU              sync.RWMutex
+)
 
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 	parts := strings.Split(domain, ".")
@@ -148,7 +151,6 @@ func Load(filename string) error {
 
 		DomainTrie.Insert(domain, &cfg)
 	}
-
 	return nil
 }
 
