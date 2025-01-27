@@ -14,13 +14,8 @@ import (
 
 var Domains []string
 var DomainTrie = NewDomainTrie()
+var ClientMngr = sync.Map{}
 var GlobalRateLimit RateLimitConfig
-var Clients = make(map[string]map[string]*Client)
-var Cooldowns = CoolDownConfig{
-	// DefaultWaitTime: 1 * time.Minute,
-	DomainMutex: make(map[string]*sync.Mutex),
-	Client:      make(map[string]map[string]time.Time),
-}
 var Misc MiscConfig
 
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {
@@ -148,11 +143,8 @@ func Load(filename string) error {
 		cfg.RateLimit.Cooldown *= time.Millisecond
 		cfg.RateLimit.DefaultCooldown = time.Second
 
-		Cooldowns.DomainMutex[domain] = &sync.Mutex{}
-
 		DomainTrie.Insert(domain, &cfg)
 	}
-	Cooldowns.DomainMutex["global"] = &sync.Mutex{}
 
 	return nil
 }

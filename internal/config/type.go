@@ -10,6 +10,12 @@ import (
 
 type DomainsConfig map[string]Config
 
+type ClientLimiter struct {
+	Limiter  *rate.Limiter
+	LastReq  time.Time
+	Cooldown time.Time
+}
+
 type Config struct {
 	Routes       RouteConfig `yaml:"routes"`
 	SortedRoutes []string
@@ -30,19 +36,9 @@ type RateLimitConfig struct {
 	DefaultCooldown time.Duration
 }
 
-type CoolDownConfig struct {
-	DomainMutex map[string]*sync.Mutex
-	Client      map[string]map[string]time.Time
-}
-
 type MiscConfig struct {
 	Email       string `yaml:"email"`
 	MetricsPort string `yaml:"metrics_port"`
-}
-
-type Client struct {
-	Limiter     *rate.Limiter
-	LastRequest time.Time
 }
 
 type TrieNode struct {

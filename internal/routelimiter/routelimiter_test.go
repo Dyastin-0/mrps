@@ -11,12 +11,7 @@ import (
 )
 
 func setupMockConfig() {
-	config.Clients = make(map[string]map[string]*config.Client)
-	config.Cooldowns = config.CoolDownConfig{
-		DomainMutex: make(map[string]*sync.Mutex),
-		Client:      make(map[string]map[string]time.Time),
-	}
-	// Initialize the DomainTrie
+	config.ClientMngr = sync.Map{}
 	config.DomainTrie = config.NewDomainTrie()
 }
 
@@ -26,7 +21,7 @@ func TestDomainHandler(t *testing.T) {
 	// Configure the DomainTrie with rate-limiting
 	routeConfig := config.Config{
 		Routes: config.RouteConfig{
-			"/": config.PathConfig{Dest: "http://localhost"},
+			"/": config.PathConfig{Dest: "localhost"},
 		},
 		RateLimit: config.RateLimitConfig{
 			Rate:            2,
@@ -36,7 +31,11 @@ func TestDomainHandler(t *testing.T) {
 		},
 	}
 	config.DomainTrie.Insert("localhost", &routeConfig)
-	config.Cooldowns.DomainMutex["localhost"] = &sync.Mutex{}
+
+	// Create a mock request handler
+	handler := Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
 
 	tests := []struct {
 		name            string
@@ -72,17 +71,16 @@ func TestDomainHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			}))
-
+			// Initialize a mock client for the "localhost" domain and "127.0.0.1" IP
 			for i := 0; i < tt.requestCount; i++ {
 				req, err := http.NewRequest("GET", "/", nil)
 				if err != nil {
 					t.Fatal(err)
 				}
 
+				// Set the Host and RemoteAddr to simulate client IP and domain
 				req.Host = "localhost"
+				req.RemoteAddr = "127.0.0.1:12345" // Simulating a client IP and port
 
 				rr := httptest.NewRecorder()
 				handler.ServeHTTP(rr, req)
@@ -91,10 +89,12 @@ func TestDomainHandler(t *testing.T) {
 					t.Errorf("Name: %s, Expected status %d but got %d for request %d", tt.name, tt.expectedResults[i], rr.Code, i+1)
 				}
 
+				// Wait between requests to simulate real user behavior
 				if i < tt.requestCount-1 {
 					time.Sleep(tt.waitBetweenReqs)
 				}
 			}
+
 			// Allow cooldown recovery between test runs
 			time.Sleep(2 * time.Second)
 		})
