@@ -70,8 +70,8 @@ domains:
         dest: "http://localhost:4002"
         rewrite: {}
     rate_limit:
-      burst: 100
-      rate: 50
+      burst: 15
+      rate: 10
       cooldown: 60000
 
 rate_limit:
