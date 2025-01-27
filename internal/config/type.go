@@ -31,10 +31,8 @@ type RateLimitConfig struct {
 }
 
 type CoolDownConfig struct {
-	MU              *sync.Mutex
-	DomainMutex     map[string]*sync.Mutex
-	Client          map[string]map[string]time.Time
-	DefaultWaitTime time.Duration
+	DomainMutex map[string]*sync.Mutex
+	Client      map[string]map[string]time.Time
 }
 
 type MiscConfig struct {

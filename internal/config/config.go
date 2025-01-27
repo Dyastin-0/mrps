@@ -17,10 +17,9 @@ var DomainTrie = NewDomainTrie()
 var GlobalRateLimit RateLimitConfig
 var Clients = make(map[string]map[string]*Client)
 var Cooldowns = CoolDownConfig{
-	MU:              &sync.Mutex{},
-	DefaultWaitTime: 1 * time.Minute,
-	DomainMutex:     make(map[string]*sync.Mutex),
-	Client:          make(map[string]map[string]time.Time),
+	// DefaultWaitTime: 1 * time.Minute,
+	DomainMutex: make(map[string]*sync.Mutex),
+	Client:      make(map[string]map[string]time.Time),
 }
 var Misc MiscConfig
 
@@ -147,12 +146,13 @@ func Load(filename string) error {
 		cfg.Routes = sortedConfig
 
 		cfg.RateLimit.Cooldown *= time.Millisecond
-		cfg.RateLimit.DefaultCooldown = Cooldowns.DefaultWaitTime
+		cfg.RateLimit.DefaultCooldown = time.Second
 
 		Cooldowns.DomainMutex[domain] = &sync.Mutex{}
 
 		DomainTrie.Insert(domain, &cfg)
 	}
+	Cooldowns.DomainMutex["global"] = &sync.Mutex{}
 
 	return nil
 }

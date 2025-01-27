@@ -18,13 +18,14 @@ func Handler(next http.Handler) http.Handler {
 		}
 
 		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+		mu := config.Cooldowns.DomainMutex["global"]
 
-		config.Cooldowns.MU.Lock()
+		mu.Lock()
 		if config.Cooldowns.Client["global"] == nil {
 			config.Cooldowns.Client["global"] = make(map[string]time.Time)
 		}
 		cooldownEnd, inCooldown := config.Cooldowns.Client["global"][ip]
-		config.Cooldowns.MU.Unlock()
+		mu.Unlock()
 
 		if inCooldown && time.Now().Before(cooldownEnd) {
 			w.Header().Set("Retry-After", cooldownEnd.Format(time.RFC1123))
@@ -32,7 +33,7 @@ func Handler(next http.Handler) http.Handler {
 			return
 		}
 
-		config.Cooldowns.MU.Lock()
+		mu.Lock()
 		if config.Clients["global"] == nil {
 			config.Clients["global"] = make(map[string]*config.Client)
 		}
@@ -42,18 +43,18 @@ func Handler(next http.Handler) http.Handler {
 				Limiter: rate.NewLimiter(config.GlobalRateLimit.Rate, config.GlobalRateLimit.Burst),
 			}
 		}
-		config.Cooldowns.MU.Unlock()
+		mu.Unlock()
 
 		client := config.Clients["global"][ip]
 		if !client.Limiter.Allow() {
 			cooldownDuration := config.GlobalRateLimit.Cooldown
 			if cooldownDuration == 0 {
-				cooldownDuration = config.Cooldowns.DefaultWaitTime
+				cooldownDuration = time.Second
 			}
 
-			config.Cooldowns.MU.Lock()
+			mu.Lock()
 			config.Cooldowns.Client["global"][ip] = time.Now().Add(cooldownDuration)
-			config.Cooldowns.MU.Unlock()
+			mu.Unlock()
 
 			w.Header().Set("Retry-After", time.Now().Add(cooldownDuration).Format(time.RFC1123))
 			http.Error(w, "too many requests 💔", http.StatusTooManyRequests)
