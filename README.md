@@ -200,7 +200,7 @@ as the reverse proxy server needs to bind on privileged ports, `80` and `443`.
 
 ### Metrics
 
-The reverse proxy server exposes Prometheus-compatible metrics at the /metrics endpoint to help monitor the server's performance.
+The reverse proxy server exposes Prometheus-compatible metrics at the `metrics_port/metrics`.
 
 #### Custom Metrics
 
@@ -221,7 +221,7 @@ The reverse proxy server exposes Prometheus-compatible metrics at the /metrics e
   - Description: Number of currently active HTTP requests being processed by the server.
 
 #### Scraping Metrics
-Prometheus can scrape these metrics by configuring the server's /metrics endpoint as a target. Example scrape configuration in Prometheus:
+Prometheus can scrape these metrics by configuring the  `metrics_port/metrics` endpoint as a target. Example scrape configuration in Prometheus:
 ```yaml
 scrape_configs:
   - job_name: 'reverse_proxy'
