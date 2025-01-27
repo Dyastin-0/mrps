@@ -114,7 +114,7 @@ domains:
             dest: "http://localhost:8080"  
   "domain.com":                                # <- Base domain     
       routes:                                 
-        "/api":                                # unless configured below    
+        "/api":
             dest: "http://localhost:3001"      # <- path : dest
         "/metrics":
             dest: "http://localhost:8080" 
