@@ -80,7 +80,7 @@ domains:
         dest: "http://localhost:6060"
         rewrite:
           type: "regex"
-          value: "^api/(.*)$"
+          value: "^/api/(.*)$"
           replace_val: "/$1"
     rate_limit:
       burst: 15
