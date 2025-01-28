@@ -6,6 +6,8 @@ YAML_FILE := ./mrps.yaml
 YAML_PATH := $(OUTPUT_DIR)/mrps.yaml
 SERVICE_FILE := mrps.service
 SERVICE_PATH := /etc/systemd/system/$(SERVICE_FILE)
+ENV_FILE := ./.env
+ENV_PATH := $(OUTPUT_DIR)/.env
 
 .PHONY: all build install  copy_config  reload restart start status
 
@@ -36,6 +38,13 @@ build:
 		echo "$(APP): $(SERVICE_FILE) successfully copied to $(SERVICE_PATH)"; \
 	else \
 		echo "$(APP): Failed to copy $(SERVICE_FILE). Check permissions or path."; \
+		exit 1; \
+	fi
+	@sudo cp $(ENV_FILE) $(ENV_PATH)
+	@if [ $$? -eq 0 ]; then \
+		echo "$(APP): $(ENV_FILE) successfully copied to $(ENV_PATH)"; \
+	else \
+		echo "$(APP): Failed to copy $(ENV_FILE). Check permissions or path."; \
 		exit 1; \
 	fi
 
