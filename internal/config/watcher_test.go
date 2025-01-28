@@ -10,7 +10,7 @@ import (
 )
 
 func TestWatch(t *testing.T) {
-	tmpFile, err := os.CreateTemp("", "config_*.yml")
+	tmpFile, err := os.CreateTemp("", "config_*.yaml")
 	if err != nil {
 		t.Fatalf("Failed to create temporary file: %v", err)
 	}
