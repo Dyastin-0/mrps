@@ -39,7 +39,7 @@ func Auth() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&req)
 		if err != nil {
-			http.Error(w, "Bad request. Invalid JSON", http.StatusBadRequest)
+			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
 
@@ -49,7 +49,7 @@ func Auth() http.HandlerFunc {
 		log.Println("Password:", password)
 
 		if email == "" || password == "" {
-			http.Error(w, "Bad request. Missing required fields", http.StatusBadRequest)
+			http.Error(w, "Bad request, missing credentials", http.StatusBadRequest)
 			return
 		}
 
@@ -95,7 +95,7 @@ func JWT(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		if token == "" {
-			http.Error(w, "Unauthorized.", http.StatusUnauthorized)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -107,7 +107,7 @@ func JWT(next http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			http.Error(w, "Forbidden.", http.StatusForbidden)
+			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
 
@@ -147,7 +147,7 @@ func Refresh() http.HandlerFunc {
 
 		email, ok := (*claims)["email"].(string)
 		if !ok {
-			http.Error(w, "Forbidden - Invalid token", http.StatusForbidden)
+			http.Error(w, "Forbidden, invalid token", http.StatusForbidden)
 			return
 		}
 
