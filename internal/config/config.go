@@ -56,7 +56,7 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 	node.Config = config
 }
 
-func (t *DomainTrieConfig) Match(domain string) **Config {
+func (t *DomainTrieConfig) Match(domain string) *Config {
 	parts := strings.Split(domain, ".")
 	node := t.Root
 
@@ -79,7 +79,41 @@ func (t *DomainTrieConfig) Match(domain string) **Config {
 		return nil
 	}
 
-	return &node.Config
+	return node.Config
+}
+
+func (t *DomainTrieConfig) Remove(domain string) bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	parts := strings.Split(domain, ".")
+	return t.remove(t.Root, parts, len(parts)-1)
+}
+
+func (t *DomainTrieConfig) remove(node *TrieNode, parts []string, idx int) bool {
+	if idx < 0 {
+		if node.Config == nil {
+			return false
+		}
+		node.Config = nil
+
+		return len(node.Children) == 0
+	}
+
+	part := parts[idx]
+	childNode, exists := node.Children[part]
+
+	if !exists {
+		return false
+	}
+
+	shouldDeleteChild := t.remove(childNode, parts, idx-1)
+
+	if shouldDeleteChild {
+		delete(node.Children, part)
+	}
+
+	return len(node.Children) == 0 && node.Config == nil
 }
 
 func Load(filename string) error {

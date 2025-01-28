@@ -1,11 +1,10 @@
-package config_test
+package config
 
 import (
 	"os"
 	"testing"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/config"
 	"golang.org/x/time/rate"
 )
 
@@ -114,7 +113,7 @@ misc:
 		t.Fatalf("Failed to close temp file: %v", err)
 	}
 
-	if err := config.Load(tmpFile.Name()); err != nil {
+	if err := Load(tmpFile.Name()); err != nil {
 		t.Fatalf("config.Load() failed: %v", err)
 	}
 
@@ -137,7 +136,7 @@ misc:
 		}
 
 		for _, test := range tests {
-			routeConfigPtr := config.DomainTrie.Match(test.domain)
+			routeConfigPtr := DomainTrie.Match(test.domain)
 			if routeConfigPtr == nil {
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
@@ -163,7 +162,7 @@ misc:
 		}
 
 		for _, test := range tests {
-			routeConfigPtr := config.DomainTrie.Match(test.domain)
+			routeConfigPtr := DomainTrie.Match(test.domain)
 			if routeConfigPtr == nil {
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
@@ -180,4 +179,21 @@ func assertEqual[T comparable](t *testing.T, actual, expected T, fieldName strin
 	if actual != expected {
 		t.Errorf("Expected %s to be %v, but got %v", fieldName, expected, actual)
 	}
+}
+
+func TestDomainTrieRemove(t *testing.T) {
+	trie := NewDomainTrie()
+
+	trie.Insert("example.com", &Config{})
+	trie.Insert("*.example.com", &Config{})
+
+	trie.Remove("example.com")
+	if config := trie.Match("sub.example.com"); config != nil {
+		t.Error("'*.example.com' was not removed correctly")
+	}
+
+	if config := trie.Match("example.com"); config == nil {
+		t.Error("'example.com' should still exist")
+	}
+
 }
