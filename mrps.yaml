@@ -76,7 +76,7 @@ domains:
 
   mrps.dyastin.tech:
     routes:
-      api/:
+      /api:
         dest: "http://localhost:6060"
         rewrite:
           type: "regex"
