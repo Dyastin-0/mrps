@@ -8,9 +8,9 @@ const (
 )
 
 type RewriteRule struct {
-	Type       RewriteType `json:"type"`
-	Value      string      `json:"value"`
-	ReplaceVal string      `json:"replace_val"`
+	Type       RewriteType `yaml:"type"`
+	Value      string      `yaml:"value"`
+	ReplaceVal string      `yaml:"replace_val"`
 }
 
 type Rewriter struct {

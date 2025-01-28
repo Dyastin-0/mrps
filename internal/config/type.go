@@ -17,6 +17,7 @@ type ClientLimiter struct {
 }
 
 type Config struct {
+	Enabled      bool        `yaml:"enabled"`
 	Routes       RouteConfig `yaml:"routes"`
 	SortedRoutes []string
 	RateLimit    RateLimitConfig `yaml:"rate_limit"`
@@ -37,8 +38,9 @@ type RateLimitConfig struct {
 }
 
 type MiscConfig struct {
-	Email       string `yaml:"email"`
-	MetricsPort string `yaml:"metrics_port"`
+	Email         string `yaml:"email"`
+	MetricsPort   string `yaml:"metrics_port"`
+	ConfigAPIPort string `yaml:"config_api_port"`
 }
 
 type TrieNode struct {

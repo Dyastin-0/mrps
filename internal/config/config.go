@@ -14,7 +14,7 @@ import (
 
 var (
 	Domains         []string
-	DomainTrie      = NewDomainTrie()
+	DomainTrie      *DomainTrieConfig
 	ClientMngr      = sync.Map{}
 	GlobalRateLimit RateLimitConfig
 	Misc            MiscConfig
@@ -123,6 +123,8 @@ func Load(filename string) error {
 	}
 	defer file.Close()
 
+	DomainTrie = NewDomainTrie()
+
 	configData := struct {
 		Domains   DomainsConfig   `yaml:"domains"`
 		Misc      MiscConfig      `yaml:"misc"`
@@ -141,6 +143,9 @@ func Load(filename string) error {
 	Misc = configData.Misc
 	if Misc.MetricsPort == "" {
 		Misc.MetricsPort = "7070"
+	}
+	if Misc.ConfigAPIPort == "" {
+		Misc.ConfigAPIPort = "6060"
 	}
 
 	GlobalRateLimit = configData.RateLimit
@@ -186,6 +191,35 @@ func Load(filename string) error {
 		DomainTrie.Insert(domain, &cfg)
 	}
 	return nil
+}
+
+func (t *DomainTrieConfig) GetAll() map[string]*Config {
+	result := make(map[string]*Config)
+	var traverse func(node *TrieNode, path []string)
+
+	traverse = func(node *TrieNode, path []string) {
+		if node.Config != nil {
+			key := strings.Join(reverseSlice(path), ".")
+			result[key] = node.Config
+		}
+		for part, child := range node.Children {
+			traverse(child, append(path, part))
+		}
+	}
+
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	traverse(t.Root, []string{})
+	return result
+}
+
+func reverseSlice(slice []string) []string {
+	reversed := make([]string, len(slice))
+	for i, v := range slice {
+		reversed[len(slice)-1-i] = v
+	}
+	return reversed
 }
 
 func isValidDomain(domain string) bool {

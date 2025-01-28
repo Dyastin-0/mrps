@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -187,7 +188,7 @@ func TestDomainTrieRemove(t *testing.T) {
 	trie.Insert("example.com", &Config{})
 	trie.Insert("*.example.com", &Config{})
 
-	trie.Remove("example.com")
+	trie.Remove("*.example.com")
 	if config := trie.Match("sub.example.com"); config != nil {
 		t.Error("'*.example.com' was not removed correctly")
 	}
@@ -196,4 +197,34 @@ func TestDomainTrieRemove(t *testing.T) {
 		t.Error("'example.com' should still exist")
 	}
 
+}
+
+func TestGetAllKeysAndConfigs(t *testing.T) {
+	trie := NewDomainTrie()
+
+	config1 := &Config{}
+	config2 := &Config{}
+	config3 := &Config{}
+
+	trie.Insert("example.com", config1)
+	trie.Insert("test.com", config2)
+	trie.Insert("example.org", config3)
+
+	result := trie.GetAll()
+
+	expected := map[string]*Config{
+		"example.com": config1,
+		"test.com":    config2,
+		"example.org": config3,
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("GetAllKeysAndConfigs() failed. Got: %v, Expected: %v", result, expected)
+	}
+
+	for key, cfg := range expected {
+		if result[key] != cfg {
+			t.Errorf("Key %s not found or mismatched in result. Got: %v, Expected: %v", key, result[key], cfg)
+		}
+	}
 }

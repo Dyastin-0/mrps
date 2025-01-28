@@ -7,6 +7,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -31,6 +32,8 @@ func main() {
 
 	go startMetricsServer()
 
+	go startAPI()
+
 	select {}
 }
 
@@ -52,5 +55,26 @@ func startMetricsServer() {
 	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
 	if err != nil {
 		log.Fatal("Failed to start metrics server: ", err)
+	}
+}
+
+func startAPI() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	router := chi.NewRouter()
+
+	router.Use(config.CORS)
+
+	router.Handle("/refresh", config.Refresh())
+	router.Handle("/auth", config.Auth())
+	router.Handle("/config", config.JWT(config.Handler()))
+
+	log.Println("API service is running on port: " + config.Misc.ConfigAPIPort)
+	err = http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
+	if err != nil {
+		log.Fatal("Failed to start API server: ", err)
 	}
 }
