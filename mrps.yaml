@@ -76,9 +76,12 @@ domains:
 
   mrps.dyastin.tech:
     routes:
-      /:
+      api/:
         dest: "http://localhost:6060"
-        rewrite: {}
+        rewrite:
+          type: "regex"
+          value: "^api/(.*)$"
+          replace_val: "/$1"
     rate_limit:
       burst: 15
       rate: 10
