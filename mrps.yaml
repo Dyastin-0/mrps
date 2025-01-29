@@ -76,7 +76,7 @@ domains:
 
   mrps.dyastin.tech:
     routes:
-      /api:
+      /:
         dest: "http://localhost:5050"
         rewrite: {}
     rate_limit:
