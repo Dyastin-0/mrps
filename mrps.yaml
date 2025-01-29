@@ -78,10 +78,7 @@ domains:
     routes:
       /api:
         dest: "http://localhost:5050"
-        rewrite:
-          type: "regex"
-          value: "^/api/(.*)$"
-          replace_val: "/$1"
+        rewrite: {}
     rate_limit:
       burst: 15
       rate: 10
