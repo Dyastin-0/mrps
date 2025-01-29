@@ -14,12 +14,22 @@ func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		allowed := false
+		for _, allowedOrigin := range Misc.AllowedOrigins {
+			if origin == allowedOrigin || allowedOrigin == "*" {
+				allowed = true
+				break
+			}
+		}
 
-		if r.Method == "OPTIONS" {
+		if allowed {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		}
+
+		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
@@ -61,14 +71,14 @@ func Auth() http.HandlerFunc {
 			return
 		}
 
-		accessToken, err := Generate(expectedEmail, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
+		accessToken, err := NewToken(expectedEmail, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			log.Println("Error generating access token:", err)
 			return
 		}
 
-		refreshToken, err := Generate(expectedEmail, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
+		refreshToken, err := NewToken(expectedEmail, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			log.Println("Error generating refresh token:", err)
@@ -151,13 +161,13 @@ func Refresh() http.HandlerFunc {
 			return
 		}
 
-		accessToken, err := Generate(email, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
+		accessToken, err := NewToken(email, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		newRefreshToken, err := Generate(email, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
+		newRefreshToken, err := NewToken(email, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
@@ -188,7 +198,7 @@ func Handler() http.Handler {
 	})
 }
 
-func Generate(email, secret string, expiration time.Duration) (string, error) {
+func NewToken(email, secret string, expiration time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"email": email,
 		"exp":   time.Now().Add(expiration).Unix(),

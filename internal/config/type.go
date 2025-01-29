@@ -38,9 +38,10 @@ type RateLimitConfig struct {
 }
 
 type MiscConfig struct {
-	Email         string `yaml:"email"`
-	MetricsPort   string `yaml:"metrics_port"`
-	ConfigAPIPort string `yaml:"config_api_port"`
+	Email          string   `yaml:"email"`
+	MetricsPort    string   `yaml:"metrics_port"`
+	ConfigAPIPort  string   `yaml:"config_api_port"`
+	AllowedOrigins []string `yaml:"allowed_origins"`
 }
 
 type TrieNode struct {
