@@ -77,7 +77,7 @@ domains:
   mrps.dyastin.tech:
     routes:
       /api:
-        dest: "http://localhost:6060"
+        dest: "http://localhost:5050"
         rewrite:
           type: "regex"
           value: "^/api/(.*)$"
