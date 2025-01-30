@@ -29,7 +29,7 @@ func main() {
 
 	go config.Watch("mrps.yaml")
 
-	go startReverseProxyServer(mainRouter)
+	// go startReverseProxyServer(mainRouter)
 
 	go startMetricsServer()
 
