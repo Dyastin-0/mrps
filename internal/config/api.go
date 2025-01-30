@@ -225,6 +225,7 @@ func SetEnabled() http.HandlerFunc {
 		}
 
 		SendConfig(token.Value, marshalConfig)
+		ParseToYAML()
 		w.WriteHeader(http.StatusOK)
 	}
 }

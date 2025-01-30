@@ -17,9 +17,9 @@ type ClientLimiter struct {
 }
 
 type Config struct {
-	Enabled      bool        `yaml:"enabled"`
-	Routes       RouteConfig `yaml:"routes"`
-	SortedRoutes []string
+	Enabled      bool            `yaml:"enabled"`
+	Routes       RouteConfig     `yaml:"routes"`
+	SortedRoutes []string        `yaml:"-"`
 	RateLimit    RateLimitConfig `yaml:"rate_limit"`
 }
 
@@ -33,8 +33,8 @@ type PathConfig struct {
 type RateLimitConfig struct {
 	Burst           int           `yaml:"burst"`
 	Rate            rate.Limit    `yaml:"rate"`
-	Cooldown        time.Duration `yaml:"cooldown"`
-	DefaultCooldown time.Duration
+	Cooldown        int64         `yaml:"cooldown"`
+	DefaultCooldown time.Duration `yaml:"-"`
 }
 
 type MiscConfig struct {
@@ -61,4 +61,10 @@ func NewDomainTrie() *DomainTrieConfig {
 			Children: make(map[string]*TrieNode),
 		},
 	}
+}
+
+type YAML struct {
+	Domains   DomainsConfig   `yaml:"domains"`
+	Misc      MiscConfig      `yaml:"misc"`
+	RateLimit RateLimitConfig `yaml:"rate_limit"`
 }

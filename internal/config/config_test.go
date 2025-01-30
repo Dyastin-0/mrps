@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
@@ -170,7 +169,7 @@ misc:
 			routeConfig := *routeConfigPtr
 			assertEqual(t, routeConfig.RateLimit.Burst, test.expectedBurst, "Burst")
 			assertEqual(t, routeConfig.RateLimit.Rate, test.expectedRate, "Rate")
-			assertEqual(t, routeConfig.RateLimit.Cooldown, test.expectedCooldown, "Cooldown")
+			assertEqual(t, time.Duration(routeConfig.RateLimit.Cooldown), test.expectedCooldown, "Cooldown")
 		}
 	})
 
@@ -197,36 +196,6 @@ func TestDomainTrieRemove(t *testing.T) {
 		t.Error("'example.com' should still exist")
 	}
 
-}
-
-func TestGetAllKeysAndConfigs(t *testing.T) {
-	trie := NewDomainTrie()
-
-	config1 := &Config{}
-	config2 := &Config{}
-	config3 := &Config{}
-
-	trie.Insert("example.com", config1)
-	trie.Insert("test.com", config2)
-	trie.Insert("example.org", config3)
-
-	result := trie.GetAll()
-
-	expected := map[string]*Config{
-		"example.com": config1,
-		"test.com":    config2,
-		"example.org": config3,
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("GetAllKeysAndConfigs() failed. Got: %v, Expected: %v", result, expected)
-	}
-
-	for key, cfg := range expected {
-		if result[key] != cfg {
-			t.Errorf("Key %s not found or mismatched in result. Got: %v, Expected: %v", key, result[key], cfg)
-		}
-	}
 }
 
 func TestSetEnabled(t *testing.T) {

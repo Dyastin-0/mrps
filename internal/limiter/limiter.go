@@ -42,10 +42,10 @@ func Handler(next http.Handler) http.Handler {
 		if !client.Limiter.Allow() {
 			cooldownDuration := config.GlobalRateLimit.Cooldown
 			if cooldownDuration == 0 {
-				cooldownDuration = time.Second
+				cooldownDuration = 60000
 			}
 
-			client.Cooldown = time.Now().Add(cooldownDuration)
+			client.Cooldown = time.Now().Add(time.Duration(cooldownDuration))
 
 			config.ClientMngr.Store(key, client)
 

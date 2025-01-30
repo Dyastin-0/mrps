@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -124,11 +125,7 @@ func Load(filename string) error {
 
 	DomainTrie = NewDomainTrie()
 
-	configData := struct {
-		Domains   DomainsConfig   `yaml:"domains"`
-		Misc      MiscConfig      `yaml:"misc"`
-		RateLimit RateLimitConfig `yaml:"rate_limit"`
-	}{}
+	configData := YAML{}
 
 	decoder := yaml.NewDecoder(file)
 	if err := decoder.Decode(&configData); err != nil {
@@ -148,7 +145,6 @@ func Load(filename string) error {
 	}
 
 	GlobalRateLimit = configData.RateLimit
-	GlobalRateLimit.Cooldown *= time.Millisecond
 
 	for domain, cfg := range configData.Domains {
 		if !isValidDomain(domain) {
@@ -184,7 +180,6 @@ func Load(filename string) error {
 
 		cfg.Routes = sortedConfig
 
-		cfg.RateLimit.Cooldown *= time.Millisecond
 		cfg.RateLimit.DefaultCooldown = time.Second
 
 		DomainTrie.Insert(domain, &cfg)
@@ -207,14 +202,14 @@ func (t *DomainTrieConfig) SetEnabled(domain string, enabled bool) bool {
 	return modified
 }
 
-func (t *DomainTrieConfig) GetAll() map[string]*Config {
-	result := make(map[string]*Config)
+func (t *DomainTrieConfig) GetAll() DomainsConfig {
+	result := DomainsConfig{}
 	var traverse func(node *TrieNode, path []string)
 
 	traverse = func(node *TrieNode, path []string) {
 		if node.Config != nil {
 			key := strings.Join(reverseSlice(path), ".")
-			result[key] = node.Config
+			result[key] = *node.Config
 		}
 		for part, child := range node.Children {
 			traverse(child, append(path, part))
@@ -226,6 +221,24 @@ func (t *DomainTrieConfig) GetAll() map[string]*Config {
 
 	traverse(t.Root, []string{})
 	return result
+}
+
+func ParseToYAML() {
+	config := YAML{
+		Domains:   DomainTrie.GetAll(),
+		Misc:      Misc,
+		RateLimit: GlobalRateLimit,
+	}
+
+	data, err := yaml.Marshal(&config)
+	if err != nil {
+		log.Fatalf("error marshalling YAML: %v", err)
+	}
+
+	err = os.WriteFile("mrps.yaml", data, 0644)
+	if err != nil {
+		log.Fatalf("error writing to file: %v", err)
+	}
 }
 
 func reverseSlice(slice []string) []string {

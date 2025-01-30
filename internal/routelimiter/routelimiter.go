@@ -52,10 +52,10 @@ func Handler(next http.Handler) http.Handler {
 		if !client.Limiter.Allow() {
 			cooldownDuration := routeConfig.RateLimit.Cooldown
 			if cooldownDuration == 0 {
-				cooldownDuration = routeConfig.RateLimit.DefaultCooldown
+				cooldownDuration = 60000
 			}
 
-			client.Cooldown = time.Now().Add(cooldownDuration)
+			client.Cooldown = time.Now().Add(time.Duration(cooldownDuration))
 
 			config.ClientMngr.Store(key, client)
 
