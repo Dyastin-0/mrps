@@ -45,7 +45,7 @@ func Handler(next http.Handler) http.Handler {
 				cooldownDuration = 60000
 			}
 
-			client.Cooldown = time.Now().Add(time.Duration(cooldownDuration))
+			client.Cooldown = time.Now().Add(time.Duration(cooldownDuration) * time.Millisecond)
 
 			config.ClientMngr.Store(key, client)
 
