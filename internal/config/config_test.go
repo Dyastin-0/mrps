@@ -228,3 +228,45 @@ func TestGetAllKeysAndConfigs(t *testing.T) {
 		}
 	}
 }
+
+func TestSetEnabled(t *testing.T) {
+	DomainTrie = NewDomainTrie()
+
+	testDomain := "example.com"
+	DomainTrie.Insert(testDomain, &Config{Enabled: false})
+
+	modified := DomainTrie.SetEnabled(testDomain, true)
+	if !modified {
+		t.Errorf("Expected SetEnabled to return true, got false")
+	}
+
+	config := DomainTrie.Match(testDomain)
+	if config == nil || !config.Enabled {
+		t.Errorf("Expected domain %s to be enabled, but got %v", testDomain, config)
+	}
+
+	modifiedAgain := DomainTrie.SetEnabled(testDomain, true)
+	if modifiedAgain {
+		t.Errorf("Expected SetEnabled to return false when setting same value")
+	}
+
+	configAfterNoChange := DomainTrie.Match(testDomain)
+	if configAfterNoChange == nil || !configAfterNoChange.Enabled {
+		t.Errorf("Expected domain %s to remain enabled, but got %v", testDomain, configAfterNoChange)
+	}
+
+	modifiedNonExistent := DomainTrie.SetEnabled("nonexistent.com", true)
+	if modifiedNonExistent {
+		t.Errorf("Expected SetEnabled to return false for a non-existent domain")
+	}
+
+	modifiedDisabled := DomainTrie.SetEnabled(testDomain, false)
+	if !modifiedDisabled {
+		t.Errorf("Expected SetEnabled to return true when disabling a domain")
+	}
+
+	configDisabled := DomainTrie.Match(testDomain)
+	if configDisabled == nil || configDisabled.Enabled {
+		t.Errorf("Expected domain %s to be disabled, but got %v", testDomain, configDisabled)
+	}
+}

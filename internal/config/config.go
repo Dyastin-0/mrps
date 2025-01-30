@@ -18,7 +18,6 @@ var (
 	ClientMngr      = sync.Map{}
 	GlobalRateLimit RateLimitConfig
 	Misc            MiscConfig
-	MU              sync.RWMutex
 )
 
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {
@@ -191,6 +190,21 @@ func Load(filename string) error {
 		DomainTrie.Insert(domain, &cfg)
 	}
 	return nil
+}
+
+func (t *DomainTrieConfig) SetEnabled(domain string, enabled bool) bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	modified := false
+
+	config := t.Match(domain)
+	if config != nil {
+		modified = config.Enabled != enabled
+		config.Enabled = enabled
+	}
+
+	return modified
 }
 
 func (t *DomainTrieConfig) GetAll() map[string]*Config {

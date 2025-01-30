@@ -28,7 +28,7 @@ func main() {
 
 	go config.Watch("mrps.yaml")
 
-	go startReverseProxyServer(mainRouter)
+	// go startReverseProxyServer(mainRouter)
 
 	go startMetricsServer()
 
@@ -68,9 +68,10 @@ func startAPI() {
 
 	router.Use(config.CORS)
 
+	router.Mount("/config", config.ProtectedRoute())
 	router.Handle("/refresh", config.Refresh())
 	router.Handle("/auth", config.Auth())
-	router.Handle("/config", config.JWT(config.Handler()))
+	router.Get("/ws", config.WS)
 
 	log.Println("API service is running on port: " + config.Misc.ConfigAPIPort)
 	err = http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)

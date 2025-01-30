@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -25,7 +26,7 @@ func CORS(next http.Handler) http.Handler {
 		if allowed {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-UUID")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		}
 
@@ -189,7 +190,46 @@ func Refresh() http.HandlerFunc {
 	}
 }
 
-func Handler() http.Handler {
+func SetEnabled() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		domain := chi.URLParam(r, "domain")
+		token, _ := r.Cookie("rt")
+
+		var req struct {
+			Enabled bool `json:"enabled"`
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&req)
+		if err != nil {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		ok := DomainTrie.SetEnabled(domain, req.Enabled)
+		if !ok {
+			enabled := "enabled"
+			if !req.Enabled {
+				enabled = "disabled"
+			}
+			http.Error(w, "Domain not modified, it is either not defined or already "+enabled, http.StatusNotFound)
+			return
+		}
+
+		config := DomainTrie.GetAll()
+		marshalConfig, err := json.Marshal(config)
+		if err != nil {
+			log.Println("Failed to marshal config:", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		SendConfig(token.Value, marshalConfig)
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func Get() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		domains := DomainTrie.GetAll()
 
@@ -209,4 +249,14 @@ func NewToken(email, secret string, expiration time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(secret))
+}
+
+func ProtectedRoute() *chi.Mux {
+	router := chi.NewRouter()
+
+	router.Use(JWT)
+	router.Handle("/", Get())
+	router.Handle("/{domain}/enabled", SetEnabled())
+
+	return router
 }
