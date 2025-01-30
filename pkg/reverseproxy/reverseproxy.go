@@ -35,6 +35,7 @@ func New(target string, path string) http.Handler {
 		rw := rewriter.New(rr)
 
 		rewrittenPath := rw.RewritePath(req.URL.Path)
+		log.Println("Rule: ", rr.Value)
 		log.Println("Rewritten path: ", rewrittenPath)
 		req.URL.Path = rewrittenPath
 
