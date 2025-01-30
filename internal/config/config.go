@@ -160,18 +160,14 @@ func Load(filename string) error {
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {
 			if !isValidPath(route) {
+				log.Printf("Invalid path: %s", route)
 				return fmt.Errorf("invalid path: %s", route)
 			}
 
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
-		log.Println("Sorted Routes: ", sortedRoutes)
-
-		//Sort the routes by the number of path segments in descending order
-		sort.Slice(sortedRoutes, func(i, j int) bool {
-			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
-		})
+		sort.Strings(sortedRoutes)
 
 		cfg.SortedRoutes = sortedRoutes
 
