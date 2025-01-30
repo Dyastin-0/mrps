@@ -7,6 +7,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -67,6 +68,7 @@ func startAPI() {
 	router := chi.NewRouter()
 
 	router.Use(config.CORS)
+	router.Use(middleware.Logger)
 
 	router.Mount("/config", config.ProtectedRoute())
 	router.Handle("/refresh", config.Refresh())
