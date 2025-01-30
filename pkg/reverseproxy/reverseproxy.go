@@ -1,7 +1,6 @@
 package reverseproxy
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -32,18 +31,11 @@ func New(target string, path string) http.Handler {
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
 		configPtr := config.DomainTrie.Match(req.Host)
-		if configPtr == nil {
-			log.Println("No config found for host: ", req.Host)
-			return
-		}
 
 		rr := configPtr.Routes[path].RewriteRule
-		fmt.Println("Path: ", path)
 		rw := rewriter.New(rr)
 
 		rewrittenPath := rw.RewritePath(req.URL.Path)
-		log.Println("Rule: ", rr.Value)
-		log.Println("Rewritten path: ", rewrittenPath)
 		req.URL.Path = rewrittenPath
 
 		req.Host = targetURL.Host

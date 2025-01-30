@@ -166,6 +166,8 @@ func Load(filename string) error {
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
+		log.Println("Sorted Routes: ", sortedRoutes)
+
 		//Sort the routes by the number of path segments in descending order
 		sort.Slice(sortedRoutes, func(i, j int) bool {
 			return len(strings.Split(sortedRoutes[i], "/")) > len(strings.Split(sortedRoutes[j], "/"))
