@@ -178,8 +178,6 @@ func Load(filename string) error {
 			sortedConfig[route] = cfg.Routes[route]
 		}
 
-		cfg.Routes = sortedConfig
-
 		cfg.RateLimit.DefaultCooldown = time.Second
 
 		DomainTrie.Insert(domain, &cfg)

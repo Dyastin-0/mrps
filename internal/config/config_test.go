@@ -5,95 +5,145 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"golang.org/x/time/rate"
 )
 
 func TestLoadComplexConfig(t *testing.T) {
 	testYAML := `
 domains:
-  gitsense.dyastin.tech:
-    routes:
-      /api/v1:
-        dest: "http://localhost:4000"
-        rewrite:
-          type: "regex"
-          value: "^/api/v1/(.*)$"
-          replace_val: "/$1"
-      /:
-        dest: "http://localhost:4001"
-        rewrite: {}
-    rate_limit:
-      burst: 15
-      rate: 10
-      cooldown: 60000
-
-  filespace.dyastin.tech:
-    routes:
-      /api/v2:
-        dest: "http://localhost:3004"
-        rewrite: {}
-      /:
-        dest: "http://localhost:5005"
-        rewrite: {}
-    rate_limit:
-      burst: 15
-      rate: 10
-      cooldown: 60000
-
-  omnisense.dyastin.tech:
-    routes:
-      /:
-        dest: "http://localhost:4004"
-        rewrite: {}
-    rate_limit:
-      burst: 15
-      rate: 10
-      cooldown: 60000
-
-  filmpin.dyastin.tech:
-    routes:
-      /socket.io:
-        dest: "http://localhost:5001"
-        rewrite: {}
-      /api:
-        dest: "http://localhost:5001"
-        rewrite: {}
-      /:
-        dest: "http://localhost:5002"
-        rewrite: {}
-    rate_limit:
-      burst: 100
-      rate: 50
-      cooldown: 60000
-
-  metrics.dyastin.tech:
-    routes:
-      /:
-        dest: "http://localhost:3000"
-        rewrite: {}
-    rate_limit:
-      burst: 100
-      rate: 50
-      cooldown: 60000
-
   dyastin.tech:
+    enabled: false
     routes:
       /:
-        dest: "http://localhost:4002"
-        rewrite: {}
+        dest: http://localhost:4002
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  filespace.dyastin.tech:
+    enabled: false
+    routes:
+      /:
+        dest: http://localhost:5005
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+      /api/v2:
+        dest: http://localhost:3004
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  filmpin.dyastin.tech:
+    enabled: false
+    routes:
+      /:
+        dest: http://localhost:5002
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+      /api:
+        dest: http://localhost:5001
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+      /socket.io:
+        dest: http://localhost:5001
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
     rate_limit:
       burst: 100
       rate: 50
       cooldown: 60000
-
+  gitsense.dyastin.tech:
+    enabled: false
+    routes:
+      /:
+        dest: http://localhost:4001
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+      /api/v1:
+        dest: http://localhost:4000
+        rewrite:
+          type: regex
+          value: ^/api/v1/(.*)$
+          replace_val: /$1
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  metrics.dyastin.tech:
+    enabled: false
+    routes:
+      /:
+        dest: http://localhost:3000
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+    rate_limit:
+      burst: 100
+      rate: 50
+      cooldown: 60000
+  mrps.dyastin.tech:
+    enabled: true
+    routes:
+      /:
+        dest: http://localhost:5050
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+      /api:
+        dest: http://localhost:6060
+        rewrite:
+          type: regex
+          value: ^/api/(.*)$
+          replace_val: /$1
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  omnisense.dyastin.tech:
+    enabled: false
+    routes:
+      /:
+        dest: http://localhost:4004
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+misc:
+  email: mail@dyastin.tech
+  metrics_port: "7070"
+  config_api_port: "6060"
+  allowed_origins:
+  - https://mrps.dyastin.tech
+  - http://localhost:5173
 rate_limit:
   burst: 100
   rate: 50
   cooldown: 60000
-
-misc:
-  email: "mail@dyastin.tech"
-  metrics_port: 7070
 `
 
 	tmpFile, err := os.CreateTemp("", "test_config_*.yaml")
@@ -153,12 +203,12 @@ misc:
 			expectedRate     rate.Limit
 			expectedCooldown time.Duration
 		}{
-			{"gitsense.dyastin.tech", 15, 10, 60000 * time.Millisecond},
-			{"filespace.dyastin.tech", 15, 10, 60000 * time.Millisecond},
-			{"omnisense.dyastin.tech", 15, 10, 60000 * time.Millisecond},
-			{"filmpin.dyastin.tech", 100, 50, 60000 * time.Millisecond},
-			{"metrics.dyastin.tech", 100, 50, 60000 * time.Millisecond},
-			{"dyastin.tech", 100, 50, 60000 * time.Millisecond},
+			{"gitsense.dyastin.tech", 15, 10, 60000},
+			{"filespace.dyastin.tech", 15, 10, 60000},
+			{"omnisense.dyastin.tech", 15, 10, 60000},
+			{"filmpin.dyastin.tech", 100, 50, 60000},
+			{"metrics.dyastin.tech", 100, 50, 60000},
+			{"dyastin.tech", 15, 10, 60000},
 		}
 
 		for _, test := range tests {
@@ -170,6 +220,37 @@ misc:
 			assertEqual(t, routeConfig.RateLimit.Burst, test.expectedBurst, "Burst")
 			assertEqual(t, routeConfig.RateLimit.Rate, test.expectedRate, "Rate")
 			assertEqual(t, time.Duration(routeConfig.RateLimit.Cooldown), test.expectedCooldown, "Cooldown")
+		}
+	})
+
+	t.Run("Validate Rewrite Rules", func(t *testing.T) {
+		tests := []struct {
+			domain          string
+			path            string
+			expectedRewrite rewriter.RewriteRule
+		}{
+			{"gitsense.dyastin.tech", "/api/v1", rewriter.RewriteRule{"regex", "^/api/v1/(.*)$", "/$1"}},
+			{"gitsense.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+			{"filespace.dyastin.tech", "/api/v2", rewriter.RewriteRule{"", "", ""}},
+			{"filespace.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+			{"omnisense.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+			{"filmpin.dyastin.tech", "/socket.io", rewriter.RewriteRule{"", "", ""}},
+			{"filmpin.dyastin.tech", "/api", rewriter.RewriteRule{"", "", ""}},
+			{"filmpin.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+			{"metrics.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+			{"dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+		}
+
+		for _, test := range tests {
+			routeConfigPtr := DomainTrie.Match(test.domain)
+			if routeConfigPtr == nil {
+				t.Fatalf("Domain not found in trie: %s", test.domain)
+			}
+			routeConfig := *routeConfigPtr
+			rewriteConfig := routeConfig.Routes[test.path].RewriteRule
+			assertEqual(t, rewriteConfig.Type, test.expectedRewrite.Type, "Rewrite Type")
+			assertEqual(t, rewriteConfig.Value, test.expectedRewrite.Value, "Rewrite Value")
+			assertEqual(t, rewriteConfig.ReplaceVal, test.expectedRewrite.ReplaceVal, "Rewrite ReplaceVal")
 		}
 	})
 
