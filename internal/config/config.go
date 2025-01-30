@@ -167,12 +167,18 @@ func Load(filename string) error {
 			sortedRoutes = append(sortedRoutes, route)
 		}
 
-		// Sort the routes by the number of "/" in each route
+		// Sort the routes by the number of "/" and then by string length
 		sort.Slice(sortedRoutes, func(i, j int) bool {
 			countI := strings.Count(sortedRoutes[i], "/")
 			countJ := strings.Count(sortedRoutes[j], "/")
 
-			return countI < countJ
+			// First sort by the number of "/"
+			if countI != countJ {
+				return countI < countJ
+			}
+
+			// If they have the same number of "/", sort by string length
+			return len(sortedRoutes[i]) < len(sortedRoutes[j])
 		})
 
 		cfg.SortedRoutes = sortedRoutes
