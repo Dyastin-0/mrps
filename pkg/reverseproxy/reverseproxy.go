@@ -31,6 +31,11 @@ func New(target string, path string) http.Handler {
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
 		configPtr := config.DomainTrie.Match(req.Host)
+		if configPtr == nil {
+			log.Println("No config found for host: ", req.Host)
+			return
+		}
+
 		rr := configPtr.Routes[path].RewriteRule
 		rw := rewriter.New(rr)
 
