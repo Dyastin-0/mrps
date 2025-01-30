@@ -79,6 +79,8 @@ func (t *DomainTrieConfig) Match(domain string) *Config {
 		return nil
 	}
 
+	fmt.Println(node.Config.Routes["/api"].RewriteRule.Value)
+
 	return node.Config
 }
 
