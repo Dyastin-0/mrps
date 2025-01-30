@@ -75,6 +75,7 @@ domains:
       cooldown: 60000
 
   mrps.dyastin.tech:
+    enabled: true
     routes:
       /api:
         dest: "http://localhost:6060"
