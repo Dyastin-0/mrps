@@ -181,6 +181,7 @@ func Load(filename string) error {
 			return len(sortedRoutes[i]) < len(sortedRoutes[j])
 		})
 
+		log.Println("Sorted routes:", sortedRoutes)
 		cfg.SortedRoutes = sortedRoutes
 
 		sortedConfig := make(RouteConfig)
