@@ -1,6 +1,7 @@
 package rewriter
 
 import (
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -11,6 +12,7 @@ func New(rules RewriteRule) *Rewriter {
 }
 
 func (rw *Rewriter) RewritePath(path string) string {
+	log.Println("Value: ", rw.rules.Value, "ReplaceVal: ", rw.rules.ReplaceVal)
 	if rw.rules.Value == "" || rw.rules.Type == "" {
 		return path
 	}
