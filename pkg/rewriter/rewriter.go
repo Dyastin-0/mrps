@@ -12,11 +12,10 @@ func New(rules RewriteRule) *Rewriter {
 }
 
 func (rw *Rewriter) RewritePath(path string) string {
+	log.Println("Value: ", rw.rules.Value, "ReplaceVal: ", rw.rules.ReplaceVal)
 	if rw.rules.Value == "" || rw.rules.Type == "" {
 		return path
 	}
-
-	log.Println("Value: ", rw.rules.Value, "ReplaceVal: ", rw.rules.ReplaceVal)
 
 	switch rw.rules.Type {
 	case PrefixRewrite:
