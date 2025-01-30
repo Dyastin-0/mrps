@@ -15,7 +15,7 @@ func Handler(next http.Handler) http.Handler {
 
 		configPtr := config.DomainTrie.Match(host)
 		if configPtr != nil {
-			config := *configPtr
+			config := configPtr
 			for _, routePath := range config.SortedRoutes {
 				if strings.HasPrefix(path, routePath) {
 					proxyTarget := config.Routes[routePath].Dest

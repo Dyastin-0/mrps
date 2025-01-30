@@ -156,12 +156,6 @@ func Load(filename string) error {
 
 		Domains = append(Domains, domain)
 
-		if domain == "mrps.dyastin.tech" {
-			for _, pathCfg := range cfg.Routes {
-				log.Printf("pathCfg: %v", pathCfg.RewriteRule.Value)
-			}
-		}
-
 		//This slice is used to access the Routes sequentially based on the number of path segments
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for route := range cfg.Routes {

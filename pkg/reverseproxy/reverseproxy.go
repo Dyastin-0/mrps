@@ -30,7 +30,7 @@ func New(target string, path string) http.Handler {
 	proxy.Director = func(req *http.Request) {
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
-		configPtr := *config.DomainTrie.Match(req.Host)
+		configPtr := config.DomainTrie.Match(req.Host)
 		rr := configPtr.Routes[path].RewriteRule
 		rw := rewriter.New(rr)
 

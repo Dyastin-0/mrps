@@ -12,7 +12,7 @@ import (
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
-		routeConfig := *config.DomainTrie.Match(host)
+		routeConfig := config.DomainTrie.Match(host)
 
 		// If the domain is not enabled, return 404
 		if !routeConfig.Enabled {
