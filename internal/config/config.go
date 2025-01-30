@@ -174,11 +174,11 @@ func Load(filename string) error {
 
 			// First sort by the number of "/"
 			if countI != countJ {
-				return countI < countJ
+				return countI > countJ
 			}
 
 			// If they have the same number of "/", sort by string length
-			return len(sortedRoutes[i]) < len(sortedRoutes[j])
+			return len(sortedRoutes[i]) > len(sortedRoutes[j])
 		})
 
 		log.Println("Sorted routes:", sortedRoutes)
