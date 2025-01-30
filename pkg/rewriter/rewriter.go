@@ -1,6 +1,7 @@
 package rewriter
 
 import (
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -14,6 +15,8 @@ func (rw *Rewriter) RewritePath(path string) string {
 	if rw.rules.Value == "" || rw.rules.Type == "" {
 		return path
 	}
+
+	log.Println("Value: ", rw.rules.Value, "ReplaceVal: ", rw.rules.ReplaceVal)
 
 	switch rw.rules.Type {
 	case PrefixRewrite:
