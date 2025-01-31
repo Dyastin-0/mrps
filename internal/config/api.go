@@ -265,8 +265,8 @@ func GetHealth() http.HandlerFunc {
 			return
 		}
 
-		go SendData(token.Value, marshalHealth)
 		HealthSubscribers.Store(token.Value, true)
+		SendData(token.Value, marshalHealth)
 
 		w.WriteHeader(http.StatusOK)
 	}
