@@ -54,6 +54,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		WSClients.Delete(token.Value)
+		HealthSubscribers.Delete(token.Value)
 		conn.Close()
 	}()
 
@@ -75,7 +76,6 @@ func SendData(id string, data []byte) error {
 	if conn, ok := WSClients.Load(id); ok {
 		if err := conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, data); err != nil {
 			WSClients.Delete(id)
-			HealthSubscribers.Delete(id)
 			return fmt.Errorf("failed to send data: %v", err)
 		}
 	} else {

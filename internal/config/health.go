@@ -86,11 +86,7 @@ func notifySubscribers() {
 	HealthSubscribers.Range(func(key, value interface{}) bool {
 		token := key.(string)
 		go func() {
-			err := SendData(token, marshalHealth)
-			if err != nil {
-				log.Println("Failed to send health data:", err)
-				HealthSubscribers.Delete(token)
-			}
+			SendData(token, marshalHealth)
 		}()
 		return true
 	})
