@@ -132,7 +132,7 @@ func Load(filename string) error {
 		return fmt.Errorf("could not decode YAML: %v", err)
 	}
 
-	if !isValidEmail(configData.Misc.Email) {
+	if !regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(configData.Misc.Email) {
 		return fmt.Errorf("invalid email: %s", configData.Misc.Email)
 	}
 
@@ -147,7 +147,7 @@ func Load(filename string) error {
 	GlobalRateLimit = configData.RateLimit
 
 	for domain, cfg := range configData.Domains {
-		if !isValidDomain(domain) {
+		if !regexp.MustCompile(`^([a-zA-Z0-9\*]+(-[a-zA-Z0-9\*]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
 		if strings.Contains(domain, "*") && strings.Index(domain, "*") != 0 {
@@ -158,13 +158,13 @@ func Load(filename string) error {
 
 		//This slice is used to access the Routes sequentially based on the number of path segments
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
-		for route := range cfg.Routes {
-			if !isValidPath(route) {
-				log.Printf("Invalid path: %s", route)
-				return fmt.Errorf("invalid path: %s", route)
+		for path := range cfg.Routes {
+			if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
+				log.Printf("Invalid path: %s", path)
+				return fmt.Errorf("invalid path: %s", path)
 			}
 
-			sortedRoutes = append(sortedRoutes, route)
+			sortedRoutes = append(sortedRoutes, path)
 		}
 
 		// Sort the routes by the number of "/" and then by string length
@@ -256,16 +256,4 @@ func reverseSlice(slice []string) []string {
 		reversed[len(slice)-1-i] = v
 	}
 	return reversed
-}
-
-func isValidDomain(domain string) bool {
-	return regexp.MustCompile(`^([a-zA-Z0-9\*]+(-[a-zA-Z0-9\*]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain)
-}
-
-func isValidEmail(email string) bool {
-	return regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(email)
-}
-
-func isValidPath(path string) bool {
-	return regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path)
 }
