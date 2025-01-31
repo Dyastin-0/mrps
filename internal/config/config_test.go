@@ -229,16 +229,16 @@ rate_limit:
 			path            string
 			expectedRewrite rewriter.RewriteRule
 		}{
-			{"gitsense.dyastin.tech", "/api/v1", rewriter.RewriteRule{"regex", "^/api/v1/(.*)$", "/$1"}},
-			{"gitsense.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
-			{"filespace.dyastin.tech", "/api/v2", rewriter.RewriteRule{"", "", ""}},
-			{"filespace.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
-			{"omnisense.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
-			{"filmpin.dyastin.tech", "/socket.io", rewriter.RewriteRule{"", "", ""}},
-			{"filmpin.dyastin.tech", "/api", rewriter.RewriteRule{"", "", ""}},
-			{"filmpin.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
-			{"metrics.dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
-			{"dyastin.tech", "/", rewriter.RewriteRule{"", "", ""}},
+			{"gitsense.dyastin.tech", "/api/v1", rewriter.RewriteRule{Type: "regex", Value: "^/api/v1/(.*)$", ReplaceVal: "/$1"}},
+			{"gitsense.dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"filespace.dyastin.tech", "/api/v2", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"filespace.dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"omnisense.dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"filmpin.dyastin.tech", "/socket.io", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"filmpin.dyastin.tech", "/api", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"filmpin.dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"metrics.dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
+			{"dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
 		}
 
 		for _, test := range tests {

@@ -208,11 +208,11 @@ func SetEnabled() http.HandlerFunc {
 
 		ok := DomainTrie.SetEnabled(domain, req.Enabled)
 		if !ok {
-			enabled := "enabled"
+			status := "enabled"
 			if !req.Enabled {
-				enabled = "disabled"
+				status = "disabled"
 			}
-			http.Error(w, "Domain not modified, it is either not defined or already "+enabled, http.StatusNotFound)
+			http.Error(w, "Domain not modified, it is either not defined or already "+status, http.StatusNotFound)
 			return
 		}
 
