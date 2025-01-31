@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,50 +9,62 @@ import (
 	"time"
 )
 
-var RouteHealth = sync.Map{}
+var HealthData = sync.Map{}
 var HealthSubscribers = sync.Map{}
 
-func InitHealth() {
+var httpClient = &http.Client{
+	Timeout: 3 * time.Second,
+}
+
+func InitHealth(ctx context.Context) {
 	log.Println("Health check is running")
 
 	ticker := time.NewTicker(10 * time.Second)
 
 	go func() {
 		defer ticker.Stop()
-		for range ticker.C {
-			checkAll()
-			notifySubscribers()
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("Stopping health checks")
+				return
+			case <-ticker.C:
+				pingAll()
+			}
+
 		}
 	}()
 }
 
-func checkAll() {
-	client := &http.Client{
-		Timeout: 3 * time.Second,
-	}
-
+func pingAll() {
+	wg := sync.WaitGroup{}
 	Domains := DomainTrie.GetAll()
 
 	for _, config := range Domains {
-		watchHealth(client, &config)
+		wg.Add(1)
+		go ping(&config, &wg)
 	}
+
+	wg.Wait()
+	notifySubscribers()
 }
 
-func watchHealth(client *http.Client, config *Config) {
+func ping(config *Config, wg *sync.WaitGroup) {
+	defer wg.Done()
 	for _, route := range config.Routes {
-		resp, err := client.Get(route.Dest)
+		resp, err := httpClient.Get(route.Dest)
 		if err != nil {
-			RouteHealth.Store(route.Dest, 0)
+			HealthData.Store(route.Dest, 0)
 		} else {
 			resp.Body.Close()
-			RouteHealth.Store(route.Dest, resp.StatusCode)
+			HealthData.Store(route.Dest, resp.StatusCode)
 		}
 	}
 }
 
 func notifySubscribers() {
 	mapHealth := make(map[string]int)
-	RouteHealth.Range(func(key, value interface{}) bool {
+	HealthData.Range(func(key, value interface{}) bool {
 		mapHealth[key.(string)] = value.(int)
 		return true
 	})
@@ -72,7 +85,7 @@ func notifySubscribers() {
 
 	HealthSubscribers.Range(func(key, value interface{}) bool {
 		token := key.(string)
-		func() {
+		go func() {
 			err := SendData(token, marshalHealth)
 			if err != nil {
 				log.Println("Failed to send health data:", err)

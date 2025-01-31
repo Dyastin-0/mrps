@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -30,7 +31,10 @@ func main() {
 	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
 
-	config.InitHealth()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	config.InitHealth(ctx)
 
 	go startReverseProxyServer(mainRouter)
 	go startMetricsServer()
@@ -39,11 +43,9 @@ func main() {
 	// Handle graceful shutdown
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-	<-shutdown // Wait for a signal
+	<-shutdown
 
 	log.Println("Shutting down gracefully...")
-
-	// You can add any cleanup logic here if needed
 }
 
 func startReverseProxyServer(router chi.Router) {

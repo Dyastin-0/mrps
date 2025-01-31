@@ -245,7 +245,7 @@ func GetHealth() http.HandlerFunc {
 		token, _ := r.Cookie("rt")
 
 		mapHealth := make(map[string]int)
-		RouteHealth.Range(func(key, value interface{}) bool {
+		HealthData.Range(func(key, value interface{}) bool {
 			mapHealth[key.(string)] = value.(int)
 			return true
 		})
