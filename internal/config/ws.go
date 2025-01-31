@@ -51,6 +51,7 @@ func WS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	WSClients.Store(token.Value, conn)
+	log.Println("Client connected:", token.Value)
 
 	defer func() {
 		WSClients.Delete(token.Value)
