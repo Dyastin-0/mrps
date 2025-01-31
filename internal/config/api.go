@@ -258,17 +258,10 @@ func GetHealth() http.HandlerFunc {
 			Health: mapHealth,
 		}
 
-		marshalHealth, err := json.Marshal(data)
-		if err != nil {
-			log.Println("Failed to marshal health:", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
 		HealthSubscribers.Store(token.Value, true)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(marshalHealth)
+		json.NewEncoder(w).Encode(&data)
 	}
 }
 
