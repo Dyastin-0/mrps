@@ -266,9 +266,9 @@ func GetHealth() http.HandlerFunc {
 		}
 
 		HealthSubscribers.Store(token.Value, true)
-		SendData(token.Value, marshalHealth)
 
-		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(marshalHealth)
 	}
 }
 
