@@ -217,15 +217,57 @@ func SetEnabled() http.HandlerFunc {
 		}
 
 		config := DomainTrie.GetAll()
-		marshalConfig, err := json.Marshal(config)
+
+		data := struct {
+			Type   string        `json:"type"`
+			Config DomainsConfig `json:"config"`
+		}{
+			Type:   "config",
+			Config: config,
+		}
+
+		marshalConfig, err := json.Marshal(data)
 		if err != nil {
 			log.Println("Failed to marshal config:", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		SendConfig(token.Value, marshalConfig)
+		go SendData(token.Value, marshalConfig)
 		ParseToYAML()
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func GetHealth() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, _ := r.Cookie("rt")
+
+		mapHealth := make(map[string]int)
+		RouteHealth.Range(func(key, value interface{}) bool {
+			mapHealth[key.(string)] = value.(int)
+			return true
+		})
+
+		data := struct {
+			Type   string         `json:"type"`
+			Health map[string]int `json:"health"`
+		}{
+			Type:   "health",
+			Health: mapHealth,
+		}
+
+		marshalHealth, err := json.Marshal(data)
+		if err != nil {
+			log.Println("Failed to marshal health:", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		go SendData(token.Value, marshalHealth)
+		HealthSubscribers.Store(token.Value, true)
+
 		w.WriteHeader(http.StatusOK)
 	}
 }
@@ -257,6 +299,7 @@ func ProtectedRoute() *chi.Mux {
 
 	router.Use(JWT)
 	router.Handle("/", Get())
+	router.Handle("/health", GetHealth())
 	router.Handle("/{domain}/enabled", SetEnabled())
 
 	return router

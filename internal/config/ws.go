@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -24,9 +25,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var (
-	WSClients = sync.Map{}
-)
+var WSClients = sync.Map{}
 
 func WS(w http.ResponseWriter, r *http.Request) {
 	token, err := r.Cookie("rt")
@@ -72,13 +71,16 @@ func WS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SendConfig(id string, config []byte) {
+func SendData(id string, data []byte) error {
 	if conn, ok := WSClients.Load(id); ok {
-		if err := conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, config); err != nil {
+		if err := conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, data); err != nil {
 			WSClients.Delete(id)
-			log.Println("Failed to send config:", err)
+			HealthSubscribers.Delete(id)
+			return fmt.Errorf("failed to send data: %v", err)
 		}
 	} else {
 		log.Println("Client not found:", id)
 	}
+
+	return nil
 }

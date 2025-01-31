@@ -9,6 +9,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -26,15 +30,20 @@ func main() {
 	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
 
-	// go config.Watch("mrps.yaml")
+	config.InitHealth()
 
-	go startReverseProxyServer(mainRouter)
-
+	// go startReverseProxyServer(mainRouter)
 	go startMetricsServer()
-
 	go startAPI()
 
-	select {}
+	// Handle graceful shutdown
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+	<-shutdown // Wait for a signal
+
+	log.Println("Shutting down gracefully...")
+
+	// You can add any cleanup logic here if needed
 }
 
 func startReverseProxyServer(router chi.Router) {

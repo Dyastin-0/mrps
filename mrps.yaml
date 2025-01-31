@@ -1,6 +1,6 @@
 domains:
   dyastin.tech:
-    enabled: false
+    enabled: true
     routes:
       /:
         dest: http://localhost:4002
@@ -13,7 +13,7 @@ domains:
       rate: 10
       cooldown: 60000
   filespace.dyastin.tech:
-    enabled: false
+    enabled: true
     routes:
       /:
         dest: http://localhost:5005
