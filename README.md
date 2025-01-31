@@ -1,6 +1,6 @@
-# Reverse Proxy Server
+# MRPS
 
-This project implements an HTTP/HTTPS reverse proxy server that routes requests to different services based on the URL. The server listens for requests and proxies them to the appropriate target service defined in the configuration. It includes automatic TLS certificate generation and renewal through Let's Encrypt for secure HTTPS connections.
+`mrps` is a simple HTTP->HTTPS reverse proxy server.
 
 ## Features
 
@@ -16,7 +16,6 @@ This project implements an HTTP/HTTPS reverse proxy server that routes requests 
 ### Prerequisites
 
 - [Go](https://golang.org/dl/) installed on your machine
-- Domain names pointed to your server's IP address (for SSL certificates)
 - Port 80 and 443 available for HTTP/HTTPS traffic
 
 ### Configuration
