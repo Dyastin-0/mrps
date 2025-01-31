@@ -80,6 +80,7 @@ func SendData(id string, data []byte) error {
 		}
 	} else {
 		log.Println("Client not found:", id)
+		return fmt.Errorf("client not found")
 	}
 
 	return nil
