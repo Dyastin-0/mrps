@@ -32,7 +32,7 @@ func main() {
 
 	config.InitHealth()
 
-	// go startReverseProxyServer(mainRouter)
+	go startReverseProxyServer(mainRouter)
 	go startMetricsServer()
 	go startAPI()
 
