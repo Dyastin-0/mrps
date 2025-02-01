@@ -127,7 +127,7 @@ misc:
   allowed_origins:
   - https://mrps.dyastin.tech
   - http://localhost:5173
-  domain: localhost
+  domain: mrps.dyastin.tech
 rate_limit:
   burst: 100
   rate: 50
