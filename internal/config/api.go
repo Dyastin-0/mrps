@@ -190,7 +190,7 @@ func Refresh() http.HandlerFunc {
 	}
 }
 
-func SetEnabled() http.HandlerFunc {
+func setEnabled() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		domain := chi.URLParam(r, "domain")
 		token, _ := r.Cookie("rt")
@@ -240,7 +240,7 @@ func SetEnabled() http.HandlerFunc {
 	}
 }
 
-func GetHealth() http.HandlerFunc {
+func getHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, _ := r.Cookie("rt")
 
@@ -265,13 +265,29 @@ func GetHealth() http.HandlerFunc {
 	}
 }
 
-func Get() http.Handler {
+func get() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		domains := DomainTrie.GetAll()
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(domains)
 	})
+}
+
+func Signout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "rt",
+			Value:    "",
+			HttpOnly: true,
+			SameSite: http.SameSiteNoneMode,
+			Secure:   true,
+			MaxAge:   -1,
+			Domain:   Misc.Domain,
+		})
+
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func NewToken(email, secret string, expiration time.Duration) (string, error) {
@@ -287,13 +303,21 @@ func NewToken(email, secret string, expiration time.Duration) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
+func getUptime() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(StartTime.Unix())
+	}
+}
+
 func ProtectedRoute() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(JWT)
-	router.Handle("/", Get())
-	router.Handle("/health", GetHealth())
-	router.Handle("/{domain}/enabled", SetEnabled())
+	router.Handle("/", get())
+	router.Handle("/uptime", getUptime())
+	router.Handle("/health", getHealth())
+	router.Handle("/{domain}/enabled", setEnabled())
 
 	return router
 }

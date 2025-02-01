@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/caddyserver/certmagic"
@@ -35,6 +36,7 @@ func main() {
 	defer cancel()
 
 	config.InitHealth(ctx)
+	config.StartTime = time.Now()
 
 	go startReverseProxyServer(mainRouter)
 	go startMetricsServer()
@@ -81,6 +83,7 @@ func startAPI() {
 
 	router.Mount("/config", config.ProtectedRoute())
 	router.Handle("/refresh", config.Refresh())
+	router.Handle("/signout", config.Signout())
 	router.Handle("/auth", config.Auth())
 	router.Get("/ws", config.WS)
 

@@ -42,6 +42,7 @@ type MiscConfig struct {
 	MetricsPort    string   `yaml:"metrics_port"`
 	ConfigAPIPort  string   `yaml:"config_api_port"`
 	AllowedOrigins []string `yaml:"allowed_origins"`
+	Domain         string   `yaml:"domain"`
 }
 
 type TrieNode struct {

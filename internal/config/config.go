@@ -19,6 +19,7 @@ var (
 	ClientMngr      = sync.Map{}
 	GlobalRateLimit RateLimitConfig
 	Misc            MiscConfig
+	StartTime       time.Time
 )
 
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {
