@@ -99,22 +99,18 @@ func InitNotifier(ctx context.Context) {
 
 		case line := <-t.Lines:
 			if line == nil {
-				log.Warn().Msg("Logger - Received nil line")
 				continue
 			}
 			if line.Err != nil {
-				log.Error().Err(line.Err).Msg("Logger - Error reading line")
 				continue
 			}
 
 			Subscribers.Range(func(key, value interface{}) bool {
 				if _, ok := LeftBehind.Load(key.(string)); ok {
-					log.Debug().Str("token", key.(string)).Msg("Logger - Skipping left behind subscriber")
 					return true
 				}
 
 				if _, ok := ws.Clients.Load(key.(string)); !ok {
-					log.Debug().Str("token", key.(string)).Msg("Logger - Skipping disconnected subscriber")
 					return true
 				}
 
@@ -125,14 +121,13 @@ func InitNotifier(ctx context.Context) {
 
 				marshalLogData, err := json.Marshal(logData)
 				if err != nil {
-					log.Error().Err(err).Msg("Logger - Failed to marshal log data")
 					return true
 				}
 
 				token := key.(string)
 				err = ws.SendData(token, marshalLogData)
 				if err != nil {
-					log.Error().Err(err).Str("token", token).Msg("Logger - Failed to send data to subscriber")
+					log.Error().Err(err).Str("token", token).Msg("Logger")
 				}
 				return true
 			})
@@ -145,7 +140,7 @@ func CatchUp(key string) {
 		Follow: false,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("Logger - CatchUp")
+		log.Error().Err(err).Msg("Logger")
 		return
 	}
 	defer t.Stop()
@@ -163,7 +158,7 @@ func CatchUp(key string) {
 
 	for line := range t.Lines {
 		if line == nil || line.Err != nil {
-			log.Error().Err(line.Err).Msg("Logger - CatchUp")
+			log.Error().Err(line.Err).Msg("Logger")
 			continue
 		}
 
@@ -174,13 +169,13 @@ func CatchUp(key string) {
 
 		marshalLogData, err := json.Marshal(logData)
 		if err != nil {
-			log.Logger.Error().Err(err).Msg("Logger - CatchUp")
+			log.Logger.Error().Err(err).Msg("Logger")
 		}
 
 		ws.SendData(key, marshalLogData)
 	}
 
 	LeftBehind.Delete(key)
-	log.Info().Str("Status", "caught up").Msg("Logger - CatchUp")
+	log.Info().Str("Status", "caught up").Msg("Logger")
 	Subscribers.Store(key, true)
 }
