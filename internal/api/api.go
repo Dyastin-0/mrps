@@ -147,7 +147,7 @@ func Refresh() http.HandlerFunc {
 			SameSite: http.SameSiteNoneMode,
 			Secure:   true,
 			MaxAge:   -1,
-			Domain:   os.Getenv("DOMAIN"),
+			Domain:   config.Misc.Domain,
 			Path:     "/",
 		})
 
@@ -185,7 +185,7 @@ func Refresh() http.HandlerFunc {
 			SameSite: http.SameSiteNoneMode,
 			Secure:   true,
 			MaxAge:   24 * 60 * 60,
-			Domain:   os.Getenv("DOMAIN"),
+			Domain:   config.Misc.Domain,
 			Path:     "/",
 		})
 
