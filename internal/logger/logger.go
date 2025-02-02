@@ -102,7 +102,11 @@ func InitNotifier(ctx context.Context) {
 			}
 
 			Subscribers.Range(func(key, value interface{}) bool {
-				if _, ok := LeftBehind.Load(key); ok {
+				if _, ok := LeftBehind.Load(key.(string)); ok {
+					return true
+				}
+
+				if _, ok := ws.Clients.Load(key.(string)); !ok {
 					return true
 				}
 
