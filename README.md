@@ -8,7 +8,7 @@
 - Automatic HTTPS
 - Configurable routing rules
 - Path rewrites
-- Global and domain-based rate limiting 
+- Global and domain-based rate limiting
 - Scrappable metrics
 
 ## Getting Started
@@ -22,12 +22,20 @@
 
 Configurations are stored on the root's `config.yaml`.
 
-#### Email
+#### miscellaneous
 
-Used for Let's Encrypt configuration 
+Optional configurations
 
 ```yaml
-email: "your@email.com"
+Misc:
+  email: your@mail.com       # Used for certmagic
+  enable_metrics: true
+  metrics_port: 5000         # Default 7070
+  enable_api: true
+  api_port: 3000             # Default 6060
+  allowed_origins:           # Used for WS connections, default wild card
+  - https://your_domain.com
+  - http://localhost:5050
 ```
 
 #### Routes Configuration
