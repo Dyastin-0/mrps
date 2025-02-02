@@ -3,7 +3,6 @@ package health
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/ws"
+	"github.com/rs/zerolog/log"
 )
 
 var Data = sync.Map{}
@@ -21,7 +21,7 @@ var httpClient = &http.Client{
 }
 
 func InitPinger(ctx context.Context) {
-	log.Println("Health check is running")
+	log.Info().Str("Status", "running").Msg("Health check")
 
 	ticker := time.NewTicker(10 * time.Second)
 
@@ -30,7 +30,7 @@ func InitPinger(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println("Stopping health checks")
+				log.Info().Str("Status", "stopping").Msg("Health check")
 				return
 			case <-ticker.C:
 				pingAll()
@@ -83,7 +83,7 @@ func notifySubscribers() {
 
 	marshalHealth, err := json.Marshal(data)
 	if err != nil {
-		log.Println("Failed to marshal health:", err)
+		log.Fatal().Err(err).Msg("Health check")
 		return
 	}
 

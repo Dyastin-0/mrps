@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/api"
 	"github.com/Dyastin-0/mrps/internal/health"
+	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
 
 	"os"
 	"os/signal"
@@ -25,7 +26,12 @@ import (
 func main() {
 	err := config.Load("mrps.yaml")
 	if err != nil {
-		log.Fatal("Failed to load config file: ", err)
+		log.Fatal().Err(err).Msg("config")
+	}
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal().Err(err).Msg("ENV")
 	}
 
 	certmagic.DefaultACME.Agreed = true
@@ -38,10 +44,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	health.InitPinger(ctx)
 	config.StartTime = time.Now()
 
-	go startReverseProxyServer(mainRouter)
+	logger.Init()
+	go health.InitPinger(ctx)
+	go logger.InitNotifier(ctx)
+
+	// go startReverseProxyServer(mainRouter)
 
 	if config.Misc.MetricsEnabled {
 		go startMetricsServer()
@@ -56,15 +65,15 @@ func main() {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	<-shutdown
 
-	log.Println("Shutting down gracefully...")
+	log.Info().Msg("Shutting down gracefully...")
 }
 
 func startReverseProxyServer(router chi.Router) {
-	log.Println("Reverse proxy server is running on HTTPS")
+	log.Info().Str("Status", "running").Msg("Proxy")
 
 	err := certmagic.HTTPS(config.Domains, router)
 	if err != nil {
-		log.Fatal("Failed to start HTTPS server: ", err)
+		log.Fatal().Err(err).Msg("Proxy")
 	}
 }
 
@@ -73,32 +82,28 @@ func startMetricsServer() {
 
 	metricsRouter.Handle("/metrics", promhttp.Handler())
 
-	log.Println("Metrics service is running on port:" + config.Misc.MetricsPort)
+	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("Metrics")
 	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
 	if err != nil {
-		log.Fatal("Failed to start metrics server: ", err)
+		log.Fatal().Err(err).Msg("Metrics")
 	}
 }
 
 func startAPI() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	router := chi.NewRouter()
 
+	router.Use(logger.Handler)
 	router.Use(api.CORS)
 
 	router.Mount("/config", api.ProtectedRoute())
 	router.Handle("/refresh", api.Refresh())
 	router.Handle("/signout", api.Signout())
 	router.Handle("/auth", api.Auth())
-	router.Get("/ws", ws.WS(&health.Subscribers))
+	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers))
 
-	log.Println("API service is running on port: " + config.Misc.ConfigAPIPort)
-	err = http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
+	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("API")
+	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
 	if err != nil {
-		log.Fatal("Failed to start API server: ", err)
+		log.Fatal().Err(err).Msg("API")
 	}
 }

@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/common"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -88,7 +88,6 @@ func Load(filename string) error {
 			return len(sortedRoutes[i]) > len(sortedRoutes[j])
 		})
 
-		log.Println("Sorted routes:", sortedRoutes)
 		cfg.SortedRoutes = sortedRoutes
 
 		sortedConfig := make(common.RouteConfig)
@@ -112,11 +111,11 @@ func ParseToYAML() {
 
 	data, err := yaml.Marshal(&config)
 	if err != nil {
-		log.Fatalf("error marshalling YAML: %v", err)
+		log.Fatal().Err(err).Msg("Config - Marshal")
 	}
 
 	err = os.WriteFile("mrps.yaml", data, 0644)
 	if err != nil {
-		log.Fatalf("error writing to file: %v", err)
+		log.Fatal().Err(err).Msg("Config - Writefile")
 	}
 }

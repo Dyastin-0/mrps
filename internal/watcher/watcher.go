@@ -1,25 +1,24 @@
 package config
 
 import (
-	"log"
-
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/fsnotify/fsnotify"
+	"github.com/rs/zerolog/log"
 )
 
 func Watch(filename string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatalf("Failed to create file watcher: %v", err)
+		log.Fatal().Err(err).Msg("Watcher")
 	}
 	defer watcher.Close()
 
 	err = watcher.Add(filename)
 	if err != nil {
-		log.Fatalf("Failed to watch file %s: %v", filename, err)
+		log.Fatal().Err(err).Msg("Watcher - Add file")
 	}
 
-	log.Printf("Watching config file: %s", filename)
+	log.Info().Str("Status", "running").Str("Target", filename).Msg("Watcher")
 
 	for {
 		select {
@@ -34,14 +33,14 @@ func Watch(filename string) {
 				if err := config.Load(filename); err != nil {
 					log.Printf("Failed to reload config: %v", err)
 				} else {
-					log.Println("Configuration reloaded successfully.")
+					log.Info().Str("Status", "reloaded").Str("Target", filename).Msg("Watcher")
 				}
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
-			log.Printf("Watcher error: %v", err)
+			log.Error().Err(err).Msg("Watcher")
 		}
 	}
 }

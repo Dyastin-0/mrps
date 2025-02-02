@@ -2,7 +2,6 @@ package ws
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -10,6 +9,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
+	"github.com/rs/zerolog/log"
 )
 
 var upgrader = websocket.Upgrader{
@@ -32,7 +32,7 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("rt")
 		if err != nil {
-			log.Println("Failed to get token:", err)
+			log.Error().Err(err).Msg("Websocket")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -41,19 +41,19 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			return []byte(os.Getenv("REFRESH_TOKEN_KEY")), nil
 		})
 		if err != nil {
-			log.Println("Failed to get token:", err)
+			log.Error().Err(err).Msg("Websocket")
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Println("Failed to upgrade connection:", err)
+			log.Error().Err(err).Msg("Websocket - Upgrader")
 			return
 		}
 
 		Clients.Store(token.Value, conn)
-		log.Println("Client connected:", token.Value)
+		log.Info().Str("Status", "connected").Msg("Websocket")
 
 		defer func() {
 			for _, cn := range conns {
@@ -65,12 +65,12 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				log.Println("Read error:", err)
+				log.Error().Err(err).Msg("Websocket - Read")
 				break
 			}
 			err = conn.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
-				log.Println("Write error:", err)
+				log.Error().Err(err).Msg("Websocket - Write")
 				break
 			}
 		}
@@ -84,7 +84,7 @@ func SendData(id string, data []byte) error {
 			return fmt.Errorf("failed to send data: %v", err)
 		}
 	} else {
-		log.Println("Client not found:", id)
+		log.Warn().Err(fmt.Errorf("client not found")).Msg("Websocket - Send")
 		return fmt.Errorf("client not found")
 	}
 

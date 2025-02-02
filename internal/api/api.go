@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -10,9 +9,11 @@ import (
 	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/health"
+	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func CORS(next http.Handler) http.Handler {
@@ -60,8 +61,6 @@ func Auth() http.HandlerFunc {
 
 		email := req.Email
 		password := req.Password
-		log.Println("Email:", email)
-		log.Println("Password:", password)
 
 		if email == "" || password == "" {
 			http.Error(w, "Bad request, missing credentials", http.StatusBadRequest)
@@ -79,14 +78,14 @@ func Auth() http.HandlerFunc {
 		accessToken, err := NewToken(expectedEmail, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Println("Error generating access token:", err)
+			log.Error().Err(err).Msg("API - Access token")
 			return
 		}
 
 		refreshToken, err := NewToken(expectedEmail, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Println("Error generating refresh token:", err)
+			log.Error().Err(err).Msg("API - Refresh token")
 			return
 		}
 
@@ -232,8 +231,8 @@ func setEnabled() http.HandlerFunc {
 
 		marshalConfig, err := json.Marshal(data)
 		if err != nil {
-			log.Println("Failed to marshal config:", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			log.Error().Err(err).Msg("API - Marshal")
 			return
 		}
 
@@ -315,13 +314,26 @@ func getUptime() http.HandlerFunc {
 	}
 }
 
+func getLogs() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, _ := r.Cookie("rt")
+
+		logger.LeftBehind.Store(token.Value, true)
+		go logger.CatchUp(token.Value)
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func ProtectedRoute() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(JWT)
+
 	router.Handle("/", get())
 	router.Handle("/uptime", getUptime())
-	router.Handle("/health", getHealth())
+	router.Handle("/health/ws", getHealth())
+	router.Handle("/logs/ws", getLogs())
 	router.Handle("/{domain}/enabled", setEnabled())
 
 	return router
