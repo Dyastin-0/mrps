@@ -106,6 +106,10 @@ func InitNotifier(ctx context.Context) {
 					return true
 				}
 
+				if _, ok := ws.Clients.Load(key.(string)); !ok {
+					return true
+				}
+
 				logData := LogData{
 					Type: "log",
 					Log:  line.Text,
