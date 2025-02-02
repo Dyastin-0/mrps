@@ -42,8 +42,14 @@ func main() {
 	config.StartTime = time.Now()
 
 	go startReverseProxyServer(mainRouter)
-	go startMetricsServer()
-	go startAPI()
+
+	if config.Misc.MetricsEnabled {
+		go startMetricsServer()
+	}
+
+	if config.Misc.APIEnabled {
+		go startAPI()
+	}
 
 	// Handle graceful shutdown
 	shutdown := make(chan os.Signal, 1)

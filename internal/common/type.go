@@ -40,8 +40,10 @@ type RateLimitConfig struct {
 
 type MiscConfig struct {
 	Email          string   `yaml:"email"`
+	MetricsEnabled bool     `yaml:"enable_metrics"`
 	MetricsPort    string   `yaml:"metrics_port"`
-	ConfigAPIPort  string   `yaml:"config_api_port"`
+	APIEnabled     bool     `yaml:"enable_api"`
+	ConfigAPIPort  string   `yaml:"api_port"`
 	AllowedOrigins []string `yaml:"allowed_origins"`
 	Domain         string   `yaml:"domain"`
 }

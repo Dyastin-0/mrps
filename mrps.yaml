@@ -122,8 +122,10 @@ domains:
       cooldown: 60000
 misc:
   email: mail@dyastin.tech
+  enable_metrics: false
   metrics_port: "7070"
-  config_api_port: "6060"
+  enable_api: true
+  api_port: "6060"
   allowed_origins:
   - https://mrps.dyastin.tech
   - http://localhost:5173
