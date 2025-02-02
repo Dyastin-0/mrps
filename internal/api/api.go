@@ -288,6 +288,7 @@ func Signout() http.HandlerFunc {
 			Secure:   true,
 			MaxAge:   -1,
 			Domain:   config.Misc.Domain,
+			Path:     "/",
 		})
 
 		w.WriteHeader(http.StatusOK)
