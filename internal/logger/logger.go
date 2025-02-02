@@ -79,7 +79,6 @@ type LogData struct {
 func InitNotifier(ctx context.Context) {
 	log.Info().Str("Status", "Running").Msg("Logger - Notifier")
 
-	// Initialize the tail
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: true,
 		ReOpen: true,
@@ -149,7 +148,7 @@ func CatchUp(key string) {
 		log.Error().Err(err).Msg("Logger - CatchUp")
 		return
 	}
-	defer t.Stop() // Use Stop instead of Cleanup for the newer version
+	defer t.Stop()
 
 	retry := 5
 
