@@ -115,8 +115,8 @@ func InitNotifier(ctx context.Context) {
 				if err != nil {
 					log.Logger.Error().Err(err).Msg("Logger - Notifier")
 				}
-
-				err = ws.SendData(key.(string), marshalLogData)
+				token := key.(string)
+				err = ws.SendData(token, marshalLogData)
 				if err != nil {
 					fmt.Println(err)
 				}
