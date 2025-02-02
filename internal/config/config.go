@@ -51,10 +51,6 @@ func Load(filename string) error {
 		Misc.ConfigAPIPort = "6060"
 	}
 
-	if Misc.AllowedOrigins == nil {
-		Misc.AllowedOrigins = []string{"*"}
-	}
-
 	GlobalRateLimit = configData.RateLimit
 
 	for domain, cfg := range configData.Domains {
