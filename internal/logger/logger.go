@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/ws"
-	"github.com/hpcloud/tail"
+	"github.com/nxadm/tail"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -79,14 +79,17 @@ type LogData struct {
 func InitNotifier(ctx context.Context) {
 	log.Info().Str("Status", "Running").Msg("Logger - Notifier")
 
+	// Initialize the tail
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: true,
 		ReOpen: true,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("Logger - Notify")
+		log.Error().Err(err).Msg("Logger - Failed to start tailing the file")
 		return
 	}
+
+	log.Info().Msg("Logger - Tailing started")
 
 	for {
 		select {
@@ -96,17 +99,23 @@ func InitNotifier(ctx context.Context) {
 			return
 
 		case line := <-t.Lines:
-			if line == nil || line.Err != nil {
-				log.Error().Err(line.Err).Msg("Logger - Notifier")
+			if line == nil {
+				log.Warn().Msg("Logger - Received nil line")
+				continue
+			}
+			if line.Err != nil {
+				log.Error().Err(line.Err).Msg("Logger - Error reading line")
 				continue
 			}
 
 			Subscribers.Range(func(key, value interface{}) bool {
 				if _, ok := LeftBehind.Load(key.(string)); ok {
+					log.Debug().Str("token", key.(string)).Msg("Logger - Skipping left behind subscriber")
 					return true
 				}
 
 				if _, ok := ws.Clients.Load(key.(string)); !ok {
+					log.Debug().Str("token", key.(string)).Msg("Logger - Skipping disconnected subscriber")
 					return true
 				}
 
@@ -117,12 +126,14 @@ func InitNotifier(ctx context.Context) {
 
 				marshalLogData, err := json.Marshal(logData)
 				if err != nil {
-					log.Logger.Error().Err(err).Msg("Logger - Notifier")
+					log.Error().Err(err).Msg("Logger - Failed to marshal log data")
+					return true
 				}
+
 				token := key.(string)
 				err = ws.SendData(token, marshalLogData)
 				if err != nil {
-					fmt.Println(err)
+					log.Error().Err(err).Str("token", token).Msg("Logger - Failed to send data to subscriber")
 				}
 				return true
 			})
@@ -131,12 +142,15 @@ func InitNotifier(ctx context.Context) {
 }
 
 func CatchUp(key string) {
-	t, err := tail.TailFile("./logs/mrps.log", tail.Config{Follow: false})
+	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
+		Follow: false,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("Logger - CatchUp")
 		return
 	}
-	defer t.Cleanup()
+	defer t.Stop() // Use Stop instead of Cleanup for the newer version
+
 	retry := 5
 
 	for retry > 0 {
@@ -149,7 +163,6 @@ func CatchUp(key string) {
 	}
 
 	for line := range t.Lines {
-
 		if line == nil || line.Err != nil {
 			log.Error().Err(line.Err).Msg("Logger - CatchUp")
 			continue

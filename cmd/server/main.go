@@ -50,7 +50,7 @@ func main() {
 	go health.InitPinger(ctx)
 	go logger.InitNotifier(ctx)
 
-	go startReverseProxyServer(mainRouter)
+	// go startReverseProxyServer(mainRouter)
 
 	if config.Misc.MetricsEnabled {
 		go startMetricsServer()
