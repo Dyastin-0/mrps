@@ -65,7 +65,6 @@ func Handler(next http.Handler) http.Handler {
 		log.Info().
 			Str("method", r.Method).
 			Str("host", r.Host).
-			Str("url", r.URL.Path).
 			Int("code", lrw.statusCode).
 			Msg("Access")
 	})
