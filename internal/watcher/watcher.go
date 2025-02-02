@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 
+	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -30,7 +31,7 @@ func Watch(filename string) {
 			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
 				log.Printf("Config file changed: %s", event.Name)
 
-				if err := Load(filename); err != nil {
+				if err := config.Load(filename); err != nil {
 					log.Printf("Failed to reload config: %v", err)
 				} else {
 					log.Println("Configuration reloaded successfully.")

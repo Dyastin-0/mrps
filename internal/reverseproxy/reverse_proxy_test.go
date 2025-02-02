@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,11 +29,11 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 	defer mockService1.Close()
 
 	// Initialize DomainTrie
-	config.DomainTrie = config.NewDomainTrie()
-	conf := &config.Config{
-		Routes: config.RouteConfig{
-			"/api":  config.PathConfig{Dest: mockService.URL},
-			"/mock": config.PathConfig{Dest: mockService1.URL},
+	config.DomainTrie = common.NewDomainTrie()
+	conf := &common.Config{
+		Routes: common.RouteConfig{
+			"/api":  common.PathConfig{Dest: mockService.URL},
+			"/mock": common.PathConfig{Dest: mockService1.URL},
 		},
 	}
 	conf.SortedRoutes = []string{"/api", "/mock"}

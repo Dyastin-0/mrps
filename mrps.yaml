@@ -32,7 +32,7 @@ domains:
       rate: 10
       cooldown: 60000
   filmpin.dyastin.tech:
-    enabled: false
+    enabled: true
     routes:
       /:
         dest: http://localhost:5002

@@ -6,7 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/api"
+	"github.com/Dyastin-0/mrps/internal/health"
 	"github.com/Dyastin-0/mrps/internal/router"
+	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -35,10 +38,10 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	config.InitHealth(ctx)
+	health.InitPinger(ctx)
 	config.StartTime = time.Now()
 
-	go startReverseProxyServer(mainRouter)
+	// go startReverseProxyServer(mainRouter)
 	go startMetricsServer()
 	go startAPI()
 
@@ -79,13 +82,13 @@ func startAPI() {
 
 	router := chi.NewRouter()
 
-	router.Use(config.CORS)
+	router.Use(api.CORS)
 
-	router.Mount("/config", config.ProtectedRoute())
-	router.Handle("/refresh", config.Refresh())
-	router.Handle("/signout", config.Signout())
-	router.Handle("/auth", config.Auth())
-	router.Get("/ws", config.WS)
+	router.Mount("/config", api.ProtectedRoute())
+	router.Handle("/refresh", api.Refresh())
+	router.Handle("/signout", api.Signout())
+	router.Handle("/auth", api.Auth())
+	router.Get("/ws", ws.WS(&health.Subscribers))
 
 	log.Println("API service is running on port: " + config.Misc.ConfigAPIPort)
 	err = http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)

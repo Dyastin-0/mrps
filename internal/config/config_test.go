@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"golang.org/x/time/rate"
 )
@@ -263,10 +264,10 @@ func assertEqual[T comparable](t *testing.T, actual, expected T, fieldName strin
 }
 
 func TestDomainTrieRemove(t *testing.T) {
-	trie := NewDomainTrie()
+	trie := common.NewDomainTrie()
 
-	trie.Insert("example.com", &Config{})
-	trie.Insert("*.example.com", &Config{})
+	trie.Insert("example.com", &common.Config{})
+	trie.Insert("*.example.com", &common.Config{})
 
 	trie.Remove("*.example.com")
 	if config := trie.Match("sub.example.com"); config != nil {
@@ -280,10 +281,10 @@ func TestDomainTrieRemove(t *testing.T) {
 }
 
 func TestSetEnabled(t *testing.T) {
-	DomainTrie = NewDomainTrie()
+	DomainTrie = common.NewDomainTrie()
 
 	testDomain := "example.com"
-	DomainTrie.Insert(testDomain, &Config{Enabled: false})
+	DomainTrie.Insert(testDomain, &common.Config{Enabled: false})
 
 	modified := DomainTrie.SetEnabled(testDomain, true)
 	if !modified {

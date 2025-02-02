@@ -1,4 +1,4 @@
-package config
+package health
 
 import (
 	"context"
@@ -7,16 +7,20 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/Dyastin-0/mrps/internal/common"
+	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/ws"
 )
 
-var HealthData = sync.Map{}
-var HealthSubscribers = sync.Map{}
+var Data = sync.Map{}
+var Subscribers = sync.Map{}
 
 var httpClient = &http.Client{
 	Timeout: 3 * time.Second,
 }
 
-func InitHealth(ctx context.Context) {
+func InitPinger(ctx context.Context) {
 	log.Println("Health check is running")
 
 	ticker := time.NewTicker(10 * time.Second)
@@ -38,7 +42,7 @@ func InitHealth(ctx context.Context) {
 
 func pingAll() {
 	wg := sync.WaitGroup{}
-	Domains := DomainTrie.GetAll()
+	Domains := config.DomainTrie.GetAll()
 
 	for _, config := range Domains {
 		wg.Add(1)
@@ -49,22 +53,22 @@ func pingAll() {
 	notifySubscribers()
 }
 
-func ping(config *Config, wg *sync.WaitGroup) {
+func ping(config *common.Config, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for _, route := range config.Routes {
 		resp, err := httpClient.Get(route.Dest)
 		if err != nil {
-			HealthData.Store(route.Dest, 0)
+			Data.Store(route.Dest, 0)
 		} else {
 			resp.Body.Close()
-			HealthData.Store(route.Dest, resp.StatusCode)
+			Data.Store(route.Dest, resp.StatusCode)
 		}
 	}
 }
 
 func notifySubscribers() {
 	mapHealth := make(map[string]int)
-	HealthData.Range(func(key, value interface{}) bool {
+	Data.Range(func(key, value interface{}) bool {
 		mapHealth[key.(string)] = value.(int)
 		return true
 	})
@@ -83,10 +87,10 @@ func notifySubscribers() {
 		return
 	}
 
-	HealthSubscribers.Range(func(key, value interface{}) bool {
+	Subscribers.Range(func(key, value interface{}) bool {
 		token := key.(string)
 		go func() {
-			SendData(token, marshalHealth)
+			ws.SendData(token, marshalHealth)
 		}()
 		return true
 	})

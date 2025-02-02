@@ -10,112 +10,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/common"
 	"gopkg.in/yaml.v2"
 )
 
 var (
 	Domains         []string
-	DomainTrie      *DomainTrieConfig
+	DomainTrie      *common.DomainTrieConfig
 	ClientMngr      = sync.Map{}
-	GlobalRateLimit RateLimitConfig
-	Misc            MiscConfig
+	GlobalRateLimit common.RateLimitConfig
+	Misc            common.MiscConfig
 	StartTime       time.Time
 )
-
-func (t *DomainTrieConfig) Insert(domain string, config *Config) {
-	parts := strings.Split(domain, ".")
-	node := t.Root
-
-	// Traverse the trie in reverse
-	for i := len(parts) - 1; i >= 0; i-- {
-		part := parts[i]
-
-		// Handle wildcard nodes
-		if part == "*" {
-			if _, exists := node.Children["*"]; !exists {
-				t.mu.Lock()
-				node.Children["*"] = &TrieNode{
-					Children:   make(map[string]*TrieNode),
-					IsWildcard: true,
-				}
-				t.mu.Unlock()
-			}
-			node = node.Children["*"]
-		} else {
-			if _, exists := node.Children[part]; !exists {
-				node.Children[part] = &TrieNode{
-					Children: make(map[string]*TrieNode),
-				}
-			}
-			node = node.Children[part]
-		}
-	}
-
-	// Assign the configuration at the final node, exact math
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	node.Config = config
-}
-
-func (t *DomainTrieConfig) Match(domain string) *Config {
-	parts := strings.Split(domain, ".")
-	node := t.Root
-
-	// Traverse the trie in reverse
-	for i := len(parts) - 1; i >= 0; i-- {
-		part := parts[i]
-
-		// Exact match
-		if childNode, exists := node.Children[part]; exists {
-			node = childNode
-			continue
-		}
-
-		// Wildcard match
-		if wildcardNode, exists := node.Children["*"]; exists {
-			node = wildcardNode
-			continue
-		}
-
-		return nil
-	}
-
-	return node.Config
-}
-
-func (t *DomainTrieConfig) Remove(domain string) bool {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	parts := strings.Split(domain, ".")
-	return t.remove(t.Root, parts, len(parts)-1)
-}
-
-func (t *DomainTrieConfig) remove(node *TrieNode, parts []string, idx int) bool {
-	if idx < 0 {
-		if node.Config == nil {
-			return false
-		}
-		node.Config = nil
-
-		return len(node.Children) == 0
-	}
-
-	part := parts[idx]
-	childNode, exists := node.Children[part]
-
-	if !exists {
-		return false
-	}
-
-	shouldDeleteChild := t.remove(childNode, parts, idx-1)
-
-	if shouldDeleteChild {
-		delete(node.Children, part)
-	}
-
-	return len(node.Children) == 0 && node.Config == nil
-}
 
 func Load(filename string) error {
 	file, err := os.Open(filename)
@@ -124,9 +30,9 @@ func Load(filename string) error {
 	}
 	defer file.Close()
 
-	DomainTrie = NewDomainTrie()
+	DomainTrie = common.NewDomainTrie()
 
-	configData := YAML{}
+	configData := common.YAML{}
 
 	decoder := yaml.NewDecoder(file)
 	if err := decoder.Decode(&configData); err != nil {
@@ -185,7 +91,7 @@ func Load(filename string) error {
 		log.Println("Sorted routes:", sortedRoutes)
 		cfg.SortedRoutes = sortedRoutes
 
-		sortedConfig := make(RouteConfig)
+		sortedConfig := make(common.RouteConfig)
 		for _, route := range sortedRoutes {
 			sortedConfig[route] = cfg.Routes[route]
 		}
@@ -197,44 +103,8 @@ func Load(filename string) error {
 	return nil
 }
 
-func (t *DomainTrieConfig) SetEnabled(domain string, enabled bool) bool {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	modified := false
-
-	config := t.Match(domain)
-	if config != nil {
-		modified = config.Enabled != enabled
-		config.Enabled = enabled
-	}
-
-	return modified
-}
-
-func (t *DomainTrieConfig) GetAll() DomainsConfig {
-	result := DomainsConfig{}
-	var traverse func(node *TrieNode, path []string)
-
-	traverse = func(node *TrieNode, path []string) {
-		if node.Config != nil {
-			key := strings.Join(reverseSlice(path), ".")
-			result[key] = *node.Config
-		}
-		for part, child := range node.Children {
-			traverse(child, append(path, part))
-		}
-	}
-
-	t.mu.RLock()
-	defer t.mu.RUnlock()
-
-	traverse(t.Root, []string{})
-	return result
-}
-
 func ParseToYAML() {
-	config := YAML{
+	config := common.YAML{
 		Domains:   DomainTrie.GetAll(),
 		Misc:      Misc,
 		RateLimit: GlobalRateLimit,
@@ -249,12 +119,4 @@ func ParseToYAML() {
 	if err != nil {
 		log.Fatalf("error writing to file: %v", err)
 	}
-}
-
-func reverseSlice(slice []string) []string {
-	reversed := make([]string, len(slice))
-	for i, v := range slice {
-		reversed[len(slice)-1-i] = v
-	}
-	return reversed
 }

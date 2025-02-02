@@ -1,4 +1,4 @@
-package config
+package api
 
 import (
 	"encoding/json"
@@ -7,6 +7,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/common"
+	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/health"
+	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -16,7 +20,7 @@ func CORS(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 
 		allowed := false
-		for _, allowedOrigin := range Misc.AllowedOrigins {
+		for _, allowedOrigin := range config.Misc.AllowedOrigins {
 			if origin == allowedOrigin || allowedOrigin == "*" {
 				allowed = true
 				break
@@ -206,7 +210,7 @@ func setEnabled() http.HandlerFunc {
 			return
 		}
 
-		ok := DomainTrie.SetEnabled(domain, req.Enabled)
+		ok := config.DomainTrie.SetEnabled(domain, req.Enabled)
 		if !ok {
 			status := "enabled"
 			if !req.Enabled {
@@ -216,14 +220,14 @@ func setEnabled() http.HandlerFunc {
 			return
 		}
 
-		config := DomainTrie.GetAll()
+		con := config.DomainTrie.GetAll()
 
 		data := struct {
-			Type   string        `json:"type"`
-			Config DomainsConfig `json:"config"`
+			Type   string               `json:"type"`
+			Config common.DomainsConfig `json:"config"`
 		}{
 			Type:   "config",
-			Config: config,
+			Config: con,
 		}
 
 		marshalConfig, err := json.Marshal(data)
@@ -233,8 +237,8 @@ func setEnabled() http.HandlerFunc {
 			return
 		}
 
-		go SendData(token.Value, marshalConfig)
-		ParseToYAML()
+		go ws.SendData(token.Value, marshalConfig)
+		go config.ParseToYAML()
 
 		w.WriteHeader(http.StatusOK)
 	}
@@ -245,7 +249,7 @@ func getHealth() http.HandlerFunc {
 		token, _ := r.Cookie("rt")
 
 		mapHealth := make(map[string]int)
-		HealthData.Range(func(key, value interface{}) bool {
+		health.Data.Range(func(key, value interface{}) bool {
 			mapHealth[key.(string)] = value.(int)
 			return true
 		})
@@ -258,7 +262,7 @@ func getHealth() http.HandlerFunc {
 			Health: mapHealth,
 		}
 
-		HealthSubscribers.Store(token.Value, true)
+		health.Subscribers.Store(token.Value, true)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(&data)
@@ -267,7 +271,7 @@ func getHealth() http.HandlerFunc {
 
 func get() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		domains := DomainTrie.GetAll()
+		domains := config.DomainTrie.GetAll()
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(domains)
@@ -283,7 +287,7 @@ func Signout() http.HandlerFunc {
 			SameSite: http.SameSiteNoneMode,
 			Secure:   true,
 			MaxAge:   -1,
-			Domain:   Misc.Domain,
+			Domain:   config.Misc.Domain,
 		})
 
 		w.WriteHeader(http.StatusOK)
@@ -306,7 +310,7 @@ func NewToken(email, secret string, expiration time.Duration) (string, error) {
 func getUptime() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(StartTime.Unix())
+		json.NewEncoder(w).Encode(config.StartTime.Unix())
 	}
 }
 

@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/limiter"
 )
 
 func TestPerClientRateLimiter(t *testing.T) {
-	config.GlobalRateLimit = config.RateLimitConfig{
+	config.GlobalRateLimit = common.RateLimitConfig{
 		Burst:    2,
 		Rate:     2,
 		Cooldown: 1000,
