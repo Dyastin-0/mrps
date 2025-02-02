@@ -106,10 +106,6 @@ func InitNotifier(ctx context.Context) {
 					return true
 				}
 
-				if _, ok := ws.Clients.Load(key.(string)); !ok {
-					return true
-				}
-
 				logData := LogData{
 					Type: "log",
 					Log:  line.Text,
@@ -137,8 +133,19 @@ func CatchUp(key string) {
 		return
 	}
 	defer t.Cleanup()
+	retry := 5
+
+	for retry > 0 {
+		if _, ok := ws.Clients.Load(key); !ok {
+			retry--
+			time.Sleep(100 * time.Millisecond)
+		} else {
+			break
+		}
+	}
 
 	for line := range t.Lines {
+
 		if line == nil || line.Err != nil {
 			log.Error().Err(line.Err).Msg("Logger - CatchUp")
 			continue
