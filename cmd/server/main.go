@@ -41,7 +41,7 @@ func main() {
 	health.InitPinger(ctx)
 	config.StartTime = time.Now()
 
-	// go startReverseProxyServer(mainRouter)
+	go startReverseProxyServer(mainRouter)
 	go startMetricsServer()
 	go startAPI()
 
