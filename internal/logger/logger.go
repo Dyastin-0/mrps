@@ -82,6 +82,7 @@ func InitNotifier(ctx context.Context) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: true,
 		ReOpen: true,
+		Logger: tail.DiscardingLogger,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("Logger - Failed to start tailing the file")
