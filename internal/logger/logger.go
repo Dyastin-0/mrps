@@ -141,7 +141,7 @@ func CatchUp(key string) {
 		Logger: tail.DiscardingLogger,
 		Location: &tail.SeekInfo{
 			Offset: -10,
-			Whence: 0,
+			Whence: 2,
 		},
 	})
 	if err != nil {
