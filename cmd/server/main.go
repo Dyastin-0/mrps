@@ -99,7 +99,7 @@ func startAPI() {
 	router.Handle("/refresh", api.Refresh())
 	router.Handle("/signout", api.Signout())
 	router.Handle("/auth", api.Auth())
-	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers))
+	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
 
 	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("API")
 	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
