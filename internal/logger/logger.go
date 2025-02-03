@@ -139,7 +139,7 @@ func CatchUp(key string) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
 		Location: &tail.SeekInfo{
-			Offset: -20,
+			Offset: 0,
 			Whence: 20,
 		},
 	})
