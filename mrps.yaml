@@ -32,7 +32,7 @@ domains:
       rate: 10
       cooldown: 60000
   filmpin.dyastin.tech:
-    enabled: true
+    enabled: false
     routes:
       /:
         dest: http://localhost:5002
@@ -57,7 +57,7 @@ domains:
       rate: 50
       cooldown: 60000
   gitsense.dyastin.tech:
-    enabled: false
+    enabled: true
     routes:
       /:
         dest: http://localhost:4001

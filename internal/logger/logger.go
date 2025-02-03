@@ -138,6 +138,10 @@ func InitNotifier(ctx context.Context) {
 func CatchUp(key string) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
+		Location: &tail.SeekInfo{
+			Offset: -10,
+			Whence: 0,
+		},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("Logger")
@@ -145,7 +149,7 @@ func CatchUp(key string) {
 	}
 	defer t.Stop()
 
-	retry := 20
+	retry := 5
 
 	for retry > 0 {
 		if _, ok := ws.Clients.Load(key); !ok {
