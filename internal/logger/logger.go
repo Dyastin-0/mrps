@@ -139,10 +139,6 @@ func CatchUp(key string) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
 		Logger: tail.DiscardingLogger,
-		Location: &tail.SeekInfo{
-			Offset: -12,
-			Whence: 2,
-		},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("Logger")
