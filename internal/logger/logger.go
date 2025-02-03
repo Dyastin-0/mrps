@@ -150,7 +150,7 @@ func CatchUp(key string) {
 	}
 	defer t.Stop()
 
-	retry := 10
+	retry := 5
 
 	for retry > 0 {
 		if _, ok := ws.Clients.Load(key); !ok {

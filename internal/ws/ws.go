@@ -66,12 +66,12 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
 				log.Error().Err(err).Msg("Websocket - Read")
-				continue
+				break
 			}
 			err = conn.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				log.Error().Err(err).Msg("Websocket - Write")
-				continue
+				break
 			}
 		}
 	}
@@ -84,6 +84,7 @@ func SendData(id string, data []byte) error {
 			return fmt.Errorf("failed to send data: %v", err)
 		}
 	} else {
+		log.Warn().Err(fmt.Errorf("client not found")).Msg("Websocket - Send")
 		return fmt.Errorf("client not found")
 	}
 
