@@ -19,7 +19,6 @@ var upgrader = websocket.Upgrader{
 		for _, allowedOrigin := range config.Misc.AllowedOrigins {
 			if r.Header.Get("Origin") == allowedOrigin || allowedOrigin == "*" {
 				return true
-			} else {
 			}
 		}
 		return false

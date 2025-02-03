@@ -122,7 +122,7 @@ domains:
       cooldown: 60000
 misc:
   email: mail@dyastin.tech
-  enable_metrics: false
+  enable_metrics: true
   metrics_port: "7070"
   enable_api: true
   api_port: "6060"
