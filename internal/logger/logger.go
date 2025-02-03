@@ -138,6 +138,7 @@ func InitNotifier(ctx context.Context) {
 func CatchUp(key string) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
+		Logger: tail.DiscardingLogger,
 		Location: &tail.SeekInfo{
 			Offset: -12,
 			Whence: 2,
