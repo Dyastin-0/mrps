@@ -150,7 +150,7 @@ func CatchUp(key string) {
 	}
 	defer t.Stop()
 
-	retry := 5
+	retry := 30
 
 	okk := false
 	for retry > 0 {
