@@ -66,12 +66,12 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
 				log.Error().Err(err).Msg("Websocket - Read")
-				break
+				continue
 			}
 			err = conn.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
 				log.Error().Err(err).Msg("Websocket - Write")
-				break
+				continue
 			}
 		}
 	}
