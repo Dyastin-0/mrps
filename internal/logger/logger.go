@@ -105,7 +105,7 @@ func InitNotifier(ctx context.Context) {
 				continue
 			}
 
-			go Subscribers.Range(func(key, value interface{}) bool {
+			Subscribers.Range(func(key, value interface{}) bool {
 				if _, ok := LeftBehind.Load(key.(string)); ok {
 					return true
 				}
@@ -140,7 +140,7 @@ func CatchUp(key string) {
 		Follow: false,
 		Logger: tail.DiscardingLogger,
 		Location: &tail.SeekInfo{
-			Offset: -10,
+			Offset: -12,
 			Whence: 2,
 		},
 	})
