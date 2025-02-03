@@ -63,14 +63,18 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 		}()
 
 		for {
-			_, msg, err := conn.ReadMessage()
+			messageType, msg, err := conn.ReadMessage()
 			if err != nil {
-				log.Error().Err(err).Msg("Websocket - Read")
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+					log.Error().Err(err).Msg("Websocket - Unexpected disconnect")
+				} else {
+					log.Info().Msg("Websocket - Client disconnected")
+				}
 				break
 			}
-			err = conn.WriteMessage(websocket.TextMessage, msg)
-			if err != nil {
-				log.Error().Err(err).Msg("Websocket - Write")
+
+			if err := conn.WriteMessage(messageType, msg); err != nil {
+				log.Error().Err(err).Msg("Websocket - Write failed")
 				break
 			}
 		}
