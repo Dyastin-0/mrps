@@ -124,11 +124,13 @@ func InitNotifier(ctx context.Context) {
 					return true
 				}
 
-				token := key.(string)
-				err = ws.SendData(token, marshalLogData)
-				if err != nil {
-					log.Error().Err(err).Str("token", token).Msg("Logger")
-				}
+				go func() {
+					token := key.(string)
+					err = ws.SendData(token, marshalLogData)
+					if err != nil {
+						log.Error().Err(err).Str("token", token).Msg("Logger")
+					}
+				}()
 				return true
 			})
 		}
