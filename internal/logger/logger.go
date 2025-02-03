@@ -105,7 +105,7 @@ func InitNotifier(ctx context.Context) {
 				continue
 			}
 
-			Subscribers.Range(func(key, value interface{}) bool {
+			go Subscribers.Range(func(key, value interface{}) bool {
 				if _, ok := LeftBehind.Load(key.(string)); ok {
 					return true
 				}
@@ -124,13 +124,11 @@ func InitNotifier(ctx context.Context) {
 					return true
 				}
 
-				go func() {
-					token := key.(string)
-					err = ws.SendData(token, marshalLogData)
-					if err != nil {
-						log.Error().Err(err).Str("token", token).Msg("Logger")
-					}
-				}()
+				token := key.(string)
+				err = ws.SendData(token, marshalLogData)
+				if err != nil {
+					log.Error().Err(err).Str("token", token).Msg("Logger")
+				}
 				return true
 			})
 		}
