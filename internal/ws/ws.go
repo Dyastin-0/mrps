@@ -80,7 +80,6 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 func SendData(id string, data []byte) error {
 	if conn, ok := Clients.Load(id); ok {
 		if err := conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, data); err != nil {
-			Clients.Delete(id)
 			return fmt.Errorf("failed to send data: %v", err)
 		}
 	} else {
