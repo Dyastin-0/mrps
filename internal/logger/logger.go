@@ -150,6 +150,24 @@ func CatchUp(key string) {
 	}
 	defer t.Stop()
 
+	retry := 5
+
+	okk := false
+	for retry > 0 {
+		if _, ok := ws.Clients.Load(key); !ok {
+			retry--
+			time.Sleep(100 * time.Millisecond)
+		} else {
+			okk = true
+			break
+		}
+	}
+
+	if !okk {
+		log.Error().Err(fmt.Errorf("failed to send logs")).Msg("Logger")
+		return
+	}
+
 	for line := range t.Lines {
 		if line == nil || line.Err != nil {
 			log.Error().Err(line.Err).Msg("Logger")
