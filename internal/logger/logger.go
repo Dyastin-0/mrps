@@ -140,7 +140,7 @@ func CatchUp(key string) {
 		Follow: false,
 		Location: &tail.SeekInfo{
 			Offset: 20,
-			Whence: 20,
+			Whence: 0,
 		},
 	})
 	if err != nil {
