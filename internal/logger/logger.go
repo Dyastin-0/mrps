@@ -150,17 +150,6 @@ func CatchUp(key string) {
 	}
 	defer t.Stop()
 
-	retry := 5
-
-	for retry > 0 {
-		if _, ok := ws.Clients.Load(key); !ok {
-			retry--
-			time.Sleep(100 * time.Millisecond)
-		} else {
-			break
-		}
-	}
-
 	for line := range t.Lines {
 		if line == nil || line.Err != nil {
 			log.Error().Err(line.Err).Msg("Logger")
