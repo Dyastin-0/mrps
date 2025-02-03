@@ -84,7 +84,6 @@ func SendData(id string, data []byte) error {
 			return fmt.Errorf("failed to send data: %v", err)
 		}
 	} else {
-		log.Warn().Err(fmt.Errorf("client not found")).Msg("Websocket - Send")
 		return fmt.Errorf("client not found")
 	}
 
