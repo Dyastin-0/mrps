@@ -58,6 +58,7 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			for _, cn := range conns {
 				cn.Delete(token.Value)
 			}
+			Clients.Delete(token.Value)
 			conn.Close()
 		}()
 
