@@ -1,6 +1,7 @@
 package reverseproxy
 
 import (
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -8,14 +9,13 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
-	"github.com/rs/zerolog/log"
 )
 
 func New(target string, path string) http.Handler {
 	targetURL, err := url.Parse(target)
 
 	if err != nil {
-		log.Fatal().Err(err).Msg("proxy")
+		log.Fatalf("Failed to parse target URL: %v", err)
 	}
 
 	transport := &http.Transport{
