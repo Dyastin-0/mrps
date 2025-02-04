@@ -333,6 +333,7 @@ func getLogs() http.HandlerFunc {
 				break
 			}
 			retry--
+			time.Sleep(100 * time.Millisecond)
 		}
 		readyChan <- ok
 	}
