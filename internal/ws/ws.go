@@ -29,15 +29,16 @@ var Clients = sync.Map{}
 
 func WS(conns ...*sync.Map) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, err := r.Cookie("rt")
-		if err != nil {
-			log.Error().Err(err).Msg("Websocket")
+		token := r.URL.Query().Get("t")
+
+		if token == "" {
+			log.Error().Err(fmt.Errorf("unauthorized")).Msg("Websocket")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		_, err = jwt.ParseWithClaims(token.Value, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("REFRESH_TOKEN_KEY")), nil
+		_, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("ACCESS_TOKEN_KEY")), nil
 		})
 		if err != nil {
 			log.Error().Err(err).Msg("Websocket")
@@ -51,14 +52,14 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			return
 		}
 
-		Clients.Store(token.Value, conn)
+		Clients.Store(token, conn)
 		log.Info().Str("Status", "connected").Msg("Websocket")
 
 		defer func() {
 			for _, cn := range conns {
-				cn.Delete(token.Value)
+				cn.Delete(token)
 			}
-			Clients.Delete(token.Value)
+			Clients.Delete(token)
 			conn.Close()
 		}()
 

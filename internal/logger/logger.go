@@ -140,7 +140,7 @@ func CatchUp(key string) {
 		Follow: false,
 		Logger: tail.DiscardingLogger,
 		Location: &tail.SeekInfo{
-			Offset: -12,
+			Offset: -20,
 			Whence: 2,
 		},
 	})
@@ -152,18 +152,17 @@ func CatchUp(key string) {
 
 	retry := 30
 
-	okk := false
+	ok := false
 	for retry > 0 {
-		if _, ok := ws.Clients.Load(key); !ok {
+		if _, ok = ws.Clients.Load(key); !ok {
 			retry--
 			time.Sleep(100 * time.Millisecond)
 		} else {
-			okk = true
 			break
 		}
 	}
 
-	if !okk {
+	if !ok {
 		log.Error().Err(fmt.Errorf("failed to send logs")).Msg("Logger")
 		return
 	}

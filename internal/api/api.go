@@ -196,7 +196,7 @@ func Refresh() http.HandlerFunc {
 func setEnabled() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		domain := chi.URLParam(r, "domain")
-		token, _ := r.Cookie("rt")
+		token := r.URL.Query().Get("t")
 
 		var req struct {
 			Enabled bool `json:"enabled"`
@@ -236,7 +236,7 @@ func setEnabled() http.HandlerFunc {
 			return
 		}
 
-		go ws.SendData(token.Value, marshalConfig)
+		go ws.SendData(token, marshalConfig)
 		go config.ParseToYAML()
 
 		w.WriteHeader(http.StatusOK)
@@ -245,7 +245,7 @@ func setEnabled() http.HandlerFunc {
 
 func getHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, _ := r.Cookie("rt")
+		token := r.URL.Query().Get("t")
 
 		mapHealth := make(map[string]int)
 		health.Data.Range(func(key, value interface{}) bool {
@@ -261,7 +261,7 @@ func getHealth() http.HandlerFunc {
 			Health: mapHealth,
 		}
 
-		health.Subscribers.Store(token.Value, true)
+		health.Subscribers.Store(token, true)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(&data)
@@ -316,10 +316,10 @@ func getUptime() http.HandlerFunc {
 
 func getLogs() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, _ := r.Cookie("rt")
+		token := r.URL.Query().Get("t")
 
-		logger.LeftBehind.Store(token.Value, true)
-		go logger.CatchUp(token.Value)
+		logger.LeftBehind.Store(token, true)
+		go logger.CatchUp(token)
 
 		w.WriteHeader(http.StatusOK)
 	}
