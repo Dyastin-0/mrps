@@ -20,7 +20,7 @@ import (
 var (
 	Subscribers       = sync.Map{}
 	LeftBehind        = sync.Map{}
-	offsetBytes int64 = -20
+	offsetBytes int64 = -12
 )
 
 func Init() {
