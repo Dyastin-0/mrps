@@ -69,7 +69,7 @@ func Handler(next http.Handler) http.Handler {
 			Str("method", r.Method).
 			Str("host", r.Host).
 			Int("code", lrw.statusCode).
-			Msg("access")
+			Msg("Access")
 	})
 }
 
@@ -79,7 +79,7 @@ type LogData struct {
 }
 
 func InitNotifier(ctx context.Context) {
-	log.Info().Str("status", "running").Msg("logger")
+	log.Info().Str("Status", "Running").Msg("Logger - Notifier")
 
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: true,
@@ -87,16 +87,16 @@ func InitNotifier(ctx context.Context) {
 		Logger: tail.DiscardingLogger,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("logger")
+		log.Error().Err(err).Msg("Logger - Failed to start tailing the file")
 		return
 	}
 
-	log.Info().Str("status", "tailing").Str("target", "./logs/mrps.log").Msg("logger")
+	log.Info().Msg("Logger - Tailing started")
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info().Str("status", "stopping").Msg("logger")
+			log.Info().Str("Status", "stopping").Msg("Logger - Notifier")
 			t.Stop()
 			return
 
@@ -140,7 +140,7 @@ func CatchUp(key string, readyChan chan bool) {
 	close(readyChan)
 
 	if !ready {
-		log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", string(key[len(key)-10:])).Msg("websocket")
+		log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", string(key[len(key)-10])).Msg("Websocket")
 		return
 	}
 
@@ -155,14 +155,14 @@ func CatchUp(key string, readyChan chan bool) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Msg("logger")
+		log.Error().Err(err).Msg("Logger")
 		return
 	}
 	defer t.Stop()
 
 	for line := range t.Lines {
 		if line == nil || line.Err != nil {
-			log.Error().Err(line.Err).Msg("logger")
+			log.Error().Err(line.Err).Msg("Logger")
 			continue
 		}
 
@@ -173,13 +173,13 @@ func CatchUp(key string, readyChan chan bool) {
 
 		dataBytes, err := json.Marshal(Data)
 		if err != nil {
-			log.Logger.Error().Err(err).Msg("logger")
+			log.Logger.Error().Err(err).Msg("Logger")
 		}
 
 		ws.Clients.Send(key, dataBytes)
 	}
 
 	LeftBehind.Delete(key)
-	log.Info().Str("status", "updated").Str("offset", fmt.Sprint(offsetBytes*-1)+"bytes").Msg("logger")
+	log.Info().Str("Status", "caught up").Str("Offset", fmt.Sprint(offsetBytes*-1)+" bytes").Msg("Logger")
 	Subscribers.Store(key, true)
 }

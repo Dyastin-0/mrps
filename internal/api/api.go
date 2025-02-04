@@ -78,15 +78,14 @@ func Auth() http.HandlerFunc {
 		accessToken, err := NewToken(expectedEmail, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Error().Err(err).Str("type", "access").Str("token", "..."+string(accessToken[len(accessToken)-10:])).Msg("api")
+			log.Error().Err(err).Msg("API - Access token")
 			return
 		}
 
 		refreshToken, err := NewToken(expectedEmail, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Error().Err(err).Str("type", "refresh").Str("token", "..."+string(refreshToken[len(refreshToken)-10:])).Msg("api")
-
+			log.Error().Err(err).Msg("API - Refresh token")
 			return
 		}
 
@@ -233,7 +232,7 @@ func setEnabled() http.HandlerFunc {
 		configBytes, err := json.Marshal(conf)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Error().Err(err).Msg("api")
+			log.Error().Err(err).Msg("API - Marshal")
 			return
 		}
 
