@@ -20,7 +20,7 @@ import (
 var (
 	Subscribers       = sync.Map{}
 	LeftBehind        = sync.Map{}
-	offsetBytes int64 = -12
+	offsetBytes int64 = -30
 )
 
 func Init() {
@@ -140,7 +140,7 @@ func CatchUp(key string, readyChan chan bool) {
 	close(readyChan)
 
 	if !ready {
-		log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", string(key[len(key)-10:])).Msg("websocket")
+		log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", "..."+string(key[len(key)-10:])).Msg("websocket")
 		return
 	}
 
