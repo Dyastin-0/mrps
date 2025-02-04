@@ -25,7 +25,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var Clients = sync.Map{}
+var Clients = NewHub()
 
 func WS(conns ...*sync.Map) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -52,14 +52,14 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			return
 		}
 
-		Clients.Store(token, conn)
+		Clients.register <- connection{id: token, conn: conn}
 		log.Info().Str("Status", "connected").Msg("Websocket")
 
 		defer func() {
 			for _, cn := range conns {
 				cn.Delete(token)
 			}
-			Clients.Delete(token)
+			Clients.unregister <- token
 			conn.Close()
 		}()
 
@@ -80,17 +80,4 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			}
 		}
 	}
-}
-
-func SendData(id string, data []byte) error {
-	if conn, ok := Clients.Load(id); ok {
-		if err := conn.(*websocket.Conn).WriteMessage(websocket.TextMessage, data); err != nil {
-			return fmt.Errorf("failed to send data: %v", err)
-		}
-	} else {
-		log.Warn().Err(fmt.Errorf("client not found")).Msg("Websocket - Send")
-		return fmt.Errorf("client not found")
-	}
-
-	return nil
 }

@@ -17,8 +17,11 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Subscribers = sync.Map{}
-var LeftBehind = sync.Map{}
+var (
+	Subscribers       = sync.Map{}
+	LeftBehind        = sync.Map{}
+	offsetBytes int64 = -10
+)
 
 func Init() {
 	logFile := &lumberjack.Logger{
@@ -110,62 +113,52 @@ func InitNotifier(ctx context.Context) {
 					return true
 				}
 
-				if _, ok := ws.Clients.Load(key.(string)); !ok {
+				if ok := ws.Clients.Exists(key.(string)); !ok {
 					return true
 				}
 
-				logData := LogData{
+				Data := LogData{
 					Type: "log",
 					Log:  line.Text,
 				}
 
-				marshalLogData, err := json.Marshal(logData)
+				dataBytes, err := json.Marshal(Data)
 				if err != nil {
 					return true
 				}
 
 				token := key.(string)
-				err = ws.SendData(token, marshalLogData)
-				if err != nil {
-					log.Error().Err(err).Str("token", token).Msg("Logger")
-				}
+				ws.Clients.Send(token, dataBytes)
 				return true
 			})
 		}
 	}
 }
 
-func CatchUp(key string) {
+func CatchUp(key string, readyChan chan bool) {
+	ready := <-readyChan
+	close(readyChan)
+
+	if !ready {
+		log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", string(key[len(key)-10])).Msg("Websocket")
+		return
+	}
+
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
 		Logger: tail.DiscardingLogger,
+		// location fails sometimes - fix later
 		Location: &tail.SeekInfo{
-			Offset: -20,
+			Offset: offsetBytes,
 			Whence: 2,
 		},
 	})
+
 	if err != nil {
 		log.Error().Err(err).Msg("Logger")
 		return
 	}
 	defer t.Stop()
-
-	retry := 30
-
-	ok := false
-	for retry > 0 {
-		if _, ok = ws.Clients.Load(key); !ok {
-			retry--
-			time.Sleep(100 * time.Millisecond)
-		} else {
-			break
-		}
-	}
-
-	if !ok {
-		log.Error().Err(fmt.Errorf("failed to send logs")).Msg("Logger")
-		return
-	}
 
 	for line := range t.Lines {
 		if line == nil || line.Err != nil {
@@ -173,20 +166,20 @@ func CatchUp(key string) {
 			continue
 		}
 
-		logData := LogData{
+		Data := LogData{
 			Type: "log",
 			Log:  line.Text,
 		}
 
-		marshalLogData, err := json.Marshal(logData)
+		dataBytes, err := json.Marshal(Data)
 		if err != nil {
 			log.Logger.Error().Err(err).Msg("Logger")
 		}
 
-		ws.SendData(key, marshalLogData)
+		ws.Clients.Send(key, dataBytes)
 	}
 
 	LeftBehind.Delete(key)
-	log.Info().Str("Status", "caught up").Msg("Logger")
+	log.Info().Str("Status", "caught up").Str("Offset", fmt.Sprint(offsetBytes*-1)+" bytes").Msg("Logger")
 	Subscribers.Store(key, true)
 }

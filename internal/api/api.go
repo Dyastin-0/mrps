@@ -221,7 +221,7 @@ func setEnabled() http.HandlerFunc {
 
 		con := config.DomainTrie.GetAll()
 
-		data := struct {
+		conf := struct {
 			Type   string               `json:"type"`
 			Config common.DomainsConfig `json:"config"`
 		}{
@@ -229,14 +229,14 @@ func setEnabled() http.HandlerFunc {
 			Config: con,
 		}
 
-		marshalConfig, err := json.Marshal(data)
+		configBytes, err := json.Marshal(conf)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			log.Error().Err(err).Msg("API - Marshal")
 			return
 		}
 
-		go ws.SendData(token, marshalConfig)
+		go ws.Clients.Send(token, configBytes)
 		go config.ParseToYAML()
 
 		w.WriteHeader(http.StatusOK)
@@ -318,10 +318,23 @@ func getLogs() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.URL.Query().Get("t")
 
-		logger.LeftBehind.Store(token, true)
-		go logger.CatchUp(token)
+		readyChan := make(chan bool)
+
+		logger.LeftBehind.Store(token, readyChan)
+
+		go logger.CatchUp(token, readyChan)
 
 		w.WriteHeader(http.StatusOK)
+
+		retry := 10
+		ok := false
+		for retry > 0 {
+			if ok = ws.Clients.Exists(token); ok {
+				break
+			}
+			retry--
+		}
+		readyChan <- ok
 	}
 }
 

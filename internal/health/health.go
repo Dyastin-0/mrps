@@ -81,7 +81,7 @@ func notifySubscribers() {
 		Health: mapHealth,
 	}
 
-	marshalHealth, err := json.Marshal(data)
+	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Health check")
 		return
@@ -90,7 +90,7 @@ func notifySubscribers() {
 	Subscribers.Range(func(key, value interface{}) bool {
 		token := key.(string)
 		go func() {
-			ws.SendData(token, marshalHealth)
+			ws.Clients.Send(token, dataBytes)
 		}()
 		return true
 	})

@@ -46,11 +46,13 @@ func main() {
 
 	config.StartTime = time.Now()
 
-	go health.InitPinger(ctx)
-	go logger.InitNotifier(ctx)
 	logger.Init()
 
-	go startReverseProxyServer(mainRouter)
+	go health.InitPinger(ctx)
+	go logger.InitNotifier(ctx)
+	go ws.Clients.Run()
+
+	// go startReverseProxyServer(mainRouter)
 
 	if config.Misc.MetricsEnabled {
 		go startMetricsServer()
