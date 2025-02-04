@@ -327,7 +327,7 @@ func getLogs() http.HandlerFunc {
 
 		w.WriteHeader(http.StatusOK)
 
-		retry := 10
+		retry := 20
 		ok := false
 		for retry > 0 {
 			if ok = ws.Clients.Exists(token); ok {
