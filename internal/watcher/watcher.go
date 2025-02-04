@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/fsnotify/fsnotify"
 	"github.com/rs/zerolog/log"
@@ -9,16 +11,16 @@ import (
 func Watch(filename string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Watcher")
+		log.Fatal().Err(err).Msg("watcher")
 	}
 	defer watcher.Close()
 
 	err = watcher.Add(filename)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Watcher - Add file")
+		log.Fatal().Err(err).Msg("watcher")
 	}
 
-	log.Info().Str("Status", "running").Str("Target", filename).Msg("Watcher")
+	log.Info().Str("status", "running").Str("target", filename).Msg("watcher")
 
 	for {
 		select {
@@ -28,19 +30,18 @@ func Watch(filename string) {
 			}
 
 			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
-				log.Printf("Config file changed: %s", event.Name)
 
 				if err := config.Load(filename); err != nil {
-					log.Printf("Failed to reload config: %v", err)
+					log.Error().Err(fmt.Errorf("failed to reload")).Msg("watcher")
 				} else {
-					log.Info().Str("Status", "reloaded").Str("Target", filename).Msg("Watcher")
+					log.Info().Str("status", "reloaded").Str("target", filename).Msg("watcher")
 				}
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
-			log.Error().Err(err).Msg("Watcher")
+			log.Error().Err(err).Msg("watcher")
 		}
 	}
 }

@@ -21,7 +21,7 @@ var httpClient = &http.Client{
 }
 
 func InitPinger(ctx context.Context) {
-	log.Info().Str("Status", "running").Msg("Health check")
+	log.Info().Str("status", "running").Msg("health")
 
 	ticker := time.NewTicker(10 * time.Second)
 
@@ -30,7 +30,7 @@ func InitPinger(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				log.Info().Str("Status", "stopping").Msg("Health check")
+				log.Info().Str("status", "stopping").Msg("health")
 				return
 			case <-ticker.C:
 				pingAll()
@@ -83,7 +83,7 @@ func notifySubscribers() {
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Health check")
+		log.Fatal().Err(err).Msg("health")
 		return
 	}
 

@@ -67,7 +67,6 @@ func Load(filename string) error {
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
 		for path := range cfg.Routes {
 			if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
-				log.Printf("Invalid path: %s", path)
 				return fmt.Errorf("invalid path: %s", path)
 			}
 
@@ -111,11 +110,11 @@ func ParseToYAML() {
 
 	data, err := yaml.Marshal(&config)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Config - Marshal")
+		log.Fatal().Err(err).Msg("config")
 	}
 
 	err = os.WriteFile("mrps.yaml", data, 0644)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Config - Writefile")
+		log.Fatal().Err(err).Msg("config")
 	}
 }
