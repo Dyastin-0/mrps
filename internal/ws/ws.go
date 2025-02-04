@@ -32,7 +32,7 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 		token := r.URL.Query().Get("t")
 
 		if token == "" {
-			log.Error().Err(fmt.Errorf("unauthorized")).Msg("Websocket")
+			log.Error().Err(fmt.Errorf("unauthorized")).Msg("websocket")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -41,19 +41,19 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			return []byte(os.Getenv("ACCESS_TOKEN_KEY")), nil
 		})
 		if err != nil {
-			log.Error().Err(err).Msg("Websocket")
+			log.Error().Err(err).Msg("websocket")
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Error().Err(err).Msg("Websocket - Upgrader")
+			log.Error().Err(err).Msg("Websocket")
 			return
 		}
 
 		Clients.register <- connection{id: token, conn: conn}
-		log.Info().Str("Status", "connected").Msg("Websocket")
+		log.Info().Str("Status", "connected").Msg("websocket")
 
 		defer func() {
 			for _, cn := range conns {
@@ -67,15 +67,15 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			messageType, msg, err := conn.ReadMessage()
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
-					log.Error().Err(err).Msg("Websocket - Unexpected disconnect")
+					log.Error().Err(err).Msg("Websocket")
 				} else {
-					log.Info().Msg("Websocket - Client disconnected")
+					log.Info().Str("status", "disconnected").Str("client", string(token[len(token)-10:])).Msg("websocket")
 				}
 				break
 			}
 
 			if err := conn.WriteMessage(messageType, msg); err != nil {
-				log.Error().Err(err).Msg("Websocket - Write failed")
+				log.Error().Err(err).Msg("websocket")
 				break
 			}
 		}
