@@ -20,7 +20,7 @@ import (
 var (
 	Subscribers       = sync.Map{}
 	LeftBehind        = sync.Map{}
-	offsetBytes int64 = -30
+	offsetBytes int64 = 10
 )
 
 func Init() {
@@ -180,6 +180,6 @@ func CatchUp(key string, readyChan chan bool) {
 	}
 
 	LeftBehind.Delete(key)
-	log.Info().Str("status", "updated").Str("offset", fmt.Sprint(offsetBytes*-1)+"bytes").Msg("logger")
+	log.Info().Str("status", "updated").Str("offset", fmt.Sprint(offsetBytes)+"bytes").Msg("logger")
 	Subscribers.Store(key, true)
 }
