@@ -7,6 +7,7 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/loadbalancer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,12 +31,15 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 
 	// Initialize DomainTrie
 	config.DomainTrie = common.NewDomainTrie()
+	dests := []string{mockService.URL}
+	dests1 := []string{mockService1.URL}
 	conf := &common.Config{
 		Routes: common.RouteConfig{
-			"/api":  common.PathConfig{Dest: mockService.URL},
-			"/mock": common.PathConfig{Dest: mockService1.URL},
+			"/api":  common.PathConfig{Dests: dests},
+			"/mock": common.PathConfig{Dests: dests1, Balancer: loadbalancer.New(dests1, "/mock")},
 		},
 	}
+
 	conf.SortedRoutes = []string{"/api", "/mock"}
 	config.DomainTrie.Insert("localhost", conf)
 

@@ -3,7 +3,8 @@ domains:
     enabled: true
     routes:
       /:
-        dest: http://localhost:4002
+        dests:
+        - http://localhost:4002
         rewrite:
           type: ""
           value: ""
@@ -16,16 +17,15 @@ domains:
     enabled: true
     routes:
       /:
-        dest:
-        - http://localhost:5005
-        - http://localhost:5005
-        balancer: round-robin
+        dests:
+          - http://localhost:5005
         rewrite:
           type: ""
           value: ""
           replace_val: ""
       /api/v2:
-        dest: http://localhost:3004
+        dests:
+          - http://localhost:3004
         rewrite:
           type: ""
           value: ""
@@ -38,19 +38,22 @@ domains:
     enabled: false
     routes:
       /:
-        dest: http://localhost:5002
+        dests:
+          - http://localhost:5002
         rewrite:
           type: ""
           value: ""
           replace_val: ""
       /api:
-        dest: http://localhost:5001
+        dests:
+          - http://localhost:5001
         rewrite:
           type: ""
           value: ""
           replace_val: ""
       /socket.io:
-        dest: http://localhost:5001
+        dests:
+          - http://localhost:5001
         rewrite:
           type: ""
           value: ""
@@ -63,13 +66,15 @@ domains:
     enabled: true
     routes:
       /:
-        dest: http://localhost:4001
+        dests:
+          - http://localhost:4001
         rewrite:
           type: ""
           value: ""
           replace_val: ""
       /api/v1:
-        dest: http://localhost:4000
+        dests:
+          - http://localhost:4000
         rewrite:
           type: regex
           value: ^/api/v1/(.*)$
@@ -82,7 +87,8 @@ domains:
     enabled: false
     routes:
       /:
-        dest: http://localhost:3000
+        dests:
+          - http://localhost:3000
         rewrite:
           type: ""
           value: ""
@@ -95,13 +101,15 @@ domains:
     enabled: true
     routes:
       /:
-        dest: http://localhost:5050
+        dests:
+          - http://localhost:5050
         rewrite:
           type: ""
           value: ""
           replace_val: ""
       /api:
-        dest: http://localhost:6060
+        dests:
+          - http://localhost:6060
         rewrite:
           type: regex
           value: ^/api/(.*)$
@@ -114,7 +122,8 @@ domains:
     enabled: true
     routes:
       /:
-        dest: http://localhost:4004
+        dests:
+          - http://localhost:4004
         rewrite:
           type: ""
           value: ""
@@ -130,8 +139,8 @@ misc:
   enable_api: true
   api_port: "6060"
   allowed_origins:
-  - https://mrps.dyastin.tech
-  - http://localhost:5173
+    - https://mrps.dyastin.tech
+    - http://localhost:5173
   domain: .mrps.dyastin.tech
 rate_limit:
   burst: 100

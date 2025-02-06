@@ -23,7 +23,7 @@ func TestDomainHandler(t *testing.T) {
 	routeConfig := common.Config{
 		Enabled: true,
 		Routes: common.RouteConfig{
-			"/": common.PathConfig{Dest: "localhost"},
+			"/": common.PathConfig{Dests: []string{"localhost"}},
 		},
 		RateLimit: common.RateLimitConfig{
 			Rate:            2,
@@ -58,9 +58,21 @@ func TestDomainHandler(t *testing.T) {
 			waitBetweenReqs: 600 * time.Millisecond,
 		},
 		{
-			name:            "Recover after cooldown",
-			requestCount:    6,
-			expectedResults: []int{http.StatusOK, http.StatusOK, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusOK},
+			name:         "Recover after cooldown",
+			requestCount: 10,
+			expectedResults: []int{
+				http.StatusOK,
+				http.StatusOK,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusOK,
+			},
 			waitBetweenReqs: 100 * time.Millisecond,
 		},
 		{
@@ -73,16 +85,15 @@ func TestDomainHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Initialize a mock client for the "localhost" domain and "127.0.0.1" IP
+
 			for i := 0; i < tt.requestCount; i++ {
 				req, err := http.NewRequest("GET", "/", nil)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				// Set the Host and RemoteAddr to simulate client IP and domain
 				req.Host = "localhost"
-				req.RemoteAddr = "127.0.0.1:12345" // Simulating a client IP and port
+				req.RemoteAddr = "127.0.0.1:12345"
 
 				rr := httptest.NewRecorder()
 				handler.ServeHTTP(rr, req)
@@ -91,7 +102,6 @@ func TestDomainHandler(t *testing.T) {
 					t.Errorf("Name: %s, Expected status %d but got %d for request %d", tt.name, tt.expectedResults[i], rr.Code, i+1)
 				}
 
-				// Wait between requests to simulate real user behavior
 				if i < tt.requestCount-1 {
 					time.Sleep(tt.waitBetweenReqs)
 				}

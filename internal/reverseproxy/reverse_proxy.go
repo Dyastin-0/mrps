@@ -18,8 +18,8 @@ func Handler(next http.Handler) http.Handler {
 			config := configPtr
 			for _, routePath := range config.SortedRoutes {
 				if strings.HasPrefix(path, routePath) {
-					proxyTarget := config.Routes[routePath].Dest
-					reverseproxy.New(proxyTarget, routePath).ServeHTTP(w, r)
+					proxyTarget := config.Routes[routePath].Balancer.Next()
+					reverseproxy.New(proxyTarget.URL, routePath).ServeHTTP(w, r)
 					return
 				}
 			}

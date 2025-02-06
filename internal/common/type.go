@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"golang.org/x/time/rate"
 )
@@ -27,10 +28,10 @@ type Config struct {
 type RouteConfig map[string]PathConfig
 
 type PathConfig struct {
-	Dests        []string             `yaml:"dest"`
-	RewriteRule  rewriter.RewriteRule `yaml:"rewrite"`
-	BalancerType string               `yaml:"balancer"`
-	Balancer     struct{}
+	Dests        []string                         `yaml:"dests"`
+	RewriteRule  rewriter.RewriteRule             `yaml:"rewrite"`
+	BalancerType string                           `yaml:"balancer"`
+	Balancer     interface{ Next() *common.Dest } `yaml:"-"`
 }
 
 type RateLimitConfig struct {

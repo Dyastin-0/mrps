@@ -3,22 +3,18 @@ package health
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
+	http "github.com/Dyastin-0/mrps/internal/http"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/rs/zerolog/log"
 )
 
 var Data = sync.Map{}
 var Subscribers = sync.Map{}
-
-var httpClient = &http.Client{
-	Timeout: 3 * time.Second,
-}
 
 func InitPinger(ctx context.Context) {
 	log.Info().Str("status", "running").Msg("health")
@@ -94,7 +90,7 @@ func notifySubscribers() {
 }
 
 func Check(url string) (int, error) {
-	resp, err := httpClient.Get(url)
+	resp, err := http.Client.Get(url)
 	if err != nil {
 		log.Warn().Str("url", url).Str("status", "down").Msg("health")
 		return 0, err

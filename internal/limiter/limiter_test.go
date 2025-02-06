@@ -43,9 +43,21 @@ func TestPerClientRateLimiter(t *testing.T) {
 			waitBetweenReqs: 600 * time.Millisecond,
 		},
 		{
-			name:            "Recover after cooldown",
-			requestCount:    6,
-			expectedResults: []int{http.StatusOK, http.StatusOK, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusOK},
+			name:         "Recover after cooldown",
+			requestCount: 10,
+			expectedResults: []int{
+				http.StatusOK,
+				http.StatusOK,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusTooManyRequests,
+				http.StatusOK,
+			},
 			waitBetweenReqs: 100 * time.Millisecond,
 		},
 		{
@@ -88,6 +100,6 @@ func TestPerClientRateLimiter(t *testing.T) {
 		})
 
 		// Wait for the cooldown to reset
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }

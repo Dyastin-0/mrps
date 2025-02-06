@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/common"
+	"github.com/Dyastin-0/mrps/internal/loadbalancer"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
@@ -65,12 +66,15 @@ func Load(filename string) error {
 
 		//This slice is used to access the Routes sequentially based on the number of path segments
 		sortedRoutes := make([]string, 0, len(cfg.Routes))
-		for path := range cfg.Routes {
+		for path, config := range cfg.Routes {
 			if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
 				return fmt.Errorf("invalid path: %s", path)
 			}
 
+			config.Balancer = loadbalancer.New(config.Dests, path)
+			cfg.Routes[path] = config
 			sortedRoutes = append(sortedRoutes, path)
+
 		}
 
 		// Sort the routes by the number of "/" and then by string length
