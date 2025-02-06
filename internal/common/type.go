@@ -27,8 +27,10 @@ type Config struct {
 type RouteConfig map[string]PathConfig
 
 type PathConfig struct {
-	Dest        string               `yaml:"dest"`
-	RewriteRule rewriter.RewriteRule `yaml:"rewrite"`
+	Dests        []string             `yaml:"dest"`
+	RewriteRule  rewriter.RewriteRule `yaml:"rewrite"`
+	BalancerType string               `yaml:"balancer"`
+	Balancer     struct{}
 }
 
 type RateLimitConfig struct {

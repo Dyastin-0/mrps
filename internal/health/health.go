@@ -56,12 +56,9 @@ func pingAll() {
 func ping(config *common.Config, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for _, route := range config.Routes {
-		resp, err := httpClient.Get(route.Dest)
-		if err != nil {
-			Data.Store(route.Dest, 0)
-		} else {
-			resp.Body.Close()
-			Data.Store(route.Dest, resp.StatusCode)
+		for _, dest := range route.Dests {
+			status, _ := Check(dest)
+			Data.Store(dest, status)
 		}
 	}
 }
@@ -94,4 +91,14 @@ func notifySubscribers() {
 		}()
 		return true
 	})
+}
+
+func Check(url string) (int, error) {
+	resp, err := httpClient.Get(url)
+	if err != nil {
+		log.Warn().Str("url", url).Str("status", "down").Msg("health")
+		return 0, err
+	}
+	resp.Body.Close()
+	return resp.StatusCode, nil
 }
