@@ -7,6 +7,7 @@ import (
 
 type balancer interface {
 	Next() *lbcommon.Dest
+	GetDests() interface{}
 }
 
 func New(dests []string, path string) balancer {

@@ -28,10 +28,13 @@ type Config struct {
 type RouteConfig map[string]PathConfig
 
 type PathConfig struct {
-	Dests        []string                         `yaml:"dests"`
-	RewriteRule  rewriter.RewriteRule             `yaml:"rewrite"`
-	BalancerType string                           `yaml:"balancer"`
-	Balancer     interface{ Next() *common.Dest } `yaml:"-"`
+	Dests        []string             `json:"Dests,omitempty" yaml:"dests,omitempty"`
+	RewriteRule  rewriter.RewriteRule `yaml:"rewrite"`
+	BalancerType string               `yaml:"balancer"`
+	Balancer     interface {
+		GetDests() interface{}
+		Next() *common.Dest
+	} `yaml:"-"`
 }
 
 type RateLimitConfig struct {

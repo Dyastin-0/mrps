@@ -9,6 +9,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	http "github.com/Dyastin-0/mrps/internal/http"
+	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/rs/zerolog/log"
 )
@@ -52,9 +53,13 @@ func pingAll() {
 func ping(config *common.Config, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for _, route := range config.Routes {
-		for _, dest := range route.Dests {
-			status, _ := Check(dest)
-			Data.Store(dest, status)
+		destsI := route.Balancer.GetDests()
+		dests, _ := destsI.([]*lbcommon.Dest)
+
+		for _, dest := range dests {
+			status, _ := Check(dest.URL)
+			log.Info().Int("status", status).Str("url", dest.URL).Msg("health")
+			Data.Store(dest.URL, status)
 		}
 	}
 }

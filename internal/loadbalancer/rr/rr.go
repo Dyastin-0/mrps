@@ -46,3 +46,7 @@ func (rr *RR) Next() *lbcommon.Dest {
 
 	return dest
 }
+
+func (rr *RR) GetDests() interface{} {
+	return rr.Dests
+}
