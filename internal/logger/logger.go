@@ -144,10 +144,11 @@ func CatchUp(key string, readyChan chan bool) {
 		return
 	}
 
+	time.Sleep(time.Second)
+
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
 		Logger: tail.DiscardingLogger,
-		// location fails sometimes - fix later
 		Location: &tail.SeekInfo{
 			Offset: offsetBytes,
 			Whence: 2,
