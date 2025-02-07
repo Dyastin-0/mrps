@@ -59,8 +59,8 @@ func (h *Hub) Run() {
 		case check := <-h.exists:
 			h.mu.Lock()
 			_, exists := h.clients[check.id]
-			check.result <- exists
 			h.mu.Unlock()
+			check.result <- exists
 
 		case msg := <-h.send:
 			h.Send(msg.id, msg.data)
