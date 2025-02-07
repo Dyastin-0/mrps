@@ -147,13 +147,13 @@ domains:
   sandbox.dyastin.tech:
     enabled: true
     routes:
-      /:
+      /free-wall:
         dests:
         - http://localhost:5000
         rewrite:
-          type: ""
-          value: ""
-          replace_val: ""
+          type: regex
+          value: ^/api/v1/(.*)$
+          replace_val: /$1
         balancer: ""
     rate_limit:
       burst: 15
