@@ -53,7 +53,8 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 		}
 
 		Clients.register <- connection{id: token, conn: conn}
-		log.Info().Str("Status", "connected").Str("client", "..."+string(token[len(token)-10:])).Msg("websocket")
+		shortToken := "..." + token[max(0, len(token)-10):] // Avoids out-of-range panic
+		log.Info().Str("Status", "connected").Str("client", shortToken).Msg("websocket")
 
 		defer func() {
 			for _, cn := range conns {
@@ -64,18 +65,13 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 		}()
 
 		for {
-			messageType, msg, err := conn.ReadMessage()
+			_, _, err := conn.ReadMessage()
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
 					log.Error().Err(err).Msg("Websocket")
 				} else {
-					log.Info().Str("status", "disconnected").Str("client", "..."+string(token[len(token)-10:])).Msg("websocket")
+					log.Info().Str("status", "disconnected").Str("client", shortToken).Msg("websocket")
 				}
-				break
-			}
-
-			if err := conn.WriteMessage(messageType, msg); err != nil {
-				log.Error().Err(err).Msg("websocket")
 				break
 			}
 		}
