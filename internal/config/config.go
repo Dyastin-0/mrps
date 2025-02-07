@@ -72,7 +72,6 @@ func Load(filename string) error {
 			}
 
 			config.Balancer = loadbalancer.New(config.Dests, path)
-			config.Dests = nil // free the memory
 			cfg.Routes[path] = config
 			sortedRoutes = append(sortedRoutes, path)
 		}
