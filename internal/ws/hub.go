@@ -59,28 +59,28 @@ func (h *Hub) Run() {
 		case check := <-h.exists:
 			h.mu.Lock()
 			_, exists := h.clients[check.id]
-			check.result <- exists
 			h.mu.Unlock()
+			check.result <- exists
 
 		case msg := <-h.send:
-			h.mu.Lock()
-			for clientID, conn := range h.clients {
-				go func(conn *websocket.Conn, data []byte) {
-					if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-						h.mu.Lock()
-						conn.Close()
-						delete(h.clients, clientID)
-						h.mu.Unlock()
-					}
-				}(conn, msg.data)
-			}
-			h.mu.Unlock()
+			h.Send(msg.id, msg.data)
 		}
 	}
 }
 
 func (h *Hub) Send(id string, data []byte) {
-	h.send <- bytesData{id, data}
+	h.mu.Lock()
+	conn, exists := h.clients[id]
+	h.mu.Unlock()
+
+	if exists {
+		if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
+			h.mu.Lock()
+			conn.Close()
+			delete(h.clients, id)
+			h.mu.Unlock()
+		}
+	}
 }
 
 func (h *Hub) Exists(id string) bool {
