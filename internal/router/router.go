@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/Dyastin-0/mrps/internal/allowedhost"
 	"github.com/Dyastin-0/mrps/internal/limiter"
 	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/metrics"
@@ -16,7 +17,7 @@ func New() chi.Router {
 
 	router.Use(logger.Handler)
 	router.Use(metrics.UpdateHandler)
-	// router.Use(allowedhost.Handler)
+	router.Use(allowedhost.Handler)
 	router.Use(limiter.Handler)
 	router.Use(routelimiter.Handler)
 	router.Use(reverseproxy.Handler)
