@@ -40,11 +40,16 @@ func New(target string, path string) http.Handler {
 
 		req.Host = targetURL.Host
 
+		if req.Header.Get("Upgrade") == "websocket" {
+			req.Header.Set("Connection", "Upgrade")
+			req.Header.Set("Upgrade", "websocket")
+		} else {
+			req.Header.Set("Connection", "keep-alive")
+		}
+
 		req.Header.Set("X-Forwared-For", req.RemoteAddr)
 		req.Header.Set("X-Forwarded-Host", req.Host)
 		req.Header.Set("X-Real-IP", req.RemoteAddr)
-		req.Header.Set("Connection", "keep-alive")
-		req.Header.Set("Connection", "Upgrade")
 	}
 
 	return proxy
