@@ -20,7 +20,7 @@ import (
 var (
 	Subscribers       = sync.Map{}
 	LeftBehind        = sync.Map{}
-	offsetBytes int64 = 10
+	offsetBytes int64 = -10
 )
 
 func Init() {
@@ -149,7 +149,7 @@ func CatchUp(key string, readyChan chan bool) {
 		Logger: tail.DiscardingLogger,
 		Location: &tail.SeekInfo{
 			Offset: offsetBytes,
-			Whence: 2,
+			Whence: 0,
 		},
 	})
 
