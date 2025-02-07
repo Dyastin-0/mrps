@@ -64,13 +64,18 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 		}()
 
 		for {
-			_, _, err := conn.ReadMessage()
+			messageType, msg, err := conn.ReadMessage()
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
 					log.Error().Err(err).Msg("Websocket")
 				} else {
 					log.Info().Str("status", "disconnected").Str("client", "..."+string(token[len(token)-10:])).Msg("websocket")
 				}
+				break
+			}
+
+			if err := conn.WriteMessage(messageType, msg); err != nil {
+				log.Error().Err(err).Msg("websocket")
 				break
 			}
 		}
