@@ -152,7 +152,7 @@ domains:
         - http://localhost:5000
         rewrite:
           type: regex
-          value: ^/api/v1/(.*)$
+          value: ^/free-wall/(.*)$
           replace_val: /$1
         balancer: ""
     rate_limit:
