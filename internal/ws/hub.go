@@ -15,9 +15,8 @@ type Hub struct {
 }
 
 type client struct {
-	conn   *websocket.Conn
-	send   chan []byte
-	closed bool
+	conn *websocket.Conn
+	send chan []byte
 }
 
 type check struct {
