@@ -16,7 +16,7 @@ type Hub struct {
 
 type client struct {
 	conn   *websocket.Conn
-	send   chan []byte // Dedicated send channel for this client
+	send   chan []byte
 	closed bool
 }
 
@@ -46,13 +46,13 @@ func (h *Hub) Run() {
 			h.mu.Lock()
 			if _, exists := h.clients[reg.id]; exists {
 				h.mu.Unlock()
-				reg.conn.Close() // Close duplicate connections
+				reg.conn.Close()
 				continue
 			}
 
 			c := &client{
 				conn: reg.conn,
-				send: make(chan []byte, 256), // Buffered channel for outgoing messages
+				send: make(chan []byte, 256),
 			}
 			h.clients[reg.id] = c
 			h.mu.Unlock()
@@ -89,7 +89,6 @@ func (h *Hub) writeWorker(id string, c *client) {
 	}
 }
 
-// Send enqueues a message for a specific client.
 func (h *Hub) Send(id string, data []byte) {
 	h.mu.Lock()
 	c, exists := h.clients[id]
@@ -98,7 +97,7 @@ func (h *Hub) Send(id string, data []byte) {
 	if exists {
 		select {
 		case c.send <- data:
-		default: // Drop message if channel is full to prevent blocking
+		default:
 			h.mu.Lock()
 			c.conn.Close()
 			delete(h.clients, id)
@@ -107,7 +106,6 @@ func (h *Hub) Send(id string, data []byte) {
 	}
 }
 
-// Exists checks if a client exists in the hub.
 func (h *Hub) Exists(id string) bool {
 	result := make(chan bool)
 	h.exists <- check{id, result}
