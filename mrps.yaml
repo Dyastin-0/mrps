@@ -144,6 +144,21 @@ domains:
       burst: 15
       rate: 10
       cooldown: 60000
+  sandbox.dyastin.tech:
+    enabled: true
+    routes:
+      /:
+        dests:
+        - http://localhost:5000
+        rewrite:
+          type: ""
+          value: ""
+          replace_val: ""
+        balancer: ""
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
 misc:
   email: mail@dyastin.tech
   enable_metrics: true
