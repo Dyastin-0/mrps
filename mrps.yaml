@@ -157,7 +157,7 @@ domains:
         balancer: ""
       /free-wall:
         dests:
-        - http://localhost:9100
+        - http://localhost:9001
         rewrite:
           type: regex
           value: ^/free-wall/(.*)$
