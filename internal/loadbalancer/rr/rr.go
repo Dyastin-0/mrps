@@ -4,6 +4,8 @@ import (
 	"sync"
 
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
+	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
+	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,7 +15,7 @@ type RR struct {
 	mu    sync.Mutex
 }
 
-func New(dests []string, path string) *RR {
+func New(dests []string, path string, rewriteRule rewriter.RewriteRule) *RR {
 	rr := &RR{
 		Dests: make([]*lbcommon.Dest, len(dests)),
 	}
@@ -26,6 +28,7 @@ func New(dests []string, path string) *RR {
 		} else {
 			newDest.Alive = true
 		}
+		newDest.Proxy = reverseproxy.New(dst, path, rewriteRule)
 		rr.Dests[idx] = newDest
 	}
 

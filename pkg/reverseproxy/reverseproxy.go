@@ -6,12 +6,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/rs/zerolog/log"
 )
 
-func New(target string, path string) http.Handler {
+func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
 	targetURL, err := url.Parse(target)
 
 	if err != nil {
@@ -30,14 +29,12 @@ func New(target string, path string) http.Handler {
 	proxy.Director = func(req *http.Request) {
 		req.URL.Scheme = targetURL.Scheme
 		req.URL.Host = targetURL.Host
-		configPtr := config.DomainTrie.Match(req.Host)
 
-		rr := configPtr.Routes[path].RewriteRule
 		rw := rewriter.New(rr)
 
 		rewrittenPath := rw.RewritePath(req.URL.Path)
-		req.URL.Path = rewrittenPath
 
+		req.URL.Path = rewrittenPath
 		req.Host = targetURL.Host
 
 		if req.Header.Get("Upgrade") == "websocket" {

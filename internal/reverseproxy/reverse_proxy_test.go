@@ -8,6 +8,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer"
+	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,8 +36,8 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 	dests1 := []string{mockService1.URL}
 	conf := &common.Config{
 		Routes: common.RouteConfig{
-			"/api":  common.PathConfig{Dests: dests},
-			"/mock": common.PathConfig{Dests: dests1, Balancer: loadbalancer.New(dests1, "/mock")},
+			"/api":  common.PathConfig{Dests: dests, Balancer: loadbalancer.New(dests, "/api", rewriter.RewriteRule{})},
+			"/mock": common.PathConfig{Dests: dests1, Balancer: loadbalancer.New(dests1, "/mock", rewriter.RewriteRule{})},
 		},
 	}
 

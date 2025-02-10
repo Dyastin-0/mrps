@@ -71,7 +71,7 @@ func Load(filename string) error {
 				return fmt.Errorf("invalid path: %s", path)
 			}
 
-			config.Balancer = loadbalancer.New(config.Dests, path)
+			config.Balancer = loadbalancer.New(config.Dests, path, config.RewriteRule)
 			cfg.Routes[path] = config
 			sortedRoutes = append(sortedRoutes, path)
 		}

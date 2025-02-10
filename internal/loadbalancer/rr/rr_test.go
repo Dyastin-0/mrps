@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
+	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +36,7 @@ func TestRoundRobinBasic(t *testing.T) {
 	}
 	path := "/api/v1"
 
-	rrInstance := rr.New(dests, path)
+	rrInstance := rr.New(dests, path, rewriter.RewriteRule{})
 
 	assert.Equal(t, 3, len(rrInstance.Dests), "should initialize with 3 destinations")
 	assert.Len(t, rrInstance.Dests, 3, "activeKeys should have 3 keys")
