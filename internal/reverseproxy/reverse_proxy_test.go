@@ -1,6 +1,7 @@
 package reverseproxy
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -36,8 +37,8 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 	dests1 := []string{mockService1.URL}
 	conf := &common.Config{
 		Routes: common.RouteConfig{
-			"/api":  common.PathConfig{Dests: dests, Balancer: loadbalancer.New(dests, "/api", rewriter.RewriteRule{})},
-			"/mock": common.PathConfig{Dests: dests1, Balancer: loadbalancer.New(dests1, "/mock", rewriter.RewriteRule{})},
+			"/api":  common.PathConfig{Dests: dests, Balancer: loadbalancer.New(context.Background(), dests, "/api", "localhost", rewriter.RewriteRule{})},
+			"/mock": common.PathConfig{Dests: dests1, Balancer: loadbalancer.New(context.Background(), dests1, "/mock", "localhost", rewriter.RewriteRule{})},
 		},
 	}
 

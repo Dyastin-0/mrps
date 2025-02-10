@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -178,7 +179,7 @@ rate_limit:
 		t.Fatalf("Failed to close temp file: %v", err)
 	}
 
-	if err := Load(tmpFile.Name()); err != nil {
+	if err := Load(context.Background(), tmpFile.Name()); err != nil {
 		t.Fatalf("config.Load() failed: %v", err)
 	}
 

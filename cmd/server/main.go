@@ -24,7 +24,13 @@ import (
 )
 
 func main() {
-	err := config.Load("mrps.yaml")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer func() {
+		cancel()
+		time.Sleep(500 * time.Millisecond)
+	}()
+
+	err := config.Load(ctx, "mrps.yaml")
 	if err != nil {
 		log.Fatal().Err(err).Msg("config")
 	}
@@ -41,16 +47,13 @@ func main() {
 	mainRouter := chi.NewRouter()
 	mainRouter.Mount("/", router.New())
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	config.StartTime = time.Now()
 
 	logger.Init()
 
-	go health.InitPinger(ctx)
+	go health.InitHealthBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
-	go ws.Clients.Run()
+	go ws.Clients.Run(ctx)
 
 	go startReverseProxyServer(mainRouter)
 
@@ -84,7 +87,7 @@ func startMetricsServer() {
 
 	metricsRouter.Handle("/metrics", promhttp.Handler())
 
-	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("Metrics")
+	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("metrics")
 	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Metrics")
@@ -103,9 +106,9 @@ func startAPI() {
 	router.Handle("/auth", api.Auth())
 	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
 
-	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("API")
+	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("api")
 	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
 	if err != nil {
-		log.Fatal().Err(err).Msg("API")
+		log.Fatal().Err(err).Msg("api")
 	}
 }

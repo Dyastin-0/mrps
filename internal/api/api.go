@@ -248,18 +248,12 @@ func getHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.URL.Query().Get("t")
 
-		mapHealth := make(map[string]int)
-		health.Data.Range(func(key, value interface{}) bool {
-			mapHealth[key.(string)] = value.(int)
-			return true
-		})
-
 		data := struct {
-			Type   string         `json:"type"`
-			Health map[string]int `json:"health"`
+			Type   string                     `json:"type"`
+			Health map[string]map[string]bool `json:"health"`
 		}{
 			Type:   "health",
-			Health: mapHealth,
+			Health: config.DomainTrie.GetHealth(),
 		}
 
 		health.Subscribers.Store(token, true)

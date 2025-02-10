@@ -1,9 +1,11 @@
 package ws
 
 import (
+	"context"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/rs/zerolog/log"
 )
 
 type Hub struct {
@@ -38,7 +40,7 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) Run() {
+func (h *Hub) Run(ctx context.Context) {
 	for {
 		select {
 		case reg := <-h.register:
@@ -72,6 +74,10 @@ func (h *Hub) Run() {
 			_, exists := h.clients[check.id]
 			h.mu.Unlock()
 			check.result <- exists
+
+		case <-ctx.Done():
+			log.Info().Str("status", "stopping").Msg("hub")
+			return
 		}
 	}
 }

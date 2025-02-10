@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -8,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Watch(filename string) {
+func Watch(ctx context.Context, filename string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal().Err(err).Msg("watcher")
@@ -31,7 +32,7 @@ func Watch(filename string) {
 
 			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
 
-				if err := config.Load(filename); err != nil {
+				if err := config.Load(ctx, filename); err != nil {
 					log.Error().Err(fmt.Errorf("failed to reload")).Msg("watcher")
 				} else {
 					log.Info().Str("status", "reloaded").Str("target", filename).Msg("watcher")

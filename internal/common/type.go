@@ -217,3 +217,36 @@ func (t *DomainTrieConfig) SetEnabled(domain string, enabled bool) bool {
 
 	return modified
 }
+
+func (t *DomainTrieConfig) GetHealth() map[string]map[string]bool {
+	healthStatus := make(map[string]map[string]bool)
+	var traverse func(node *TrieNode, path []string)
+
+	traverse = func(node *TrieNode, path []string) {
+		if node.Config != nil && node.Config.Routes != nil {
+			domain := strings.Join(reverseSlice(path), ".")
+			healthStatus[domain] = make(map[string]bool)
+
+			for _, routeConfig := range node.Config.Routes {
+				if routeConfig.Balancer == nil {
+					continue
+				}
+
+				dests := routeConfig.Balancer.GetDests().([]*common.Dest)
+				for _, dest := range dests {
+					healthStatus[domain][dest.URL] = dest.Alive
+				}
+			}
+		}
+
+		for part, child := range node.Children {
+			traverse(child, append(path, part))
+		}
+	}
+
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	traverse(t.Root, []string{})
+	return healthStatus
+}

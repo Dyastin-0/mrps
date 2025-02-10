@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -24,7 +25,7 @@ var (
 	StartTime       time.Time
 )
 
-func Load(filename string) error {
+func Load(ctx context.Context, filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("could not open config file: %v", err)
@@ -71,7 +72,7 @@ func Load(filename string) error {
 				return fmt.Errorf("invalid path: %s", path)
 			}
 
-			config.Balancer = loadbalancer.New(config.Dests, path, config.RewriteRule)
+			config.Balancer = loadbalancer.New(ctx, config.Dests, path, domain, config.RewriteRule)
 			cfg.Routes[path] = config
 			sortedRoutes = append(sortedRoutes, path)
 		}

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -40,7 +41,7 @@ domains:
 	logBuffer := new(LogBuffer)
 	log.SetOutput(logBuffer)
 
-	go Watch(tmpFile.Name())
+	go Watch(context.Background(), tmpFile.Name())
 
 	time.Sleep(100 * time.Millisecond)
 
