@@ -37,7 +37,7 @@ func TestRoundRobinBasic(t *testing.T) {
 	}
 	path := "/api/v1"
 
-	rrInstance := rr.New(context.Background(), dests, path, "localhost", rewriter.RewriteRule{})
+	rrInstance := rr.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
 
 	assert.Equal(t, 3, len(rrInstance.Dests), "should initialize with 3 destinations")
 	assert.Len(t, rrInstance.Dests, 3, "activeKeys should have 3 keys")

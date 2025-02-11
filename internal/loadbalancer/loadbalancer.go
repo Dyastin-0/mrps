@@ -2,17 +2,31 @@ package loadbalancer
 
 import (
 	"context"
+	"errors"
 
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 )
 
-type balancer interface {
+type Balancer interface {
 	Next() *lbcommon.Dest
-	GetDests() interface{}
+	First() *lbcommon.Dest
+	GetDests() []*lbcommon.Dest
 }
 
-func New(ctx context.Context, dests []string, path string, host string, rewriteRule rewriter.RewriteRule) balancer {
-	return rr.New(ctx, dests, path, host, rewriteRule)
+type Default interface {
+}
+
+func new(btype string, ctx context.Context, dests []string, rewriteRule rewriter.RewriteRule, path, host string) (Balancer, error) {
+	switch btype {
+	case "rr", "":
+		return rr.New(ctx, dests, rewriteRule, path, host), nil
+	default:
+		return nil, errors.New("unsupported balancer type")
+	}
+}
+
+func New(ctx context.Context, dests []string, rewriteRule rewriter.RewriteRule, btype, path, host string) (Balancer, error) {
+	return new(btype, ctx, dests, rewriteRule, path, host)
 }

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
@@ -18,7 +19,7 @@ type RR struct {
 	cancel context.CancelFunc
 }
 
-func New(ctx context.Context, dests []string, path string, host string, rewriteRule rewriter.RewriteRule) *RR {
+func New(ctx context.Context, dests []string, rewriteRule rewriter.RewriteRule, path, host string) *RR {
 	context, cancel := context.WithCancel(ctx)
 
 	rr := &RR{
@@ -58,6 +59,17 @@ func (rr *RR) Next() *lbcommon.Dest {
 	return dest
 }
 
-func (rr *RR) GetDests() interface{} {
+func (rr *RR) First() *lbcommon.Dest {
+	rr.mu.Lock()
+	defer rr.mu.Unlock()
+
+	if len(rr.Dests) == 0 {
+		return nil
+	}
+
+	return rr.Dests[0]
+}
+
+func (rr *RR) GetDests() []*common.Dest {
 	return rr.Dests
 }

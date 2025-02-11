@@ -12,13 +12,20 @@ func Handler(next http.Handler) http.Handler {
 		host := strings.ToLower(r.Host)
 		path := r.URL.Path
 
-		configPtr := config.DomainTrie.Match(host)
-		if configPtr != nil {
-			config := configPtr
-			for _, routePath := range config.SortedRoutes {
+		matchedConfig := config.DomainTrie.Match(host)
+		if matchedConfig != nil {
+			for _, routePath := range matchedConfig.SortedRoutes {
 				if strings.HasPrefix(path, routePath) {
-					config.Routes[routePath].Balancer.Next().Proxy.ServeHTTP(w, r)
-					return
+					if matchedConfig.Routes[routePath].BalancerType != "" {
+						if dest := matchedConfig.Routes[routePath].Balancer.Next(); dest != nil {
+							dest.Proxy.ServeHTTP(w, r)
+							return
+						}
+					}
+					if dest := matchedConfig.Routes[routePath].Balancer.First(); dest != nil {
+						dest.Proxy.ServeHTTP(w, r)
+						return
+					}
 				}
 			}
 		}

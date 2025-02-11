@@ -32,8 +32,9 @@ type PathConfig struct {
 	RewriteRule  rewriter.RewriteRule `yaml:"rewrite"`
 	BalancerType string               `yaml:"balancer"`
 	Balancer     interface {
-		GetDests() interface{}
+		GetDests() []*common.Dest
 		Next() *common.Dest
+		First() *common.Dest
 	} `yaml:"-"`
 }
 
@@ -232,7 +233,7 @@ func (t *DomainTrieConfig) GetHealth() map[string]map[string]bool {
 					continue
 				}
 
-				dests := routeConfig.Balancer.GetDests().([]*common.Dest)
+				dests := routeConfig.Balancer.GetDests()
 				for _, dest := range dests {
 					healthStatus[domain][dest.URL] = dest.Alive
 				}
