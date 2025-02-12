@@ -18,15 +18,14 @@ import (
 )
 
 var (
-	Subscribers       = sync.Map{}
-	LeftBehind        = sync.Map{}
-	offsetBytes int64 = -10
+	Subscribers = sync.Map{}
+	LeftBehind  = sync.Map{}
 )
 
 func Init() {
 	logFile := &lumberjack.Logger{
 		Filename:   "./logs/mrps.log",
-		MaxSize:    10,
+		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     30,
 		Compress:   true,
@@ -147,10 +146,6 @@ func CatchUp(key string, readyChan chan bool) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
 		Logger: tail.DiscardingLogger,
-		Location: &tail.SeekInfo{
-			Offset: offsetBytes,
-			Whence: 0,
-		},
 	})
 
 	if err != nil {
@@ -179,6 +174,6 @@ func CatchUp(key string, readyChan chan bool) {
 	}
 
 	LeftBehind.Delete(key)
-	log.Info().Str("status", "updated").Str("offset", fmt.Sprint(offsetBytes)+"bytes").Msg("logger")
+	log.Info().Str("status", "updated").Msg("logger")
 	Subscribers.Store(key, true)
 }

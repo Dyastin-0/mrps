@@ -45,13 +45,15 @@ func (h *Hub) Run(ctx context.Context) {
 		select {
 		case reg := <-h.register:
 			h.mu.Lock()
-			if _, exists := h.clients[reg.id]; exists {
+			c, exists := h.clients[reg.id]
+			if exists {
 				h.mu.Unlock()
-				reg.conn.Close()
+				c.conn.Close()
+				close(c.send)
 				continue
 			}
 
-			c := &client{
+			c = &client{
 				conn: reg.conn,
 				send: make(chan []byte, 256),
 			}
@@ -89,6 +91,7 @@ func (h *Hub) writeWorker(id string, c *client) {
 			c.conn.Close()
 			delete(h.clients, id)
 			h.mu.Unlock()
+			log.Debug().Err(err).Msg("DEBUG")
 			break
 		}
 	}
@@ -103,10 +106,6 @@ func (h *Hub) Send(id string, data []byte) {
 		select {
 		case c.send <- data:
 		default:
-			h.mu.Lock()
-			c.conn.Close()
-			delete(h.clients, id)
-			h.mu.Unlock()
 		}
 	}
 }
