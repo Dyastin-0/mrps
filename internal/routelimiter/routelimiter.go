@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"golang.org/x/time/rate"
 )
 
@@ -31,17 +31,17 @@ func Handler(next http.Handler) http.Handler {
 
 		key := host + ":" + ip
 		value, exists := config.ClientMngr.Load(key)
-		var client *common.ClientLimiter
+		var client *types.ClientLimiter
 
 		if !exists {
-			client = &common.ClientLimiter{
+			client = &types.ClientLimiter{
 				Limiter:  rate.NewLimiter(routeConfig.RateLimit.Rate, routeConfig.RateLimit.Burst),
 				LastReq:  time.Now(),
 				Cooldown: time.Now(),
 			}
 			config.ClientMngr.Store(key, client)
 		} else {
-			client = value.(*common.ClientLimiter)
+			client = value.(*types.ClientLimiter)
 		}
 
 		if time.Now().Before(client.Cooldown) {

@@ -4,7 +4,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:4002
+        - url: http://localhost:4002
         rewrite:
           type: ""
           value: ""
@@ -19,7 +19,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:5005
+        - url: http://localhost:5005
         rewrite:
           type: ""
           value: ""
@@ -27,7 +27,7 @@ domains:
         balancer: ""
       /api/v2:
         dests:
-        - http://localhost:3004
+        - url: http://localhost:3004
         rewrite:
           type: ""
           value: ""
@@ -42,7 +42,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:5002
+        - url: http://localhost:5002
         rewrite:
           type: ""
           value: ""
@@ -50,7 +50,7 @@ domains:
         balancer: ""
       /api:
         dests:
-        - http://localhost:5001
+        - url: http://localhost:5001
         rewrite:
           type: ""
           value: ""
@@ -58,7 +58,7 @@ domains:
         balancer: ""
       /socket.io:
         dests:
-        - http://localhost:5001
+        - url: http://localhost:5001
         rewrite:
           type: ""
           value: ""
@@ -73,7 +73,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:4001
+        - url: http://localhost:4001
         rewrite:
           type: ""
           value: ""
@@ -81,7 +81,7 @@ domains:
         balancer: ""
       /api/v1:
         dests:
-        - http://localhost:4000
+        - url: http://localhost:4000
         rewrite:
           type: regex
           value: ^/api/v1/(.*)$
@@ -96,7 +96,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:3000
+        - url: http://localhost:3000
         rewrite:
           type: ""
           value: ""
@@ -111,7 +111,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:5050
+        - url: http://localhost:5050
         rewrite:
           type: ""
           value: ""
@@ -119,7 +119,7 @@ domains:
         balancer: ""
       /api:
         dests:
-        - http://localhost:6060
+        - url: http://localhost:6060
         rewrite:
           type: regex
           value: ^/api/(.*)$
@@ -134,7 +134,7 @@ domains:
     routes:
       /:
         dests:
-        - http://localhost:4004
+        - url: http://localhost:4004
         rewrite:
           type: ""
           value: ""
@@ -149,7 +149,7 @@ domains:
     routes:
       /free-wall:
         dests:
-        - http://localhost:9001
+        - url: http://localhost:9001
         rewrite:
           type: regex
           value: ^/free-wall/(.*)$
@@ -157,7 +157,7 @@ domains:
         balancer: ""
       /free-wall/api:
         dests:
-        - http://localhost:5000
+        - url: http://localhost:5000
         rewrite:
           type: regex
           value: ^/free-wall/api/(.*)$

@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/health"
 	"github.com/Dyastin-0/mrps/internal/logger"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
@@ -223,8 +223,8 @@ func setEnabled() http.HandlerFunc {
 		con := config.DomainTrie.GetAll()
 
 		conf := struct {
-			Type   string               `json:"type"`
-			Config common.DomainsConfig `json:"config"`
+			Type   string              `json:"type"`
+			Config types.DomainsConfig `json:"config"`
 		}{
 			Type:   "config",
 			Config: con,

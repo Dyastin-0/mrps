@@ -18,11 +18,12 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:4002
+        - url: http://localhost:4002
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
     rate_limit:
       burst: 15
       rate: 10
@@ -32,18 +33,20 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:5005
+        - url: http://localhost:5005
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
       /api/v2:
         dests:
-          - http://localhost:3004
+        - url: http://localhost:3004
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
     rate_limit:
       burst: 15
       rate: 10
@@ -53,25 +56,28 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:5002
+        - url: http://localhost:5002
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
       /api:
         dests:
-          - http://localhost:5001
+        - url: http://localhost:5001
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
       /socket.io:
         dests:
-          - http://localhost:5001
+        - url: http://localhost:5001
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
     rate_limit:
       burst: 100
       rate: 50
@@ -81,18 +87,20 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:4001
+        - url: http://localhost:4001
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
       /api/v1:
         dests:
-          - http://localhost:4000
+        - url: http://localhost:4000
         rewrite:
           type: regex
           value: ^/api/v1/(.*)$
           replace_val: /$1
+        balancer: ""
     rate_limit:
       burst: 15
       rate: 10
@@ -102,11 +110,12 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:3000
+        - url: http://localhost:3000
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
     rate_limit:
       burst: 100
       rate: 50
@@ -116,18 +125,20 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:5050
+        - url: http://localhost:5050
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
       /api:
         dests:
-          - http://localhost:6060
+        - url: http://localhost:6060
         rewrite:
           type: regex
           value: ^/api/(.*)$
           replace_val: /$1
+        balancer: ""
     rate_limit:
       burst: 15
       rate: 10
@@ -137,11 +148,35 @@ domains:
     routes:
       /:
         dests:
-          - http://localhost:4004
+        - url: http://localhost:4004
         rewrite:
           type: ""
           value: ""
           replace_val: ""
+        balancer: ""
+    rate_limit:
+      burst: 15
+      rate: 10
+      cooldown: 60000
+  sandbox.dyastin.tech:
+    enabled: true
+    routes:
+      /free-wall:
+        dests:
+        - url: http://localhost:9001
+        rewrite:
+          type: regex
+          value: ^/free-wall/(.*)$
+          replace_val: /$1
+        balancer: ""
+      /free-wall/api:
+        dests:
+        - url: http://localhost:5000
+        rewrite:
+          type: regex
+          value: ^/free-wall/api/(.*)$
+          replace_val: /$1
+        balancer: ""
     rate_limit:
       burst: 15
       rate: 10
@@ -153,8 +188,8 @@ misc:
   enable_api: true
   api_port: "6060"
   allowed_origins:
-    - https://mrps.dyastin.tech
-    - http://localhost:5173
+  - https://mrps.dyastin.tech
+  - http://localhost:5173
   domain: .mrps.dyastin.tech
 rate_limit:
   burst: 100
@@ -207,7 +242,7 @@ rate_limit:
 				t.Fatalf("Domain not found in trie: %s", test.domain)
 			}
 			routeConfig := *routeConfigPtr
-			dest := routeConfig.Routes[test.path].Dests[0]
+			dest := routeConfig.Routes[test.path].Dests[0].URL
 			assertEqual(t, dest, test.expectedDest, "Destinations")
 		}
 	})

@@ -7,25 +7,25 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/types"
 )
 
 func setupMockConfig() {
 	config.ClientMngr = sync.Map{}
-	config.DomainTrie = common.NewDomainTrie()
+	config.DomainTrie = types.NewDomainTrie()
 }
 
 func TestDomainHandler(t *testing.T) {
 	setupMockConfig()
 
 	// Configure the DomainTrie with rate-limiting
-	routeConfig := common.Config{
+	routeConfig := types.Config{
 		Enabled: true,
-		Routes: common.RouteConfig{
-			"/": common.PathConfig{Dests: []string{"localhost"}},
+		Routes: types.RouteConfig{
+			"/": types.PathConfig{Dests: []types.Dest{{URL: "localhost"}}},
 		},
-		RateLimit: common.RateLimitConfig{
+		RateLimit: types.RateLimitConfig{
 			Rate:            2,
 			Burst:           2,
 			Cooldown:        1000,

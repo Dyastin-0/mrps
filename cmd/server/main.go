@@ -55,7 +55,7 @@ func main() {
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)
 
-	go startReverseProxyServer(mainRouter)
+	// go startReverseProxyServer(mainRouter)
 
 	if config.Misc.MetricsEnabled {
 		go startMetricsServer()

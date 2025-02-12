@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,15 +32,15 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 	defer mockService1.Close()
 
 	// Initialize DomainTrie
-	config.DomainTrie = common.NewDomainTrie()
-	dests := []string{mockService.URL}
-	dests1 := []string{mockService1.URL}
+	config.DomainTrie = types.NewDomainTrie()
+	dests := []types.Dest{{URL: mockService.URL}}
+	dests1 := []types.Dest{{URL: mockService1.URL}}
 	bl, _ := loadbalancer.New(context.Background(), dests1, rewriter.RewriteRule{}, "rr", "/mock", "localhost")
 	bl1, _ := loadbalancer.New(context.Background(), dests, rewriter.RewriteRule{}, "rr", "/api", "localhost")
-	conf := &common.Config{
-		Routes: common.RouteConfig{
-			"/api":  common.PathConfig{Dests: dests, Balancer: bl1},
-			"/mock": common.PathConfig{Dests: dests1, Balancer: bl},
+	conf := &types.Config{
+		Routes: types.RouteConfig{
+			"/api":  types.PathConfig{Dests: dests, Balancer: bl1},
+			"/mock": types.PathConfig{Dests: dests1, Balancer: bl},
 		},
 	}
 

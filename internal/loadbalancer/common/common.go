@@ -10,9 +10,11 @@ import (
 )
 
 type Dest struct {
-	URL   string
-	Alive bool
-	Proxy http.Handler `yaml:"-" json:"-"`
+	URL           string
+	Alive         bool
+	Weight        int
+	CurrentWeight int
+	Proxy         http.Handler `yaml:"-" json:"-"`
 }
 
 func (d *Dest) Check(ctx context.Context, host string, delay time.Duration) {

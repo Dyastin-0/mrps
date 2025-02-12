@@ -10,18 +10,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
 var (
 	Domains         []string
-	DomainTrie      *common.DomainTrieConfig
+	DomainTrie      *types.DomainTrieConfig
 	ClientMngr      = sync.Map{}
-	GlobalRateLimit common.RateLimitConfig
-	Misc            common.MiscConfig
+	GlobalRateLimit types.RateLimitConfig
+	Misc            types.MiscConfig
 	StartTime       time.Time
 )
 
@@ -32,9 +32,9 @@ func Load(ctx context.Context, filename string) error {
 	}
 	defer file.Close()
 
-	DomainTrie = common.NewDomainTrie()
+	DomainTrie = types.NewDomainTrie()
 
-	configData := common.YAML{}
+	configData := types.YAML{}
 
 	decoder := yaml.NewDecoder(file)
 	if err := decoder.Decode(&configData); err != nil {
@@ -96,7 +96,7 @@ func Load(ctx context.Context, filename string) error {
 
 		cfg.SortedRoutes = sortedRoutes
 
-		sortedConfig := make(common.RouteConfig)
+		sortedConfig := make(types.RouteConfig)
 		for _, route := range sortedRoutes {
 			sortedConfig[route] = cfg.Routes[route]
 		}
@@ -109,7 +109,7 @@ func Load(ctx context.Context, filename string) error {
 }
 
 func ParseToYAML() {
-	config := common.YAML{
+	config := types.YAML{
 		Domains:   DomainTrie.GetAll(),
 		Misc:      Misc,
 		RateLimit: GlobalRateLimit,

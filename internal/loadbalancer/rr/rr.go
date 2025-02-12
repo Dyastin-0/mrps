@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/rs/zerolog/log"
@@ -19,7 +19,7 @@ type RR struct {
 	cancel context.CancelFunc
 }
 
-func New(ctx context.Context, dests []string, rewriteRule rewriter.RewriteRule, path, host string) *RR {
+func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) *RR {
 	context, cancel := context.WithCancel(ctx)
 
 	rr := &RR{
@@ -28,9 +28,9 @@ func New(ctx context.Context, dests []string, rewriteRule rewriter.RewriteRule, 
 	}
 
 	for idx, dst := range dests {
-		newDest := &lbcommon.Dest{URL: dst}
+		newDest := &lbcommon.Dest{URL: dst.URL}
 		go newDest.Check(context, host, 10*time.Second)
-		newDest.Proxy = reverseproxy.New(dst, path, rewriteRule)
+		newDest.Proxy = reverseproxy.New(dst.URL, path, rewriteRule)
 		rr.Dests[idx] = newDest
 	}
 
@@ -70,6 +70,4 @@ func (rr *RR) First() *lbcommon.Dest {
 	return rr.Dests[0]
 }
 
-func (rr *RR) GetDests() []*common.Dest {
-	return rr.Dests
-}
+func (rr *RR) GetDests() []*lbcommon.Dest { return rr.Dests }

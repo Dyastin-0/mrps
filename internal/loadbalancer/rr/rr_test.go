@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,10 +31,16 @@ func startTestServer(port string, healthy bool) string {
 }
 
 func TestRoundRobinBasic(t *testing.T) {
-	dests := []string{
-		startTestServer(":8081", true),
-		startTestServer(":8082", true),
-		startTestServer(":8083", true),
+	dests := []types.Dest{
+		{
+			URL: startTestServer(":8081", true),
+		},
+		{
+			URL: startTestServer(":8082", true),
+		},
+		{
+			URL: startTestServer(":8083", true),
+		},
 	}
 	path := "/api/v1"
 

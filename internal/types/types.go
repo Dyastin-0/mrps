@@ -1,4 +1,4 @@
-package common
+package types
 
 import (
 	"strings"
@@ -28,7 +28,7 @@ type Config struct {
 type RouteConfig map[string]PathConfig
 
 type PathConfig struct {
-	Dests        []string             `json:"Dests,omitempty" yaml:"dests,omitempty"`
+	Dests        []Dest               `json:"Dests,omitempty" yaml:"dests,omitempty"`
 	RewriteRule  rewriter.RewriteRule `yaml:"rewrite"`
 	BalancerType string               `yaml:"balancer"`
 	Balancer     interface {
@@ -36,6 +36,11 @@ type PathConfig struct {
 		Next() *common.Dest
 		First() *common.Dest
 	} `yaml:"-"`
+}
+
+type Dest struct {
+	URL    string `yaml:"url"`
+	Weight int    `yaml:"weight"`
 }
 
 type RateLimitConfig struct {
