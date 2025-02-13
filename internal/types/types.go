@@ -19,10 +19,10 @@ type ClientLimiter struct {
 }
 
 type Config struct {
-	Enabled      bool            `yaml:"enabled"`
-	Routes       RouteConfig     `yaml:"routes"`
+	Enabled      bool            `yaml:"enabled,omitempty"`
+	Routes       RouteConfig     `yaml:"routes,omitempty"`
 	SortedRoutes []string        `yaml:"-"`
-	RateLimit    RateLimitConfig `yaml:"rate_limit"`
+	RateLimit    RateLimitConfig `yaml:"rate_limit,omitempty"`
 }
 
 type RouteConfig map[string]PathConfig
@@ -45,21 +45,21 @@ type Dest struct {
 }
 
 type RateLimitConfig struct {
-	Burst           int           `yaml:"burst, omitempty"`
-	Rate            rate.Limit    `yaml:"rate, omitempty"`
-	Cooldown        int64         `yaml:"cooldown, omitempty"`
+	Burst           int           `yaml:"burst,omitempty"`
+	Rate            rate.Limit    `yaml:"rate,omitempty"`
+	Cooldown        int64         `yaml:"cooldown,omitempty"`
 	DefaultCooldown time.Duration `yaml:"-"`
 }
 
 type MiscConfig struct {
-	Email          string   `yaml:"email, omitempty"`
-	Secure         bool     `yaml:"secure, omitempty"`
-	MetricsEnabled bool     `yaml:"enable_metrics, omitempty"`
-	MetricsPort    string   `yaml:"metrics_port, omitempty"`
-	APIEnabled     bool     `yaml:"enable_api, omitempty"`
-	ConfigAPIPort  string   `yaml:"api_port, omitempty"`
-	AllowedOrigins []string `yaml:"allowed_origins, omitempty"`
-	Domain         string   `yaml:"domain, omitempty"`
+	Email          string   `yaml:"email,omitempty"`
+	Secure         bool     `yaml:"secure,omitempty"`
+	MetricsEnabled bool     `yaml:"enable_metrics,omitempty"`
+	MetricsPort    string   `yaml:"metrics_port,omitempty"`
+	APIEnabled     bool     `yaml:"enable_api,omitempty"`
+	ConfigAPIPort  string   `yaml:"api_port,omitempty"`
+	AllowedOrigins []string `yaml:"allowed_origins,omitempty"`
+	Domain         string   `yaml:"domain,omitempty"`
 }
 
 type TrieNode struct {
@@ -82,10 +82,10 @@ func NewDomainTrie() *DomainTrieConfig {
 }
 
 type YAML struct {
-	Domains   DomainsConfig   `yaml:"domains, omitempty"`
-	Misc      MiscConfig      `yaml:"misc, omitempty"`
-	RateLimit RateLimitConfig `yaml:"rate_limit, omitempty"`
-	HTTP      HTTP            `yaml:"http, omitempty"`
+	Domains   DomainsConfig   `yaml:"domains,omitempty"`
+	Misc      MiscConfig      `yaml:"misc,omitempty"`
+	RateLimit RateLimitConfig `yaml:"rate_limit,omitempty"`
+	HTTP      HTTP            `yaml:"http,omitempty"`
 }
 
 type HTTP struct {
