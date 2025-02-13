@@ -53,6 +53,7 @@ type RateLimitConfig struct {
 
 type MiscConfig struct {
 	Email          string   `yaml:"email"`
+	Secure         bool     `yaml:"secure"`
 	MetricsEnabled bool     `yaml:"enable_metrics"`
 	MetricsPort    string   `yaml:"metrics_port"`
 	APIEnabled     bool     `yaml:"enable_api"`

@@ -174,6 +174,7 @@ http:
       - url: http://localhost:4004
 misc:
   email: mail@dyastin.tech
+  secure: true
   enable_metrics: true
   metrics_port: "7070"
   enable_api: true
