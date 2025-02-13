@@ -97,7 +97,7 @@ func auth() http.HandlerFunc {
 			SameSite: http.SameSiteNoneMode,
 			Secure:   true,
 			MaxAge:   24 * 60 * 60,
-			Domain:   os.Getenv("DOMAIN"),
+			Domain:   config.Misc.Domain,
 			Path:     "/",
 		})
 
