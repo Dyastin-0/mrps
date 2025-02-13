@@ -67,7 +67,7 @@ func main() {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	<-shutdown
 
-	log.Info().Msg("Shutting down gracefully...")
+	log.Info().Msg("shutting down gracefully...")
 }
 
 func startReverseProxyServer(ctx context.Context) {
@@ -82,14 +82,14 @@ func startReverseProxyServer(ctx context.Context) {
 		log.Info().Str("status", "listening").Msg("http")
 		err := httpServer.ListenAndServe()
 		if err != nil {
-			log.Fatal().Err(err).Msg("proxy")
+			log.Fatal().Err(err).Msg("http")
 		}
 	}()
 
 	magic := certmagic.NewDefault()
 	err := magic.ManageSync(ctx, config.Domains)
 	if err != nil {
-		log.Fatal().Err(err).Msg("proxy")
+		log.Fatal().Err(err).Msg("https")
 	}
 
 	httpsServer := &http.Server{
@@ -101,7 +101,7 @@ func startReverseProxyServer(ctx context.Context) {
 	log.Info().Str("status", "listening").Msg("https")
 	err = httpsServer.ListenAndServeTLS("", "")
 	if err != nil {
-		log.Fatal().Err(err).Msg("proxy")
+		log.Fatal().Err(err).Msg("https")
 	}
 }
 
@@ -110,10 +110,10 @@ func startMetricsServer() {
 
 	metricsRouter.Handle("/metrics", promhttp.Handler())
 
-	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("metrics")
+	log.Info().Str("status", "running").Str("Port", config.Misc.MetricsPort).Msg("metrics")
 	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Metrics")
+		log.Fatal().Err(err).Msg("metrics")
 	}
 }
 
@@ -129,7 +129,7 @@ func startAPI() {
 	router.Handle("/auth", api.Auth())
 	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
 
-	log.Info().Str("Status", "running").Str("Port", config.Misc.MetricsPort).Msg("api")
+	log.Info().Str("status", "running").Str("port", config.Misc.MetricsPort).Msg("api")
 	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
 	if err != nil {
 		log.Fatal().Err(err).Msg("api")
