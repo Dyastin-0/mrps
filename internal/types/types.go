@@ -45,21 +45,21 @@ type Dest struct {
 }
 
 type RateLimitConfig struct {
-	Burst           int           `yaml:"burst"`
-	Rate            rate.Limit    `yaml:"rate"`
-	Cooldown        int64         `yaml:"cooldown"`
+	Burst           int           `yaml:"burst, omitempty"`
+	Rate            rate.Limit    `yaml:"rate, omitempty"`
+	Cooldown        int64         `yaml:"cooldown, omitempty"`
 	DefaultCooldown time.Duration `yaml:"-"`
 }
 
 type MiscConfig struct {
-	Email          string   `yaml:"email"`
-	Secure         bool     `yaml:"secure"`
-	MetricsEnabled bool     `yaml:"enable_metrics"`
-	MetricsPort    string   `yaml:"metrics_port"`
-	APIEnabled     bool     `yaml:"enable_api"`
-	ConfigAPIPort  string   `yaml:"api_port"`
-	AllowedOrigins []string `yaml:"allowed_origins"`
-	Domain         string   `yaml:"domain"`
+	Email          string   `yaml:"email, omitempty"`
+	Secure         bool     `yaml:"secure, omitempty"`
+	MetricsEnabled bool     `yaml:"enable_metrics, omitempty"`
+	MetricsPort    string   `yaml:"metrics_port, omitempty"`
+	APIEnabled     bool     `yaml:"enable_api, omitempty"`
+	ConfigAPIPort  string   `yaml:"api_port, omitempty"`
+	AllowedOrigins []string `yaml:"allowed_origins, omitempty"`
+	Domain         string   `yaml:"domain, omitempty"`
 }
 
 type TrieNode struct {
@@ -82,10 +82,10 @@ func NewDomainTrie() *DomainTrieConfig {
 }
 
 type YAML struct {
-	Domains   DomainsConfig   `yaml:"domains"`
-	Misc      MiscConfig      `yaml:"misc"`
-	RateLimit RateLimitConfig `yaml:"rate_limit"`
-	HTTP      HTTP            `yaml:"http"`
+	Domains   DomainsConfig   `yaml:"domains, omitempty"`
+	Misc      MiscConfig      `yaml:"misc, omitempty"`
+	RateLimit RateLimitConfig `yaml:"rate_limit, omitempty"`
+	HTTP      HTTP            `yaml:"http, omitempty"`
 }
 
 type HTTP struct {
