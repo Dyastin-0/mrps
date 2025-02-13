@@ -20,7 +20,10 @@ func routeAndServe(routes types.RouteConfig, sortedRoutes []string, w http.Respo
 					dest.Proxy.ServeHTTP(w, r)
 					return true
 				}
-				route.Balancer.NextAlive().Proxy.ServeHTTP(w, r)
+				if dest := route.Balancer.NextAlive(); dest != nil {
+					dest.Proxy.ServeHTTP(w, r)
+					return true
+				}
 			}
 
 			if dest := route.Balancer.First(); dest != nil {
