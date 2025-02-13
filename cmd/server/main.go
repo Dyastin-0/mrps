@@ -89,22 +89,24 @@ func startReverseProxyServer(ctx context.Context) {
 		}
 	}()
 
-	magic := certmagic.NewDefault()
-	err := magic.ManageSync(ctx, config.Domains)
-	if err != nil {
-		log.Fatal().Err(err).Msg("https")
-	}
+	if len(config.Domains) != 0 {
+		magic := certmagic.NewDefault()
+		err := magic.ManageSync(ctx, config.Domains)
+		if err != nil {
+			log.Fatal().Err(err).Msg("https")
+		}
 
-	httpsServer := &http.Server{
-		Addr:      ":443",
-		TLSConfig: magic.TLSConfig(),
-		Handler:   router.New(),
-	}
+		httpsServer := &http.Server{
+			Addr:      ":443",
+			TLSConfig: magic.TLSConfig(),
+			Handler:   router.New(),
+		}
 
-	log.Info().Str("status", "listening").Msg("https")
-	err = httpsServer.ListenAndServeTLS("", "")
-	if err != nil {
-		log.Fatal().Err(err).Msg("https")
+		log.Info().Str("status", "listening").Msg("https")
+		err = httpsServer.ListenAndServeTLS("", "")
+		if err != nil {
+			log.Fatal().Err(err).Msg("https")
+		}
 	}
 }
 
