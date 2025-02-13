@@ -8,8 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog/log"
 )
 
 var mu sync.Mutex
@@ -90,4 +93,16 @@ func UpdateHandler(next http.Handler) http.Handler {
 		RequestDuration.WithLabelValues(method, host, code).Observe(duration)
 		mu.Unlock()
 	})
+}
+
+func Start() {
+	metricsRouter := chi.NewRouter()
+
+	metricsRouter.Handle("/metrics", promhttp.Handler())
+
+	log.Info().Str("status", "running").Str("Port", config.Misc.MetricsPort).Msg("metrics")
+	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
+	if err != nil {
+		log.Fatal().Err(err).Msg("metrics")
+	}
 }

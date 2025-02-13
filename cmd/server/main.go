@@ -3,16 +3,15 @@ package main
 import (
 	"context"
 	"flag"
-	"net/http"
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/api"
 	"github.com/Dyastin-0/mrps/internal/health"
 	"github.com/Dyastin-0/mrps/internal/logger"
+	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/caddyserver/certmagic"
-	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 
@@ -21,7 +20,6 @@ import (
 	"syscall"
 
 	"github.com/Dyastin-0/mrps/internal/config"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -58,14 +56,14 @@ func main() {
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)
 
-	go startReverseProxyServer(ctx)
+	go router.Start(ctx)
 
 	if config.Misc.MetricsEnabled {
-		go startMetricsServer()
+		go metrics.Start()
 	}
 
 	if config.Misc.APIEnabled {
-		go startAPI()
+		go api.Start()
 	}
 
 	// Handle graceful shutdown
@@ -74,72 +72,4 @@ func main() {
 	<-shutdown
 
 	log.Info().Msg("shutting down gracefully...")
-}
-
-func startReverseProxyServer(ctx context.Context) {
-	log.Info().Str("status", "running").Msg("proxy")
-
-	httpServer := &http.Server{
-		Addr:    ":80",
-		Handler: router.NewHTTP(),
-	}
-
-	go func() {
-		log.Info().Str("status", "listening").Msg("http")
-		err := httpServer.ListenAndServe()
-		if err != nil {
-			log.Fatal().Err(err).Msg("http")
-		}
-	}()
-
-	if len(config.Domains) != 0 {
-		magic := certmagic.NewDefault()
-		err := magic.ManageSync(ctx, config.Domains)
-		if err != nil {
-			log.Fatal().Err(err).Msg("https")
-		}
-
-		httpsServer := &http.Server{
-			Addr:      ":443",
-			TLSConfig: magic.TLSConfig(),
-			Handler:   router.New(),
-		}
-
-		log.Info().Str("status", "listening").Msg("https")
-		err = httpsServer.ListenAndServeTLS("", "")
-		if err != nil {
-			log.Fatal().Err(err).Msg("https")
-		}
-	}
-}
-
-func startMetricsServer() {
-	metricsRouter := chi.NewRouter()
-
-	metricsRouter.Handle("/metrics", promhttp.Handler())
-
-	log.Info().Str("status", "running").Str("Port", config.Misc.MetricsPort).Msg("metrics")
-	err := http.ListenAndServe(":"+config.Misc.MetricsPort, metricsRouter)
-	if err != nil {
-		log.Fatal().Err(err).Msg("metrics")
-	}
-}
-
-func startAPI() {
-	router := chi.NewRouter()
-
-	router.Use(logger.Handler)
-	router.Use(api.CORS)
-
-	router.Mount("/config", api.ProtectedRoute())
-	router.Handle("/refresh", api.Refresh())
-	router.Handle("/signout", api.Signout())
-	router.Handle("/auth", api.Auth())
-	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
-
-	log.Info().Str("status", "running").Str("port", config.Misc.MetricsPort).Msg("api")
-	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
-	if err != nil {
-		log.Fatal().Err(err).Msg("api")
-	}
 }

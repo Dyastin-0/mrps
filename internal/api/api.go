@@ -12,11 +12,11 @@ import (
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/go-chi/chi/v5"
-	"github.com/golang-jwt/jwt/v5"
+	jwtv5 "github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
 )
 
-func CORS(next http.Handler) http.Handler {
+func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
@@ -49,7 +49,7 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func Auth() http.HandlerFunc {
+func auth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req LoginRequest
 		decoder := json.NewDecoder(r.Body)
@@ -106,7 +106,7 @@ func Auth() http.HandlerFunc {
 	}
 }
 
-func JWT(next http.Handler) http.Handler {
+func jwt(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		if token == "" {
@@ -116,8 +116,8 @@ func JWT(next http.Handler) http.Handler {
 
 		token = token[7:]
 
-		claims := &jwt.MapClaims{}
-		_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		claims := &jwtv5.MapClaims{}
+		_, err := jwtv5.ParseWithClaims(token, claims, func(t *jwtv5.Token) (interface{}, error) {
 			return []byte(os.Getenv("ACCESS_TOKEN_KEY")), nil
 		})
 
@@ -130,7 +130,7 @@ func JWT(next http.Handler) http.Handler {
 	})
 }
 
-func Refresh() http.HandlerFunc {
+func refresh() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("rt")
 		if err != nil {
@@ -151,8 +151,8 @@ func Refresh() http.HandlerFunc {
 			Path:     "/",
 		})
 
-		claims := &jwt.MapClaims{}
-		_, err = jwt.ParseWithClaims(refreshToken, claims, func(t *jwt.Token) (interface{}, error) {
+		claims := &jwtv5.MapClaims{}
+		_, err = jwtv5.ParseWithClaims(refreshToken, claims, func(t *jwtv5.Token) (interface{}, error) {
 			return []byte(os.Getenv("REFRESH_TOKEN_KEY")), nil
 		})
 		if err != nil {
@@ -272,7 +272,7 @@ func get() http.Handler {
 	})
 }
 
-func Signout() http.HandlerFunc {
+func signout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{
 			Name:     "rt",
@@ -290,14 +290,14 @@ func Signout() http.HandlerFunc {
 }
 
 func NewToken(email, secret string, expiration time.Duration) (string, error) {
-	claims := jwt.MapClaims{
+	claims := jwtv5.MapClaims{
 		"email": email,
 		"exp":   time.Now().Add(expiration).Unix(),
 		"iss":   "mrps",
 		"iat":   time.Now().Unix(),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwtv5.NewWithClaims(jwtv5.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(secret))
 }
@@ -334,10 +334,10 @@ func getLogs() http.HandlerFunc {
 	}
 }
 
-func ProtectedRoute() *chi.Mux {
+func protectedRoute() *chi.Mux {
 	router := chi.NewRouter()
 
-	router.Use(JWT)
+	router.Use(jwt)
 
 	router.Handle("/", get())
 	router.Handle("/uptime", getUptime())
@@ -346,4 +346,23 @@ func ProtectedRoute() *chi.Mux {
 	router.Handle("/{domain}/enabled", setEnabled())
 
 	return router
+}
+
+func Start() {
+	router := chi.NewRouter()
+
+	router.Use(logger.Handler)
+	router.Use(cors)
+
+	router.Mount("/config", protectedRoute())
+	router.Handle("/refresh", refresh())
+	router.Handle("/signout", signout())
+	router.Handle("/auth", auth())
+	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
+
+	log.Info().Str("status", "running").Str("port", config.Misc.MetricsPort).Msg("api")
+	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
+	if err != nil {
+		log.Fatal().Err(err).Msg("api")
+	}
 }
