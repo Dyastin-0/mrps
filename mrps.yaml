@@ -112,7 +112,6 @@ domains:
       /:
         dests:
         - url: http://localhost:5050
-        - url: http://35.203.147.239
         rewrite:
           type: ""
           value: ""
