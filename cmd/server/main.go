@@ -34,7 +34,7 @@ func main() {
 	configPath := flag.String("config", "mrps.yaml", "Path to the config file")
 	flag.Parse()
 
-	log.Info().Str("config", *configPath).Msg("Config path in use")
+	log.Info().Str("path", *configPath).Msg("config")
 
 	err := config.Load(ctx, *configPath)
 	if err != nil {
