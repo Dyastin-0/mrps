@@ -169,9 +169,9 @@ domains:
       cooldown: 60000
 http:
   routes:
-    /free-wall/:
+    /:
       dests:
-      - url: http://localhost:9001
+      - url: http://localhost:4004
 misc:
   email: mail@dyastin.tech
   enable_metrics: true
