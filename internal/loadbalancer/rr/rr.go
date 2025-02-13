@@ -59,6 +59,30 @@ func (rr *RR) Next() *lbcommon.Dest {
 	return dest
 }
 
+func (rr *RR) NextAlive() *lbcommon.Dest {
+	rr.mu.Lock()
+	defer rr.mu.Unlock()
+
+	if len(rr.Dests) == 0 {
+		return nil
+	}
+
+	startIndex := rr.index
+	for {
+		dest := rr.Next()
+
+		if dest.Alive {
+			return dest
+		}
+
+		if rr.index == startIndex {
+			break
+		}
+	}
+
+	return nil
+}
+
 func (rr *RR) First() *lbcommon.Dest {
 	rr.mu.Lock()
 	defer rr.mu.Unlock()

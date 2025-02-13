@@ -12,6 +12,7 @@ import (
 
 type Balancer interface {
 	Next() *lbcommon.Dest
+	NextAlive() *lbcommon.Dest
 	First() *lbcommon.Dest
 	GetDests() []*lbcommon.Dest
 }

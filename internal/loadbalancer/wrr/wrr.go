@@ -70,4 +70,32 @@ func (wrr *WRR) Next() *lbcommon.Dest {
 	return selected
 }
 
+func (wrr *WRR) NextAlive() *lbcommon.Dest {
+	wrr.mu.Lock()
+	defer wrr.mu.Unlock()
+
+	if len(wrr.Dests) == 0 {
+		return nil
+	}
+
+	startIndex := -1
+	for i := 0; i < len(wrr.Dests); i++ {
+		dest := wrr.Next()
+		if startIndex == -1 {
+			startIndex = dest.CurrentWeight
+		}
+
+		if dest.Alive {
+			return dest
+		}
+
+		if dest.CurrentWeight == startIndex {
+			break
+		}
+	}
+
+	log.Warn().Msg("No healthy destinations available")
+	return nil
+}
+
 func (wrr *WRR) GetDests() []*lbcommon.Dest { return wrr.Dests }

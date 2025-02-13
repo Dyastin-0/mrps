@@ -34,6 +34,7 @@ type PathConfig struct {
 	Balancer     interface {
 		GetDests() []*common.Dest
 		Next() *common.Dest
+		NextAlive() *common.Dest
 		First() *common.Dest
 	} `yaml:"-"`
 }

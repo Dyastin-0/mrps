@@ -5,28 +5,40 @@ import (
 	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/types"
 )
+
+func routeAndServe(routes types.RouteConfig, sortedRoutes []string, w http.ResponseWriter, r *http.Request) bool {
+	path := r.URL.Path
+
+	for _, routePath := range sortedRoutes {
+		if strings.HasPrefix(path, routePath) {
+			route := routes[routePath]
+
+			if route.BalancerType != "" {
+				if dest := route.Balancer.Next(); dest != nil && dest.Alive {
+					dest.Proxy.ServeHTTP(w, r)
+					return true
+				}
+				route.Balancer.NextAlive()
+			}
+
+			if dest := route.Balancer.First(); dest != nil {
+				dest.Proxy.ServeHTTP(w, r)
+				return true
+			}
+		}
+	}
+
+	return false
+}
 
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
-		path := r.URL.Path
-
-		matchedConfig := config.DomainTrie.Match(host)
-		if matchedConfig != nil {
-			for _, routePath := range matchedConfig.SortedRoutes {
-				if strings.HasPrefix(path, routePath) {
-					if matchedConfig.Routes[routePath].BalancerType != "" {
-						if dest := matchedConfig.Routes[routePath].Balancer.Next(); dest != nil {
-							dest.Proxy.ServeHTTP(w, r)
-							return
-						}
-					}
-					if dest := matchedConfig.Routes[routePath].Balancer.First(); dest != nil {
-						dest.Proxy.ServeHTTP(w, r)
-						return
-					}
-				}
+		if matchedConfig := config.DomainTrie.Match(host); matchedConfig != nil {
+			if routeAndServe(matchedConfig.Routes, matchedConfig.SortedRoutes, w, r) {
+				return
 			}
 		}
 
@@ -36,21 +48,8 @@ func Handler(next http.Handler) http.Handler {
 
 func HTTPHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-
-		for _, routePath := range config.HTTP.SortedRoutes {
-			if strings.HasPrefix(path, routePath) {
-				if config.HTTP.Routes[routePath].BalancerType != "" {
-					if dest := config.HTTP.Routes[routePath].Balancer.Next(); dest != nil {
-						dest.Proxy.ServeHTTP(w, r)
-						return
-					}
-				}
-				if dest := config.HTTP.Routes[routePath].Balancer.First(); dest != nil {
-					dest.Proxy.ServeHTTP(w, r)
-					return
-				}
-			}
+		if routeAndServe(config.HTTP.Routes, config.HTTP.SortedRoutes, w, r) {
+			return
 		}
 
 		next.ServeHTTP(w, r)
