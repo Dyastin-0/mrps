@@ -31,12 +31,12 @@ func main() {
 		time.Sleep(500 * time.Millisecond)
 	}()
 
-	configPath := *flag.String("config", "mrps.yaml", "Path to the config file")
+	configPath := flag.String("config", "mrps.yaml", "Path to the config file")
 	flag.Parse()
 
-	log.Debug().Str("config", configPath).Msg("DEBUG")
+	log.Info().Str("config", *configPath).Msg("Config path in use")
 
-	err := config.Load(ctx, configPath)
+	err := config.Load(ctx, *configPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("config")
 	}
