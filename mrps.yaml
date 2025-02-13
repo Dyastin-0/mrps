@@ -116,7 +116,7 @@ domains:
           type: ""
           value: ""
           replace_val: ""
-        balancer: "rr"
+        balancer: ""
       /api:
         dests:
         - url: http://localhost:6060
