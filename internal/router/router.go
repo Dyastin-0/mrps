@@ -23,7 +23,7 @@ func New() chi.Router {
 	router.Use(reverseproxy.Handler)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, from reverse proxy server 🚀\n"))
+		w.Write([]byte("Hello, mrps https 🚀\n"))
 	})
 
 	return router
@@ -31,6 +31,10 @@ func New() chi.Router {
 
 func NewHTTP() *chi.Mux {
 	router := chi.NewRouter()
+
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, from mrps http 🚀\n"))
+	})
 
 	return router
 }
