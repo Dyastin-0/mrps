@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"net/http"
 	"time"
 
@@ -30,14 +31,16 @@ func main() {
 		time.Sleep(500 * time.Millisecond)
 	}()
 
-	err := config.Load(ctx, "mrps.yaml")
+	configPath := *flag.String("config", "mrps.yaml", "Path to the config file")
+
+	err := config.Load(ctx, configPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("config")
 	}
 
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal().Err(err).Msg("ENV")
+		log.Fatal().Err(err).Msg("env")
 	}
 
 	certmagic.DefaultACME.Agreed = true
