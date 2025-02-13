@@ -94,11 +94,11 @@ func auth() http.HandlerFunc {
 			Name:     "rt",
 			Value:    refreshToken,
 			HttpOnly: true,
-			SameSite: http.SameSiteNoneMode,
-			Secure:   config.Misc.Secure,
-			MaxAge:   24 * 60 * 60,
-			Domain:   config.Misc.Domain,
-			Path:     "/",
+			// SameSite: http.SameSiteNoneMode,
+			Secure: config.Misc.Secure,
+			MaxAge: 24 * 60 * 60,
+			Domain: config.Misc.Domain,
+			Path:   "/",
 		})
 
 		w.Header().Set("Content-Type", "application/json")
