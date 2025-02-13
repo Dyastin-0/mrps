@@ -169,7 +169,7 @@ domains:
       cooldown: 60000
 http:
   routes:
-    /:
+    /free-wall/:
       dests:
       - url: http://localhost:9001
 misc:
