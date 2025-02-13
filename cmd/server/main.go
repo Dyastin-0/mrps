@@ -44,9 +44,6 @@ func main() {
 	certmagic.DefaultACME.Email = string(config.Misc.Email)
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
-	mainRouter := chi.NewRouter()
-	mainRouter.Mount("/", router.New())
-
 	config.StartTime = time.Now()
 
 	logger.Init()
@@ -55,7 +52,7 @@ func main() {
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)
 
-	go startReverseProxyServer(mainRouter)
+	go startReverseProxyServer(ctx)
 
 	if config.Misc.MetricsEnabled {
 		go startMetricsServer()
@@ -73,12 +70,38 @@ func main() {
 	log.Info().Msg("Shutting down gracefully...")
 }
 
-func startReverseProxyServer(router chi.Router) {
-	log.Info().Str("Status", "running").Msg("Proxy")
+func startReverseProxyServer(ctx context.Context) {
+	log.Info().Str("status", "running").Msg("proxy")
 
-	err := certmagic.HTTPS(config.Domains, router)
+	httpServer := &http.Server{
+		Addr:    ":80",
+		Handler: router.NewHTTP(),
+	}
+
+	go func() {
+		log.Info().Str("status", "listening").Msg("http")
+		err := httpServer.ListenAndServe()
+		if err != nil {
+			log.Fatal().Err(err).Msg("proxy")
+		}
+	}()
+
+	magic := certmagic.NewDefault()
+	err := magic.ManageSync(ctx, config.Domains)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Proxy")
+		log.Fatal().Err(err).Msg("proxy")
+	}
+
+	httpsServer := &http.Server{
+		Addr:      ":443",
+		TLSConfig: magic.TLSConfig(),
+		Handler:   router.New(),
+	}
+
+	log.Info().Str("status", "listening").Msg("https")
+	err = httpsServer.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatal().Err(err).Msg("proxy")
 	}
 }
 

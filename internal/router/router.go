@@ -28,3 +28,9 @@ func New() chi.Router {
 
 	return router
 }
+
+func NewHTTP() *chi.Mux {
+	router := chi.NewRouter()
+
+	return router
+}
