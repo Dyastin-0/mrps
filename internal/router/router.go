@@ -32,6 +32,11 @@ func New() chi.Router {
 func NewHTTP() *chi.Mux {
 	router := chi.NewRouter()
 
+	router.Use(logger.Handler)
+	router.Use(metrics.UpdateHandler)
+	router.Use(limiter.Handler)
+	router.Use(reverseproxy.Handler)
+
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, from mrps http 🚀\n"))
 	})

@@ -18,6 +18,7 @@ import (
 
 var (
 	Domains         []string
+	HTTP            types.HTTP
 	DomainTrie      *types.DomainTrieConfig
 	ClientMngr      = sync.Map{}
 	GlobalRateLimit types.RateLimitConfig
@@ -105,6 +106,38 @@ func Load(ctx context.Context, filename string) error {
 
 		DomainTrie.Insert(domain, &cfg)
 	}
+
+	if configData.HTTP.Routes != nil {
+		HTTP = configData.HTTP
+		sortedRoutes := make([]string, 0, len(configData.HTTP.Routes))
+
+		for path, config := range configData.HTTP.Routes {
+			if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
+				return fmt.Errorf("invalid path: %s", path)
+			}
+
+			config.Balancer, err = loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, "http")
+			if err != nil {
+				log.Fatal().Err(err).Msg("config")
+			}
+			configData.HTTP.Routes[path] = config
+			sortedRoutes = append(sortedRoutes, path)
+		}
+
+		sort.Slice(sortedRoutes, func(i, j int) bool {
+			countI := strings.Count(sortedRoutes[i], "/")
+			countJ := strings.Count(sortedRoutes[j], "/")
+
+			if countI != countJ {
+				return countI > countJ
+			}
+
+			return len(sortedRoutes[i]) > len(sortedRoutes[j])
+		})
+
+		HTTP.SortedRoutes = sortedRoutes
+	}
+
 	return nil
 }
 
