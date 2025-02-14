@@ -1,6 +1,7 @@
 package types
 
 import (
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -33,8 +34,8 @@ type PathConfig struct {
 	BalancerType string               `yaml:"balancer"`
 	Balancer     interface {
 		GetDests() []*common.Dest
-		Next() *common.Dest
-		NextAlive() *common.Dest
+		Serve(r *http.Request) *common.Dest
+		ServeAlive(r *http.Request) *common.Dest
 		First() *common.Dest
 	} `yaml:"-"`
 }

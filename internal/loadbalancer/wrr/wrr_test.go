@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/wrr"
+	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,10 +31,10 @@ func startTestServer(port string, healthy bool) string {
 }
 
 func TestWeightedRoundRobin(t *testing.T) {
-	dests := map[string]int{
-		startTestServer(":8081", true): 3,
-		startTestServer(":8082", true): 2,
-		startTestServer(":8083", true): 1,
+	dests := []types.Dest{
+		{URL: startTestServer(":8081", true), Weight: 3},
+		{URL: startTestServer(":8082", true), Weight: 2},
+		{URL: startTestServer(":8083", true), Weight: 1},
 	}
 	path := "/api/v1"
 
@@ -48,7 +49,7 @@ func TestWeightedRoundRobin(t *testing.T) {
 	}
 
 	for i := 0; i < 12; i++ {
-		dest := wrrInstance.Next()
+		dest := wrrInstance.Serve(&http.Request{})
 		assert.NotNil(t, dest, "destination should be returned")
 		counts[dest.URL]++
 	}

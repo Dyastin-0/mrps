@@ -49,19 +49,19 @@ func TestRoundRobinBasic(t *testing.T) {
 	assert.Equal(t, 3, len(rrInstance.Dests), "should initialize with 3 destinations")
 	assert.Len(t, rrInstance.Dests, 3, "activeKeys should have 3 keys")
 
-	dest1 := rrInstance.Next()
+	dest1 := rrInstance.Serve(&http.Request{})
 	assert.NotNil(t, dest1, "first destination should be returned")
 	assert.Equal(t, dest1.URL, "http://localhost:8081", "should return the first destination")
 
-	dest2 := rrInstance.Next()
+	dest2 := rrInstance.Serve(&http.Request{})
 	assert.NotNil(t, dest2, "second destination should be returned")
 	assert.Equal(t, dest2.URL, "http://localhost:8082", "should return the second destination")
 
-	dest3 := rrInstance.Next()
+	dest3 := rrInstance.Serve(&http.Request{})
 	assert.NotNil(t, dest3, "third destination should be returned")
 	assert.Equal(t, dest3.URL, "http://localhost:8083", "should return the third destination")
 
-	dest1Again := rrInstance.Next()
+	dest1Again := rrInstance.Serve(&http.Request{})
 	assert.NotNil(t, dest1Again, "should cycle back to the first destination")
 	assert.Equal(t, dest1Again.URL, "http://localhost:8081", "should return the first destination again")
 }

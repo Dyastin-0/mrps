@@ -3,16 +3,19 @@ package loadbalancer
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
+	"github.com/Dyastin-0/mrps/internal/loadbalancer/iphash"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
+	"github.com/Dyastin-0/mrps/internal/loadbalancer/wrr"
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 )
 
 type Balancer interface {
-	Next() *lbcommon.Dest
-	NextAlive() *lbcommon.Dest
+	Serve(r *http.Request) *lbcommon.Dest
+	ServeAlive(r *http.Request) *lbcommon.Dest
 	First() *lbcommon.Dest
 	GetDests() []*lbcommon.Dest
 }
@@ -24,6 +27,10 @@ func new(btype string, ctx context.Context, dests []types.Dest, rewriteRule rewr
 	switch btype {
 	case "rr", "":
 		return rr.New(ctx, dests, rewriteRule, path, host), nil
+	case "wrr":
+		return wrr.New(ctx, dests, rewriteRule, path, host), nil
+	case "ih":
+		return iphash.New(ctx, dests, rewriteRule, path, host), nil
 	default:
 		return nil, errors.New("unsupported balancer type")
 	}

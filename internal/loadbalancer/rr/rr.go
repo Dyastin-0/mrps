@@ -2,6 +2,7 @@ package rr
 
 import (
 	"context"
+	"net/http"
 	"sync"
 	"time"
 
@@ -45,7 +46,7 @@ func (rr *RR) Stop() {
 	}
 }
 
-func (rr *RR) Next() *lbcommon.Dest {
+func (rr *RR) Serve(r *http.Request) *lbcommon.Dest {
 	rr.mu.Lock()
 	defer rr.mu.Unlock()
 
@@ -59,7 +60,7 @@ func (rr *RR) Next() *lbcommon.Dest {
 	return dest
 }
 
-func (rr *RR) NextAlive() *lbcommon.Dest {
+func (rr *RR) ServeAlive(r *http.Request) *lbcommon.Dest {
 	rr.mu.Lock()
 	defer rr.mu.Unlock()
 
@@ -69,7 +70,7 @@ func (rr *RR) NextAlive() *lbcommon.Dest {
 
 	startIndex := rr.index
 	for {
-		dest := rr.Next()
+		dest := rr.Serve(r)
 
 		if dest.Alive {
 			return dest
