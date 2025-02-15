@@ -167,11 +167,6 @@ domains:
       burst: 15
       rate: 10
       cooldown: 60000
-http:
-  routes:
-    /:
-      dests:
-      - url: http://localhost:4004
 misc:
   email: mail@dyastin.tech
   secure: true
