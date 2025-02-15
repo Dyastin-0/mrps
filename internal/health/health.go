@@ -33,14 +33,12 @@ func InitHealthBroadcaster(ctx context.Context) {
 }
 
 func broadcastHealthData() {
-	healthData := config.DomainTrie.GetHealth()
-
 	data := struct {
 		Type   string                     `json:"type"`
 		Health map[string]map[string]bool `json:"health"`
 	}{
 		Type:   "health",
-		Health: healthData,
+		Health: config.DomainTrie.GetHealth(),
 	}
 
 	dataBytes, err := json.Marshal(data)
