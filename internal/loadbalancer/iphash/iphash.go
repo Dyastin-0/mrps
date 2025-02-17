@@ -40,41 +40,50 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 	return rr
 }
 
-func (ih *IPHash) Serve(r *http.Request) *lbcommon.Dest {
+func (ih *IPHash) Serve(w http.ResponseWriter, r *http.Request) bool {
 	ih.mu.Lock()
 	defer ih.mu.Unlock()
 
 	if len(ih.Dests) == 0 {
-		return nil
+		return false
 	}
 
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	hash := hash.FNV(ip)
 	index := int(hash) % len(ih.Dests)
 
-	return ih.Dests[index]
+	dest := ih.Dests[index]
+	dest.Proxy.ServeHTTP(w, r)
+
+	return true
 }
 
-func (ih *IPHash) ServeAlive(r *http.Request) *lbcommon.Dest {
+func (ih *IPHash) ServeAlive(w http.ResponseWriter, r *http.Request) bool {
 	ih.mu.Lock()
 	defer ih.mu.Unlock()
 
 	if len(ih.Dests) == 0 {
-		return nil
+		return false
 	}
 
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return false
+	}
+
 	hash := hash.FNV(ip)
 	startIndex := int(hash) % len(ih.Dests)
 
 	for i := 0; i < len(ih.Dests); i++ {
 		index := (startIndex + i) % len(ih.Dests)
-		if ih.Dests[index].Alive {
-			return ih.Dests[index]
+		dest := ih.Dests[index]
+		if dest.Alive {
+			dest.Proxy.ServeHTTP(w, r)
+			return true
 		}
 	}
 
-	return nil
+	return false
 }
 
 func (ih *IPHash) First() *lbcommon.Dest {

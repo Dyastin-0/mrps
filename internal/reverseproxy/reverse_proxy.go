@@ -16,12 +16,10 @@ func routeAndServe(routes types.RouteConfig, sortedRoutes []string, w http.Respo
 			route := routes[routePath]
 
 			if route.BalancerType != "" {
-				if dest := route.Balancer.Serve(r); dest != nil && dest.Alive {
-					dest.Proxy.ServeHTTP(w, r)
+				if served := route.Balancer.Serve(w, r); served {
 					return true
 				}
-				if dest := route.Balancer.ServeAlive(r); dest != nil {
-					dest.Proxy.ServeHTTP(w, r)
+				if served := route.Balancer.ServeAlive(w, r); served {
 					return true
 				}
 			}

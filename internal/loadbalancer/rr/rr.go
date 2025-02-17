@@ -46,42 +46,43 @@ func (rr *RR) Stop() {
 	}
 }
 
-func (rr *RR) Serve(r *http.Request) *lbcommon.Dest {
+func (rr *RR) Serve(w http.ResponseWriter, r *http.Request) bool {
 	rr.mu.Lock()
 	defer rr.mu.Unlock()
 
 	if len(rr.Dests) == 0 {
-		return nil
+		return false
 	}
 
 	dest := rr.Dests[rr.index]
 	rr.index = (rr.index + 1) % len(rr.Dests)
 
-	return dest
+	dest.Proxy.ServeHTTP(w, r)
+	return true
 }
 
-func (rr *RR) ServeAlive(r *http.Request) *lbcommon.Dest {
+func (rr *RR) ServeAlive(w http.ResponseWriter, r *http.Request) bool {
 	rr.mu.Lock()
 	defer rr.mu.Unlock()
 
 	if len(rr.Dests) == 0 {
-		return nil
+		return false
 	}
 
 	startIndex := rr.index
-	for {
-		dest := rr.Serve(r)
+
+	for i := 0; i < len(rr.Dests); i++ {
+		index := (startIndex + i) % len(rr.Dests)
+		dest := rr.Dests[index]
 
 		if dest.Alive {
-			return dest
-		}
-
-		if rr.index == startIndex {
-			break
+			rr.index = (index + 1) % len(rr.Dests)
+			dest.Proxy.ServeHTTP(w, r)
+			return true
 		}
 	}
 
-	return nil
+	return false
 }
 
 func (rr *RR) First() *lbcommon.Dest {

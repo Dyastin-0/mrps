@@ -14,8 +14,8 @@ import (
 )
 
 type Balancer interface {
-	Serve(r *http.Request) *lbcommon.Dest
-	ServeAlive(r *http.Request) *lbcommon.Dest
+	Serve(w http.ResponseWriter, r *http.Request) bool
+	ServeAlive(w http.ResponseWriter, r *http.Request) bool
 	First() *lbcommon.Dest
 	GetDests() []*lbcommon.Dest
 }

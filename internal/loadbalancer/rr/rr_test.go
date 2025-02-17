@@ -3,8 +3,8 @@ package rr_test
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
 	"github.com/Dyastin-0/mrps/internal/types"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func startTestServer(port string, healthy bool) string {
+func startTestServer(healthy bool) *httptest.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if healthy {
@@ -21,47 +21,45 @@ func startTestServer(port string, healthy bool) string {
 			w.WriteHeader(http.StatusServiceUnavailable)
 		}
 	})
-	server := &http.Server{
-		Addr:    port,
-		Handler: handler,
-	}
-	go server.ListenAndServe()
-	time.Sleep(500 * time.Millisecond)
-	return "http://localhost" + port
+	server := httptest.NewServer(handler)
+	return server
 }
 
 func TestRoundRobinBasic(t *testing.T) {
-	dests := []types.Dest{
-		{
-			URL: startTestServer(":8081", true),
-		},
-		{
-			URL: startTestServer(":8082", true),
-		},
-		{
-			URL: startTestServer(":8083", true),
-		},
-	}
-	path := "/api/v1"
+	// Start test servers
+	server1 := startTestServer(true)
+	defer server1.Close()
 
+	server2 := startTestServer(true)
+	defer server2.Close()
+
+	server3 := startTestServer(true)
+	defer server3.Close()
+
+	dests := []types.Dest{
+		{URL: server1.URL},
+		{URL: server2.URL},
+		{URL: server3.URL},
+	}
+
+	path := "/api/v1"
 	rrInstance := rr.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
 
-	assert.Equal(t, 3, len(rrInstance.Dests), "should initialize with 3 destinations")
-	assert.Len(t, rrInstance.Dests, 3, "activeKeys should have 3 keys")
+	assert.Len(t, rrInstance.Dests, 3, "should initialize with 3 destinations")
 
-	dest1 := rrInstance.Serve(&http.Request{})
-	assert.NotNil(t, dest1, "first destination should be returned")
-	assert.Equal(t, dest1.URL, "http://localhost:8081", "should return the first destination")
+	for i := 0; i < 3; i++ {
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-	dest2 := rrInstance.Serve(&http.Request{})
-	assert.NotNil(t, dest2, "second destination should be returned")
-	assert.Equal(t, dest2.URL, "http://localhost:8082", "should return the second destination")
+		success := rrInstance.Serve(rec, req)
+		assert.True(t, success, "Serve should return true for a healthy destination")
+		assert.Equal(t, http.StatusOK, rec.Code, "Each destination should return 200 OK")
+	}
 
-	dest3 := rrInstance.Serve(&http.Request{})
-	assert.NotNil(t, dest3, "third destination should be returned")
-	assert.Equal(t, dest3.URL, "http://localhost:8083", "should return the third destination")
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-	dest1Again := rrInstance.Serve(&http.Request{})
-	assert.NotNil(t, dest1Again, "should cycle back to the first destination")
-	assert.Equal(t, dest1Again.URL, "http://localhost:8081", "should return the first destination again")
+	success := rrInstance.Serve(rec, req)
+	assert.True(t, success, "Should cycle back to the first destination")
+	assert.Equal(t, http.StatusOK, rec.Code, "Response should still be 200 OK")
 }

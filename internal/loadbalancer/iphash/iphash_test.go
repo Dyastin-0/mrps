@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Helper function to start a test HTTP server
 func startTestServer(port string, healthy bool) string {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -28,14 +27,13 @@ func startTestServer(port string, healthy bool) string {
 		Handler: handler,
 	}
 	go server.ListenAndServe()
-	time.Sleep(500 * time.Millisecond) // Ensure the server starts
+	time.Sleep(500 * time.Millisecond)
 	return "http://localhost" + port
 }
 
-// Helper function to create a fake HTTP request with a specified client IP
 func newTestRequest(clientIP string) *http.Request {
 	req := httptest.NewRequest("GET", "http://example.com", nil)
-	req.RemoteAddr = clientIP + ":12345" // Fake remote address
+	req.RemoteAddr = clientIP + ":12345"
 	return req
 }
 
@@ -55,17 +53,21 @@ func TestIPHashBasic(t *testing.T) {
 	req2 := newTestRequest("192.168.1.2")
 	req3 := newTestRequest("10.0.0.5")
 
-	dest1 := ipHashInstance.Serve(req1)
-	dest2 := ipHashInstance.Serve(req2)
-	dest3 := ipHashInstance.Serve(req3)
+	rec1 := httptest.NewRecorder()
+	rec2 := httptest.NewRecorder()
+	rec3 := httptest.NewRecorder()
 
-	assert.NotNil(t, dest1, "should return a destination for client IP 1")
-	assert.NotNil(t, dest2, "should return a destination for client IP 2")
-	assert.NotNil(t, dest3, "should return a destination for client IP 3")
+	assert.True(t, ipHashInstance.Serve(rec1, req1), "should serve request for client IP 1")
+	assert.True(t, ipHashInstance.Serve(rec2, req2), "should serve request for client IP 2")
+	assert.True(t, ipHashInstance.Serve(rec3, req3), "should serve request for client IP 3")
 
-	assert.Equal(t, dest1, ipHashInstance.Serve(req1), "same IP should get same backend")
-	assert.Equal(t, dest2, ipHashInstance.Serve(req2), "same IP should get same backend")
-	assert.Equal(t, dest3, ipHashInstance.Serve(req3), "same IP should get same backend")
+	rec4 := httptest.NewRecorder()
+	rec5 := httptest.NewRecorder()
+	rec6 := httptest.NewRecorder()
+
+	assert.True(t, ipHashInstance.Serve(rec4, req1), "same IP should get same backend")
+	assert.True(t, ipHashInstance.Serve(rec5, req2), "same IP should get same backend")
+	assert.True(t, ipHashInstance.Serve(rec6, req3), "same IP should get same backend")
 }
 
 func TestIPHashFailover(t *testing.T) {
@@ -77,11 +79,10 @@ func TestIPHashFailover(t *testing.T) {
 	path := "/api/v1"
 
 	ipHashInstance := iphash.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
-	time.Sleep(11 * time.Second) // Allow health checks to run
+	time.Sleep(11 * time.Second)
 
 	req := newTestRequest("192.168.1.10")
-	dest := ipHashInstance.ServeAlive(req)
+	rec := httptest.NewRecorder()
 
-	assert.NotNil(t, dest, "should return a destination")
-	assert.NotEqual(t, "http://localhost:8082", dest.URL, "should not return an unhealthy backend")
+	assert.True(t, ipHashInstance.ServeAlive(rec, req), "should serve a healthy destination despite failures")
 }

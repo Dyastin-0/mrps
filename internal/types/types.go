@@ -34,8 +34,8 @@ type PathConfig struct {
 	BalancerType string               `yaml:"balancer"`
 	Balancer     interface {
 		GetDests() []*common.Dest
-		Serve(r *http.Request) *common.Dest
-		ServeAlive(r *http.Request) *common.Dest
+		Serve(w http.ResponseWriter, r *http.Request) bool
+		ServeAlive(w http.ResponseWriter, r *http.Request) bool
 		First() *common.Dest
 	} `yaml:"-"`
 }
