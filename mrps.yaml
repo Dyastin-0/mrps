@@ -144,22 +144,6 @@ domains:
       burst: 15
       rate: 10
       cooldown: 60000
-  sandbox.dyastin.tech:
-    enabled: true
-    routes:
-      /free-wall:
-        dests:
-        - url: http://35.203.147.239
-        - url: http://localhost:7070
-        rewrite:
-          type: regex
-          value: ^/free-wall/(.*)$
-          replace_val: /$1
-        balancer: "rr"
-    rate_limit:
-      burst: 15
-      rate: 10
-      cooldown: 60000
 misc:
   email: mail@dyastin.tech
   secure: true
