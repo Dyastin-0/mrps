@@ -1,15 +1,14 @@
 package logger
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/hijack"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/nxadm/tail"
 	"github.com/rs/zerolog"
@@ -36,38 +35,14 @@ func Init() {
 	log.Logger = logger
 }
 
-type loggingResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
-	return &loggingResponseWriter{w, http.StatusOK}
-}
-
-func (lrw *loggingResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
-}
-
-func (rw *loggingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	if hijacker, ok := rw.ResponseWriter.(http.Hijacker); ok {
-		return hijacker.Hijack()
-	}
-	return nil, nil, fmt.Errorf("ResponseWriter does not support Hijack")
-}
-
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		lrw := newLoggingResponseWriter(w)
-
-		next.ServeHTTP(lrw, r)
+		statusCode := hijack.StatusCode(next, w, r)
 
 		log.Info().
 			Str("method", r.Method).
 			Str("host", r.Host).
-			Int("code", lrw.statusCode).
+			Int("code", statusCode).
 			Msg("access")
 	})
 }

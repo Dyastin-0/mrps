@@ -1,14 +1,13 @@
 package metrics
 
 import (
-	"bufio"
 	"fmt"
-	"net"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/hijack"
 	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -53,25 +52,6 @@ func Handler() http.HandlerFunc {
 	return promhttp.Handler().ServeHTTP
 }
 
-func NewWrapResponseWriter(w http.ResponseWriter) *ResponseWriter {
-	return &ResponseWriter{
-		ResponseWriter: w,
-		StatusCode:     http.StatusOK,
-	}
-}
-
-func (w *ResponseWriter) WriteHeader(statusCode int) {
-	w.StatusCode = statusCode
-	w.ResponseWriter.WriteHeader(statusCode)
-}
-
-func (rw *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	if hijacker, ok := rw.ResponseWriter.(http.Hijacker); ok {
-		return hijacker.Hijack()
-	}
-	return nil, nil, fmt.Errorf("ResponseWriter does not support Hijack")
-}
-
 func UpdateHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -81,16 +61,13 @@ func UpdateHandler(next http.Handler) http.Handler {
 		ActiveRequests.Inc()
 		defer ActiveRequests.Dec()
 
-		rec := NewWrapResponseWriter(w)
+		statusCode := hijack.StatusCode(next, w, r)
 
-		next.ServeHTTP(rec, r)
-
-		code := fmt.Sprint(rec.StatusCode)
 		duration := time.Since(start).Seconds()
 
 		mu.Lock()
-		RequestCount.WithLabelValues(method, host, code).Inc()
-		RequestDuration.WithLabelValues(method, host, code).Observe(duration)
+		RequestCount.WithLabelValues(method, host, fmt.Sprint(statusCode)).Inc()
+		RequestDuration.WithLabelValues(method, host, fmt.Sprint(statusCode)).Observe(duration)
 		mu.Unlock()
 	})
 }
