@@ -57,32 +57,15 @@ func TestIPHashBasic(t *testing.T) {
 	rec2 := httptest.NewRecorder()
 	rec3 := httptest.NewRecorder()
 
-	assert.True(t, ipHashInstance.Serve(rec1, req1), "should serve request for client IP 1")
-	assert.True(t, ipHashInstance.Serve(rec2, req2), "should serve request for client IP 2")
-	assert.True(t, ipHashInstance.Serve(rec3, req3), "should serve request for client IP 3")
+	assert.True(t, ipHashInstance.Serve(rec1, req1, 3), "should serve request for client IP 1")
+	assert.True(t, ipHashInstance.Serve(rec2, req2, 3), "should serve request for client IP 2")
+	assert.True(t, ipHashInstance.Serve(rec3, req3, 3), "should serve request for client IP 3")
 
 	rec4 := httptest.NewRecorder()
 	rec5 := httptest.NewRecorder()
 	rec6 := httptest.NewRecorder()
 
-	assert.True(t, ipHashInstance.Serve(rec4, req1), "same IP should get same backend")
-	assert.True(t, ipHashInstance.Serve(rec5, req2), "same IP should get same backend")
-	assert.True(t, ipHashInstance.Serve(rec6, req3), "same IP should get same backend")
-}
-
-func TestIPHashFailover(t *testing.T) {
-	dests := []types.Dest{
-		{URL: startTestServer(":8081", true)},
-		{URL: startTestServer(":8082", false)},
-		{URL: startTestServer(":8083", true)},
-	}
-	path := "/api/v1"
-
-	ipHashInstance := iphash.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
-	time.Sleep(11 * time.Second)
-
-	req := newTestRequest("192.168.1.10")
-	rec := httptest.NewRecorder()
-
-	assert.True(t, ipHashInstance.ServeAlive(rec, req), "should serve a healthy destination despite failures")
+	assert.True(t, ipHashInstance.Serve(rec4, req1, 3), "same IP should get same backend")
+	assert.True(t, ipHashInstance.Serve(rec5, req2, 3), "same IP should get same backend")
+	assert.True(t, ipHashInstance.Serve(rec6, req3, 3), "same IP should get same backend")
 }

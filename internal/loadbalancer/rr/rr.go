@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/hijack"
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
@@ -46,43 +47,25 @@ func (rr *RR) Stop() {
 	}
 }
 
-func (rr *RR) Serve(w http.ResponseWriter, r *http.Request) bool {
-	rr.mu.Lock()
-	defer rr.mu.Unlock()
-
-	if len(rr.Dests) == 0 {
+func (rr *RR) Serve(w http.ResponseWriter, r *http.Request, retries int) bool {
+	if len(rr.Dests) == 0 || retries <= 0 {
+		http.Error(w, "All backend servers are down", http.StatusBadGateway)
 		return false
 	}
 
+	rr.mu.Lock()
 	dest := rr.Dests[rr.index]
 	rr.index = (rr.index + 1) % len(rr.Dests)
+	rr.mu.Unlock()
 
-	dest.Proxy.ServeHTTP(w, r)
+	statusCode := hijack.StatusCode(dest.Proxy, w, r)
+
+	if statusCode >= 500 {
+		log.Printf("Server %s failed with status %d, retrying (%d retries left)...", dest.URL, statusCode, retries-1)
+		return rr.Serve(w, r, retries-1)
+	}
+
 	return true
-}
-
-func (rr *RR) ServeAlive(w http.ResponseWriter, r *http.Request) bool {
-	rr.mu.Lock()
-	defer rr.mu.Unlock()
-
-	if len(rr.Dests) == 0 {
-		return false
-	}
-
-	startIndex := rr.index
-
-	for i := 0; i < len(rr.Dests); i++ {
-		index := (startIndex + i) % len(rr.Dests)
-		dest := rr.Dests[index]
-
-		if dest.Alive {
-			rr.index = (index + 1) % len(rr.Dests)
-			dest.Proxy.ServeHTTP(w, r)
-			return true
-		}
-	}
-
-	return false
 }
 
 func (rr *RR) First() *lbcommon.Dest {

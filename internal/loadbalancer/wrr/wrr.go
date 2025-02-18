@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/hijack"
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
@@ -47,7 +48,11 @@ func (wrr *WRR) Stop() {
 	}
 }
 
-func (wrr *WRR) Serve(w http.ResponseWriter, r *http.Request) bool {
+func (wrr *WRR) Serve(w http.ResponseWriter, r *http.Request, retries int) bool {
+	if len(wrr.Dests) == 0 || retries <= 0 {
+		return false
+	}
+
 	wrr.mu.Lock()
 	defer wrr.mu.Unlock()
 
@@ -55,12 +60,10 @@ func (wrr *WRR) Serve(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	// Increment CurrentWeight for each destination
 	for i := range wrr.Dests {
 		wrr.Dests[i].CurrentWeight += wrr.Dests[i].Weight
 	}
 
-	// Find the destination with the highest CurrentWeight
 	bestIndex := -1
 	for i, dest := range wrr.Dests {
 		if bestIndex == -1 || dest.CurrentWeight > wrr.Dests[bestIndex].CurrentWeight {
@@ -72,40 +75,15 @@ func (wrr *WRR) Serve(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	selected := wrr.Dests[bestIndex]
-	selected.Proxy.ServeHTTP(w, r)
+	dest := wrr.Dests[bestIndex]
 
-	selected.CurrentWeight -= wrr.totalWeight
-	return true
-}
+	statusCode := hijack.StatusCode(dest.Proxy, w, r)
+	dest.CurrentWeight -= wrr.totalWeight
 
-func (wrr *WRR) ServeAlive(w http.ResponseWriter, r *http.Request) bool {
-	wrr.mu.Lock()
-	defer wrr.mu.Unlock()
-
-	if len(wrr.Dests) == 0 {
-		return false
+	if statusCode >= 500 {
+		wrr.Serve(w, r, retries-1)
 	}
 
-	bestIndex := -1
-	for i, dest := range wrr.Dests {
-		if !dest.Alive {
-			continue
-		}
-
-		dest.CurrentWeight += dest.Weight
-		if bestIndex == -1 || dest.CurrentWeight > wrr.Dests[bestIndex].CurrentWeight {
-			bestIndex = i
-		}
-	}
-
-	if bestIndex == -1 {
-		return false
-	}
-
-	selected := wrr.Dests[bestIndex]
-	selected.Proxy.ServeHTTP(w, r)
-	selected.CurrentWeight -= wrr.totalWeight
 	return true
 }
 

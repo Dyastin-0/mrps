@@ -16,10 +16,7 @@ func routeAndServe(routes types.RouteConfig, sortedRoutes []string, w http.Respo
 			route := routes[routePath]
 
 			if route.BalancerType != "" {
-				if served := route.Balancer.Serve(w, r); served {
-					return true
-				}
-				if served := route.Balancer.ServeAlive(w, r); served {
+				if served := route.Balancer.Serve(w, r, len(sortedRoutes)); served {
 					return true
 				}
 			}

@@ -57,7 +57,7 @@ func TestWeightedRoundRobin(t *testing.T) {
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		served := wrrInstance.Serve(rec, req)
+		served := wrrInstance.Serve(rec, req, 3)
 		assert.True(t, served, "a destination should be selected")
 
 		switch rec.Body.String() {

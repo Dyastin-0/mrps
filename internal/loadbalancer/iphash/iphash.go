@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Dyastin-0/mrps/internal/hijack"
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/hash"
@@ -40,50 +41,27 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 	return rr
 }
 
-func (ih *IPHash) Serve(w http.ResponseWriter, r *http.Request) bool {
-	ih.mu.Lock()
-	defer ih.mu.Unlock()
-
-	if len(ih.Dests) == 0 {
+func (ih *IPHash) Serve(w http.ResponseWriter, r *http.Request, retries int) bool {
+	if len(ih.Dests) == 0 || retries <= 0 {
 		return false
 	}
+
+	ih.mu.Lock()
+	defer ih.mu.Unlock()
 
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	hash := hash.FNV(ip)
 	index := int(hash) % len(ih.Dests)
 
 	dest := ih.Dests[index]
-	dest.Proxy.ServeHTTP(w, r)
+
+	statusCode := hijack.StatusCode(dest.Proxy, w, r)
+
+	if statusCode >= 500 {
+		ih.Serve(w, r, retries-1)
+	}
 
 	return true
-}
-
-func (ih *IPHash) ServeAlive(w http.ResponseWriter, r *http.Request) bool {
-	ih.mu.Lock()
-	defer ih.mu.Unlock()
-
-	if len(ih.Dests) == 0 {
-		return false
-	}
-
-	ip, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return false
-	}
-
-	hash := hash.FNV(ip)
-	startIndex := int(hash) % len(ih.Dests)
-
-	for i := 0; i < len(ih.Dests); i++ {
-		index := (startIndex + i) % len(ih.Dests)
-		dest := ih.Dests[index]
-		if dest.Alive {
-			dest.Proxy.ServeHTTP(w, r)
-			return true
-		}
-	}
-
-	return false
 }
 
 func (ih *IPHash) First() *lbcommon.Dest {

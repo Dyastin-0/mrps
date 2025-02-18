@@ -51,7 +51,7 @@ func TestRoundRobinBasic(t *testing.T) {
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		success := rrInstance.Serve(rec, req)
+		success := rrInstance.Serve(rec, req, 5)
 		assert.True(t, success, "Serve should return true for a healthy destination")
 		assert.Equal(t, http.StatusOK, rec.Code, "Each destination should return 200 OK")
 	}
@@ -59,7 +59,7 @@ func TestRoundRobinBasic(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-	success := rrInstance.Serve(rec, req)
+	success := rrInstance.Serve(rec, req, 5)
 	assert.True(t, success, "Should cycle back to the first destination")
 	assert.Equal(t, http.StatusOK, rec.Code, "Response should still be 200 OK")
 }
