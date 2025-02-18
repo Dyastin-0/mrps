@@ -149,20 +149,13 @@ domains:
     routes:
       /free-wall:
         dests:
-        - url: http://localhost:9001
+        - url: http://35.203.147.239
+        - url: http://localhost:7070
         rewrite:
           type: regex
           value: ^/free-wall/(.*)$
           replace_val: /$1
-        balancer: ""
-      /free-wall/api:
-        dests:
-        - url: http://localhost:5000
-        rewrite:
-          type: regex
-          value: ^/free-wall/api/(.*)$
-          replace_val: /$1
-        balancer: ""
+        balancer: "rr"
     rate_limit:
       burst: 15
       rate: 10
