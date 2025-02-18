@@ -55,7 +55,6 @@ func main() {
 	go health.InitHealthBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)
-
 	go router.Start(ctx)
 
 	if config.Misc.MetricsEnabled {
