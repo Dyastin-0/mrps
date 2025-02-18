@@ -112,12 +112,11 @@ domains:
       /:
         dests:
         - url: http://localhost:5050
-        - url: http://35.203.147.239/mrps
         rewrite:
           type: ""
           value: ""
           replace_val: ""
-        balancer: "rr"
+        balancer: ""
       /api:
         dests:
         - url: http://localhost:6060
