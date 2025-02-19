@@ -133,7 +133,7 @@ domains:
 
 ### Load-balancing
 
-There three (3) load-balancing algorithm available: `rr`, `wrr`, and `iphash`; respectively, round robin, weighted round robin, and IP hash.
+There are three (3) load-balancing algorithm available: `rr`, `wrr`, and `iphash`; respectively, round robin, weighted round robin, and IP hash.
 
 ```yaml
 domains:                                       
