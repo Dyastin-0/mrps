@@ -20,7 +20,7 @@ type ClientLimiter struct {
 }
 
 type Config struct {
-	Enabled      bool            `yaml:"enabled,omitempty"`
+	Enabled      bool            `yaml:"enabled"`
 	Routes       RouteConfig     `yaml:"routes,omitempty"`
 	SortedRoutes []string        `yaml:"-"`
 	RateLimit    RateLimitConfig `yaml:"rate_limit,omitempty"`
@@ -30,8 +30,8 @@ type RouteConfig map[string]PathConfig
 
 type PathConfig struct {
 	Dests        []Dest               `json:"Dests,omitempty" yaml:"dests,omitempty"`
-	RewriteRule  rewriter.RewriteRule `yaml:"rewrite"`
-	BalancerType string               `yaml:"balancer"`
+	RewriteRule  rewriter.RewriteRule `yaml:"rewrite,omitempty"`
+	BalancerType string               `yaml:"balancer,omitempty"`
 	Balancer     interface {
 		GetDests() []*common.Dest
 		Serve(w http.ResponseWriter, r *http.Request, retries int) bool
@@ -42,7 +42,7 @@ type PathConfig struct {
 
 type Dest struct {
 	URL    string `yaml:"url"`
-	Weight int    `yaml:"weight"`
+	Weight int    `yaml:"weight,omitempty"`
 }
 
 type RateLimitConfig struct {

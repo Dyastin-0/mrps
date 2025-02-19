@@ -238,7 +238,6 @@ func setEnabled() http.HandlerFunc {
 		}
 
 		go ws.Clients.Send(token, configBytes)
-		go config.ParseToYAML()
 
 		w.WriteHeader(http.StatusOK)
 	}
@@ -334,12 +333,20 @@ func getLogs() http.HandlerFunc {
 	}
 }
 
+func sync() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		config.ParseToYAML()
+		w.WriteHeader(http.StatusAccepted)
+	}
+}
+
 func protectedRoute() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(jwt)
 
 	router.Handle("/", get())
+	router.Post("/sync", sync())
 	router.Handle("/uptime", getUptime())
 	router.Handle("/health/ws", getHealth())
 	router.Handle("/logs/ws", getLogs())
