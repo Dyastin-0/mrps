@@ -10,7 +10,6 @@ import (
 	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/router"
-	"github.com/Dyastin-0/mrps/internal/watcher"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/caddyserver/certmagic"
 	"github.com/joho/godotenv"
@@ -55,7 +54,7 @@ func main() {
 
 	logger.Init()
 
-	go watcher.Watch(ctx, *configPath)
+	go config.Watch(ctx, *configPath)
 	go health.InitHealthBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)

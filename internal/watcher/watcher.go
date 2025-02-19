@@ -2,23 +2,21 @@ package watcher
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/fsnotify/fsnotify"
 	"github.com/rs/zerolog/log"
 )
 
-func Watch(ctx context.Context, filename string) {
+func Watch(ctx context.Context, filename string, callback func()) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal().Err(err).Msg("watcher")
+		log.Fatal().Err(err).Msg("failed to create file watcher")
 	}
 	defer watcher.Close()
 
 	err = watcher.Add(filename)
 	if err != nil {
-		log.Fatal().Err(err).Msg("watcher")
+		log.Fatal().Err(err).Msg("failed to watch file")
 	}
 
 	log.Info().Str("status", "running").Str("target", filename).Msg("watcher")
@@ -31,18 +29,19 @@ func Watch(ctx context.Context, filename string) {
 			}
 
 			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
-
-				if err := config.Load(ctx, filename); err != nil {
-					log.Error().Err(fmt.Errorf("failed to reload")).Msg("watcher")
-				} else {
-					log.Info().Str("status", "reloaded").Str("target", filename).Msg("watcher")
-				}
+				log.Info().Str("event", event.String()).Str("target", filename).Msg("watcher")
+				callback()
 			}
+
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
 			log.Error().Err(err).Msg("watcher")
+
+		case <-ctx.Done():
+			log.Info().Str("status", "stopping").Msg("watcher")
+			return
 		}
 	}
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer"
 	"github.com/Dyastin-0/mrps/internal/types"
+	"github.com/Dyastin-0/mrps/internal/watcher"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
@@ -27,6 +28,14 @@ var (
 )
 
 func Load(ctx context.Context, filename string) error {
+	// Reset all global variables
+	Domains = nil
+	HTTP = types.HTTP{}
+	DomainTrie = types.NewDomainTrie()
+	GlobalRateLimit = types.RateLimitConfig{}
+	Misc = types.MiscConfig{}
+	StartTime = time.Now()
+
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("could not open config file: %v", err)
@@ -157,4 +166,14 @@ func ParseToYAML() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("config")
 	}
+}
+
+func Watch(ctx context.Context, path string) {
+	watcher.Watch(ctx, path, func() {
+		if err := Load(ctx, path); err != nil {
+			log.Error().Err(fmt.Errorf("failed to reload")).Msg("config")
+		} else {
+			log.Info().Str("status", "reloaded").Str("path", path).Msg("config")
+		}
+	})
 }
