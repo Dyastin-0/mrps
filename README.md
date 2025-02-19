@@ -24,51 +24,39 @@ Configurations are stored on the root's `config.yaml`.
 
 #### miscellaneous
 
-Optional configurations
-
 ```yaml
 Misc:
-  email: your@mail.com       # Used for certmagic
+  email: your@mail.com       # Used for certmagic (optional)
   enable_metrics: true
   metrics_port: 5000         # Default 7070
   enable_api: true
   api_port: 3000             # Default 6060
-  allowed_origins:           # Used for WS connections, default wild card
+  allowed_origins:           # Used for WS connections
   - https://your_domain.com
   - http://localhost:5050
 ```
 
-#### Routes Configuration
+#### Route Configuration
 
-Routes define how incoming requests are routed to different services. Example:
+Routes define how incoming requests are routed to different services.
+
+Basic route:
 
 ```yaml
 domains:
-  "domain.com":
+  domain.com:
     routes:
-      "/api":
-        dest: "http://localhost:3000"
-      "/":
-        dest: "http://localhost:9090"
-    rate_limit:
-      burst: 100
-      rate: 50
-      cooldown: 60000
-  "sub.domain.com":
-    routes:
-      "/api":
-        dest: "http://localhost:3000"
-      "/":
-        dest: "http://localhost:9090"    
-    rate_limit:
-      burst: 10
-      rate: 5
-      cooldown: 60000
+      /api:
+        dest: http://localhost:3000
+      /:
+        dest: http://localhost:9090
 ```
 
 #### Rate Limiting Configuration
 
-Rate limiting defines how many request a client can do in a specified timeframe, applicable to domain and global scope. Example:
+Rate limiting defines how many request a client can do in a specified timeframe, applicable to domain and global scope.
+
+##### Global
 
 ```yaml
 rate_limit:
@@ -77,102 +65,53 @@ rate_limit:
   cooldown: 60000
 ```
 
-`burst` Maximum requests allowed in a short period. This enables handling sudden traffic spikes.
+##### Domain
+
+```yaml
+domains:
+  domain.com:
+    routes:
+      /:
+        dests:
+        - url: http://localhost6060
+    rate_limit:
+      burst: 50
+      rate: 10
+      cooldown: 60000
+```
+
+`burst` Maximum requests allowed in a short period.
 
 `rate` Requests per second at which tokens are replenished.
 
 `cooldown` Time (in milliseconds) a client must wait after exhausting the burst limit.
 
-#### How it Works
-
-- `burst`: Client can make up to burst requests (50 in the example) without hitting the limit.
-- `rate`: After the burst, requests are limited to rate tokens per second (10 in this example).
-- `cooldown`: After exceeding the burst, the client must wait for the cooldown period (60 seconds) before making more requests.
-
-### Routing Rules
-
-The routing rules are simple and configurable. Example:
-
-```yaml
-domains:                                       # <- All domains are configured here
-  "domain.com":                                # <- Domain name
-      routes:                                 
-        "/api":
-            dest: "http://localhost:3000"      # <- path : dest
-        "/metrics":
-            dest: "http://localhost:9090"      # <- path : dest
-  "sub.domain.com":                                
-      routes:                                 
-        "/api":
-            dest: "http://localhost:3001"      # <- path : dest
-        "/metrics":
-            dest: "http://localhost:8080"   
-```
-
-You can also use wild cards:
-
-```yaml
-domains:                                       
-  "*.domain.com":                              # <- Any sub-domain will be routed here                              
-      routes:                                  # will ignore the base domain
-        "/api":                                # unless configured below    
-            dest: "http://localhost:3001"      # <- path : dest
-        "/metrics":
-            dest: "http://localhost:8080"  
-  "domain.com":                                # <- Base domain     
-      routes:                                 
-        "/api":
-            dest: "http://localhost:3001"      # <- path : dest
-        "/metrics":
-            dest: "http://localhost:8080" 
-```
-
 #### Path Rewrites
 
-There's two types of rewrites available, regex and prefix. Example
+There's two types of rewrites available, `regex` and `prefix`.
 
 ```yaml
 domains:                                       
-  "domain.com":                                                       
+  domain.com:                                                       
       routes:                                  
-        "/api/v1":                               
-            dest: "http://localhost:3001"
+        /api/v1:                               
+            dest: http://localhost:3001
             rewrite:
-              type: "regex"
-              value: "^/api/v1/(.*)$"          # <- will be rewritten to /
-              replace_val: "/$1"
-        "/metrics":
-            dest: "http://localhost:8080"  
-  "sub.domain.com":                                                       
+              type: regex
+              value: ^/api/v1/(.*)$          # <- will be rewritten to /
+              replace_val: /$1
+        /metrics:
+            dest: http://localhost:8080  
+  sub.domain.com:                                                       
       routes:                                  
-        "/api/v1":                               
-            dest: "http://localhost:3001"
+        /api/v1:                               
+            dest: http://localhost:3001
             rewrite:
-              type: "regex"
-              value: "^/api/v1/(.*)$"          # <- will be rewritten to /api/v2
-              replace_val: "/api/v2/$1"
-        "/metrics":
-            dest: "http://localhost:8080"  
-  "sub.domain.com":                                                       
-      routes:                                  
-        "/api/v1":                               
-            dest: "http://localhost:3001"
-            rewrite:
-              type: "prefix"
-              value: "/api/v1"                 # <- will be rewritten to /
-              replace_val: ""
-        "/metrics":
-            dest: "http://localhost:8080"  
-  "sub.domain.com":                                                       
-      routes:                                  
-        "/api/v1":                               
-            dest: "http://localhost:3001"
-            rewrite:
-              type: "prefix"
-              value: "/api/v1"                 # <- will be rewritten to /new/path
-              replace_val: "/new/path"
-        "/metrics":
-            dest: "http://localhost:8080"  
+              type: prefix
+              value: /api/v1                 # <- will be rewritten to /new/path
+              replace_val: /new/path
+        /metrics:
+            dest: http://localhost:8080" 
 ```
 
 ### TLS Certificates
@@ -229,6 +168,7 @@ The reverse proxy server exposes Prometheus-compatible metrics at the `metrics_p
 
 #### Scraping Metrics
 Prometheus can scrape these metrics by configuring the  `metrics_port/metrics` endpoint as a target. Example scrape configuration in Prometheus:
+
 ```yaml
 scrape_configs:
   - job_name: 'reverse_proxy'

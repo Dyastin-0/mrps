@@ -10,6 +10,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/router"
+	"github.com/Dyastin-0/mrps/internal/watcher"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/caddyserver/certmagic"
 	"github.com/joho/godotenv"
@@ -44,14 +45,17 @@ func main() {
 		log.Fatal().Err(err).Msg("env")
 	}
 
+	if config.Misc.Email != "" {
+		certmagic.DefaultACME.Email = config.Misc.Email
+	}
 	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.Email = string(config.Misc.Email)
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
 	config.StartTime = time.Now()
 
 	logger.Init()
 
+	go watcher.Watch(ctx, *configPath)
 	go health.InitHealthBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)

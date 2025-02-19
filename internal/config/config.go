@@ -42,7 +42,7 @@ func Load(ctx context.Context, filename string) error {
 		return fmt.Errorf("could not decode YAML: %v", err)
 	}
 
-	if !regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(configData.Misc.Email) {
+	if configData.Misc.Email != "" && !regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`).MatchString(configData.Misc.Email) {
 		return fmt.Errorf("invalid email: %s", configData.Misc.Email)
 	}
 
