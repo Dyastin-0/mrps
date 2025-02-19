@@ -77,9 +77,9 @@ func (ih *IPHash) First() *lbcommon.Dest {
 
 func (ih *IPHash) GetDests() []*lbcommon.Dest { return ih.Dests }
 
-func (ih *IPHash) Stop() {
+func (ih *IPHash) StopHealthChecks() {
 	if ih.cancel != nil {
-		log.Info().Msg("Stopping all health checks")
+		log.Info().Str("balancer", "iphash").Str("status", "stopped").Msg("health")
 		ih.cancel()
 	}
 }

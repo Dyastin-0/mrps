@@ -40,9 +40,9 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 	return rr
 }
 
-func (rr *RR) Stop() {
+func (rr *RR) StopHealthChecks() {
 	if rr.cancel != nil {
-		log.Info().Msg("Stopping all health checks")
+		log.Info().Str("balancer", "rr").Str("status", "stopped").Msg("health")
 		rr.cancel()
 	}
 }

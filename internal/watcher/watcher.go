@@ -28,8 +28,8 @@ func Watch(ctx context.Context, filename string, callback func()) {
 				return
 			}
 
-			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
-				log.Info().Str("event", event.String()).Str("target", filename).Msg("watcher")
+			if event.Op&(fsnotify.Write) != 0 {
+				log.Info().Str("event", "modified").Str("target", filename).Msg("watcher")
 				callback()
 			}
 

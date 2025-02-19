@@ -9,7 +9,6 @@ import (
 	"github.com/Dyastin-0/mrps/internal/health"
 	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/metrics"
-	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/caddyserver/certmagic"
 	"github.com/joho/godotenv"
@@ -58,7 +57,7 @@ func main() {
 	go health.InitHealthBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)
-	go router.Start(ctx)
+	// go router.Start(ctx)
 
 	if config.Misc.MetricsEnabled {
 		go metrics.Start()

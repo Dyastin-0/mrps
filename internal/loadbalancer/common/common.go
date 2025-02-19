@@ -21,10 +21,12 @@ func (d *Dest) Check(ctx context.Context, host string, delay time.Duration) {
 	ticker := time.NewTicker(delay)
 	defer ticker.Stop()
 
+	log.Info().Str("host", host).Str("url", d.URL).Str("status", "running").Msg("health")
+
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info().Str("host", host).Str("url", d.URL).Str("Status", "Stopping").Msg("health")
+			log.Info().Str("host", host).Str("url", d.URL).Str("status", "stopping").Msg("health")
 			return
 		case <-ticker.C:
 			d.ping(host)

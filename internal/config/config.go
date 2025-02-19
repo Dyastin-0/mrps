@@ -28,14 +28,6 @@ var (
 )
 
 func Load(ctx context.Context, filename string) error {
-	// Reset all global variables
-	Domains = nil
-	HTTP = types.HTTP{}
-	DomainTrie = types.NewDomainTrie()
-	GlobalRateLimit = types.RateLimitConfig{}
-	Misc = types.MiscConfig{}
-	StartTime = time.Now()
-
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("could not open config file: %v", err)
@@ -170,6 +162,7 @@ func ParseToYAML() {
 
 func Watch(ctx context.Context, path string) {
 	watcher.Watch(ctx, path, func() {
+		DomainTrie.StopHealthChecks()
 		if err := Load(ctx, path); err != nil {
 			log.Error().Err(fmt.Errorf("failed to reload")).Msg("config")
 		} else {

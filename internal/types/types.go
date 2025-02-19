@@ -36,6 +36,7 @@ type PathConfig struct {
 		GetDests() []*common.Dest
 		Serve(w http.ResponseWriter, r *http.Request, retries int) bool
 		First() *common.Dest
+		StopHealthChecks()
 	} `yaml:"-"`
 }
 
@@ -263,4 +264,24 @@ func (t *DomainTrieConfig) GetHealth() map[string]map[string]bool {
 
 	traverse(t.Root, []string{})
 	return healthStatus
+}
+
+func (t *DomainTrieConfig) StopHealthChecks() {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	var traverse func(node *TrieNode, path []string)
+
+	traverse = func(node *TrieNode, path []string) {
+		if node.Config != nil {
+			for _, config := range node.Config.Routes {
+				config.Balancer.StopHealthChecks()
+			}
+		}
+		for part, child := range node.Children {
+			traverse(child, append(path, part))
+		}
+	}
+
+	traverse(t.Root, []string{})
 }
