@@ -54,7 +54,7 @@ func main() {
 
 	logger.Init()
 
-	go config.Watch(ctx, *configPath)
+	// go config.Watch(ctx, *configPath)
 	go health.InitHealthBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
 	go ws.Clients.Run(ctx)
