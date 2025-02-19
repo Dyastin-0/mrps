@@ -91,7 +91,6 @@ func (h *Hub) writeWorker(id string, c *client) {
 			c.conn.Close()
 			delete(h.clients, id)
 			h.mu.Unlock()
-			log.Debug().Err(err).Msg("DEBUG")
 			break
 		}
 	}
