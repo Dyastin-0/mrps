@@ -18,6 +18,17 @@
 - [Go](https://golang.org/dl/) installed on your machine
 - Port 80 and 443 available for HTTP/HTTPS traffic
 
+#### Environment
+
+`.env` is used when mrps API is enabled.
+
+```
+AUTH_EMAIL=your@mail.com
+AUTH_PASSWORD=12345
+REFRESH_TOKEN_KEY=12321
+ACCESS_TOKEN_KEY=32123
+```
+
 ### Configuration
 
 Configurations are stored on the root's `config.yaml`.
@@ -47,9 +58,11 @@ domains:
   domain.com:
     routes:
       /api:
-        dest: http://localhost:3000
+        dests:
+        - http://localhost:3000
       /:
-        dest: http://localhost:9090
+        dests:
+        - http://localhost:9090
 ```
 
 #### Rate Limiting Configuration
@@ -95,31 +108,61 @@ domains:
   domain.com:                                                       
       routes:                                  
         /api/v1:                               
-            dest: http://localhost:3001
+            dests:
+            - http://localhost:3001
             rewrite:
               type: regex
               value: ^/api/v1/(.*)$          # <- will be rewritten to /
               replace_val: /$1
         /metrics:
-            dest: http://localhost:8080  
+            dests:
+            - http://localhost:8080  
   sub.domain.com:                                                       
       routes:                                  
         /api/v1:                               
-            dest: http://localhost:3001
+            dests:
+            - http://localhost:3001
             rewrite:
               type: prefix
               value: /api/v1                 # <- will be rewritten to /new/path
               replace_val: /new/path
         /metrics:
-            dest: http://localhost:8080" 
+            dests:
+            - http://localhost:8080" 
+```
+
+### Load-balancing
+
+There three (3) load-balancing algorithm available: `rr`, `wrr`, and `iphash`; respectively, round robin, weighted round robin, and IP hash.
+
+```yaml
+domains:                                       
+  domain.com:                                                       
+      routes:                                  
+        /api/v1:                               
+            dests: 
+              - http://localhost:3001
+              - http://172.44.38.89
+            balancer: rr
+        /metrics:
+            dests:
+              - http://localhost:8080
+                weight: 3
+              - http://172.44.38.89
+                weight: 2
+            balancer: wrr
+  sub.domain.com:                                                       
+      routes:                                  
+        /api/v1:                               
+            dests:
+              - http://localhost:3001
+              - http://172.44.38.89
+            balancer: iphash
 ```
 
 ### TLS Certificates
 
-The server automatically manages TLS certificates through Let's Encrypt using [certmagic](https://github.com/caddyserver/certmagic):
-- Certificates are obtained when the server starts
-- Automatic renewal before expiration
-- Certificates are cached locally for reuse
+The server automatically manages TLS certificates through Let's Encrypt using [certmagic](https://github.com/caddyserver/certmagic)
 
 ### Running the Server
 
