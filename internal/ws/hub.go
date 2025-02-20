@@ -13,7 +13,6 @@ type Hub struct {
 	register   chan connection
 	unregister chan string
 	exists     chan check
-	messages   chan receivedMessage // Channel for incoming messages
 	mu         sync.Mutex
 }
 
@@ -35,18 +34,12 @@ type connection struct {
 	closed chan bool
 }
 
-type receivedMessage struct {
-	id      string
-	message []byte
-}
-
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[string]*client),
 		register:   make(chan connection),
 		unregister: make(chan string),
 		exists:     make(chan check),
-		messages:   make(chan receivedMessage),
 	}
 }
 
@@ -74,9 +67,6 @@ func (h *Hub) Run(ctx context.Context) {
 
 			go h.writeWorker(reg.id, c)
 			go h.readWorker(reg.id, c)
-
-		case msg := <-h.messages:
-			log.Info().Str("client", msg.id).Str("message", string(msg.message)).Msg("received")
 
 		case id := <-h.unregister:
 			h.mu.Lock()
@@ -125,8 +115,6 @@ func (h *Hub) readWorker(id string, c *client) {
 		case c.recv <- msg:
 		default:
 		}
-
-		h.messages <- receivedMessage{id: id, message: msg}
 	}
 }
 
