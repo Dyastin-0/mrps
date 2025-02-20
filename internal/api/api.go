@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -11,10 +12,13 @@ import (
 	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/internal/ws"
+	sshutil "github.com/Dyastin-0/mrps/pkg/ssh"
 	"github.com/go-chi/chi/v5"
 	jwtv5 "github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
 )
+
+var sessionCancelMap = make(map[string]context.CancelFunc)
 
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -78,14 +82,14 @@ func auth() http.HandlerFunc {
 		accessToken, err := NewToken(expectedEmail, os.Getenv("ACCESS_TOKEN_KEY"), 15*time.Minute)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Error().Err(err).Str("type", "access").Str("token", "..."+string(accessToken[len(accessToken)-10:])).Msg("api")
+			log.Error().Err(err).Str("type", "access").Str("token", "..."+accessToken[max(0, len(accessToken)-10):]).Msg("api")
 			return
 		}
 
 		refreshToken, err := NewToken(expectedEmail, os.Getenv("REFRESH_TOKEN_KEY"), 24*time.Hour)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			log.Error().Err(err).Str("type", "refresh").Str("token", "..."+string(refreshToken[len(refreshToken)-10:])).Msg("api")
+			log.Error().Err(err).Str("type", "refresh").Str("token", "..."+refreshToken[max(0, len(refreshToken)-10):]).Msg("api")
 
 			return
 		}
@@ -340,7 +344,50 @@ func sync() http.HandlerFunc {
 	}
 }
 
-func protectedRoute() *chi.Mux {
+func ssh() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		token = token[7:]
+
+		conn, _ := ws.Clients.Get(token)
+		if conn == nil {
+			http.Error(w, "webSocket connection not found", http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusAccepted)
+
+		go func() {
+			log.Info().Str("status", "connecting").Msg("ssh")
+			cancel, err := sshutil.StartSession(
+				os.Getenv("PRIVATE_KEY"),
+				os.Getenv("IP"),
+				os.Getenv("HOST_KEY"),
+				os.Getenv("USER"),
+				token,
+				conn,
+			)
+			if err != nil {
+				log.Error().Err(err).Msg("ssh")
+			}
+			sessionCancelMap[token] = cancel
+		}()
+	}
+}
+
+func cancelSSH() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		token = token[7:]
+
+		sessionCancelMap[token]()
+		delete(sessionCancelMap, token)
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func configRoute() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(jwt)
@@ -355,17 +402,30 @@ func protectedRoute() *chi.Mux {
 	return router
 }
 
+func sshRoute() *chi.Mux {
+	router := chi.NewRouter()
+
+	router.Use(jwt)
+
+	router.Post("/", ssh())
+	router.Delete("/", cancelSSH())
+
+	return router
+}
+
 func Start() {
 	router := chi.NewRouter()
 
 	router.Use(logger.Handler)
 	router.Use(cors)
 
-	router.Mount("/config", protectedRoute())
+	router.Mount("/config", configRoute())
+	router.Mount("/ssh", sshRoute())
+
 	router.Handle("/refresh", refresh())
 	router.Handle("/signout", signout())
 	router.Handle("/auth", auth())
-	router.Get("/ws", ws.WS(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
+	router.Get("/ws", ws.Handler(&health.Subscribers, &logger.Subscribers, &logger.LeftBehind))
 
 	log.Info().Str("status", "running").Str("port", config.Misc.MetricsPort).Msg("api")
 	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)

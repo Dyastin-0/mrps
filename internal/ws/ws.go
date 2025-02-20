@@ -27,7 +27,7 @@ var upgrader = websocket.Upgrader{
 
 var Clients = NewHub()
 
-func WS(conns ...*sync.Map) http.HandlerFunc {
+func Handler(conns ...*sync.Map) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.URL.Query().Get("t")
 
@@ -48,13 +48,15 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Error().Err(err).Msg("Websocket")
+			log.Error().Err(err).Msg("Websocket upgrade failed")
 			return
 		}
 
-		Clients.register <- connection{id: token, conn: conn}
-		shortToken := "..." + token[max(0, len(token)-10):] // Avoids out-of-range panic
-		log.Info().Str("Status", "connected").Str("client", shortToken).Msg("websocket")
+		closed := make(chan bool)
+		Clients.register <- connection{id: token, conn: conn, closed: closed}
+
+		shortToken := "..." + token[max(0, len(token)-10):]
+		log.Info().Str("status", "connected").Str("client", shortToken).Msg("websocket")
 
 		defer func() {
 			for _, cn := range conns {
@@ -62,18 +64,12 @@ func WS(conns ...*sync.Map) http.HandlerFunc {
 			}
 			Clients.unregister <- token
 			conn.Close()
+			close(closed)
+			log.Info().Str("status", "disconnected").Str("client", shortToken).Msg("websocket")
 		}()
 
-		for {
-			_, _, err := conn.ReadMessage()
-			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
-					log.Error().Err(err).Msg("Websocket")
-				} else {
-					log.Info().Str("status", "disconnected").Str("client", shortToken).Msg("websocket")
-				}
-				break
-			}
-		}
+		<-closed
+		log.Info().Str("status", "client closed").Str("client", shortToken).Msg("websocket")
+
 	}
 }
