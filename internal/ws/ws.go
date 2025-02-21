@@ -65,11 +65,10 @@ func Handler(conns ...*sync.Map) http.HandlerFunc {
 			Clients.unregister <- token
 			conn.Close()
 			close(closed)
-			log.Info().Str("status", "disconnected").Str("client", shortToken).Msg("websocket")
 		}()
 
 		<-closed
-		log.Info().Str("status", "client closed").Str("client", shortToken).Msg("websocket")
+		log.Info().Str("status", "closed").Str("client", shortToken).Msg("websocket")
 
 	}
 }

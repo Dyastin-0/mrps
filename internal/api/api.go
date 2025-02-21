@@ -358,7 +358,6 @@ func ssh() http.HandlerFunc {
 		w.WriteHeader(http.StatusAccepted)
 
 		go func() {
-			log.Info().Str("status", "connecting").Msg("ssh")
 			cancel, err := sshutil.StartSession(
 				os.Getenv("PRIVATE_KEY"),
 				os.Getenv("IP"),
@@ -370,6 +369,8 @@ func ssh() http.HandlerFunc {
 			if err != nil {
 				log.Error().Err(err).Msg("ssh")
 			}
+
+			log.Info().Str("status", "connected").Msg("ssh")
 			sessionCancelMap[token] = cancel
 		}()
 	}
