@@ -370,7 +370,7 @@ func ssh() http.HandlerFunc {
 				log.Error().Err(err).Msg("ssh")
 			}
 
-			log.Info().Str("status", "connected").Msg("ssh")
+			log.Info().Str("status", "connected").Str("client", token).Msg("ssh")
 			sessionCancelMap[token] = cancel
 		}()
 	}

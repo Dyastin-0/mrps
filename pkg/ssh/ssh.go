@@ -91,14 +91,14 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 	go func() {
 		recv, ok := ws.Clients.Listen(wsID)
 		if !ok {
-			log.Error().Str("status", "failed").Str("client", wsID).Msg("ssh")
+			log.Error().Str("type", "connection").Str("status", "failed").Str("client", wsID).Msg("ssh")
 			return
 		}
 
 		for msg := range recv {
 			var cmdMsg CommandMessage
 			if err := json.Unmarshal(msg, &cmdMsg); err != nil {
-				log.Error().Err(err).Msg("failed to unmarshal ssh command")
+				log.Error().Err(err).Msg("ssh")
 				continue
 			}
 
@@ -106,18 +106,17 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 
 			_, err := stdinPipe.Write([]byte(cmdMsg.SSHCommand + "\n"))
 			if err != nil {
-				log.Error().Err(err).Msg("failed to write to ssh stdin")
+				log.Error().Err(err).Msg("ssh")
 				break
 			}
 		}
 
-		log.Info().Msg("client disconnected, stopping ssh command listener")
 		cancel()
 	}()
 
 	go func() {
 		<-ctx.Done()
-		log.Info().Str("status", "disconnected").Msg("ssh")
+		log.Info().Str("status", "disconnected").Str("client", wsID).Msg("ssh")
 		session.Close()
 		client.Close()
 	}()
