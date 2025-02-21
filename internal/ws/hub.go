@@ -86,7 +86,7 @@ func (h *Hub) Run(ctx context.Context) {
 			check.result <- exists
 
 		case <-ctx.Done():
-			log.Info().Str("status", "stopping").Msg("hub")
+			log.Info().Str("status", "stopping").Msg("websocket")
 			return
 		}
 	}
@@ -95,7 +95,7 @@ func (h *Hub) Run(ctx context.Context) {
 func (h *Hub) writeWorker(id string, c *client) {
 	for msg := range c.send {
 		if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-			log.Error().Err(err).Str("client", id).Msg("write error")
+			log.Error().Str("type", "writer").Err(err).Str("client", id[max(0, len(id)-10):]).Msg("websocket")
 			h.unregister <- id
 			return
 		}
@@ -106,7 +106,7 @@ func (h *Hub) readWorker(id string, c *client) {
 	for {
 		_, msg, err := c.conn.ReadMessage()
 		if err != nil {
-			log.Error().Err(err).Str("client", id).Msg("read error")
+			log.Error().Str("type", "reader").Err(err).Str("client", id[max(0, len(id)-10):]).Msg("websocket")
 			h.unregister <- id
 			return
 		}
