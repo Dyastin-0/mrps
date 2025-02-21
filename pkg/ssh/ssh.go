@@ -101,14 +101,14 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 	go streamOuput(stdoutPipe, wsConn, "stdout")
 	go streamOuput(stderrPipe, wsConn, "stderr")
 
-	metrics.ActiveSSHConns.Inc()
-
 	go func() {
 		recv, ok := ws.Clients.Listen(wsID)
 		if !ok {
-			log.Error().Str("type", "connection").Str("status", "failed").Str("client", wsID).Msg("ssh")
+			log.Error().Str("type", "connection").Str("status", "failed").Str("client", "..."+wsID[max(0, len(wsID)-10):]).Msg("ssh")
 			return
 		}
+
+		metrics.ActiveSSHConns.Inc()
 
 		for msg := range recv {
 			var cmdMsg CommandMessage
