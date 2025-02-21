@@ -353,15 +353,25 @@ func ssh() http.HandlerFunc {
 		token := r.Header.Get("Authorization")
 		token = token[7:]
 
-		conn, _ := ws.Clients.Get(token)
-		if conn == nil {
-			http.Error(w, "webSocket connection not found", http.StatusBadRequest)
-			return
-		}
-
-		w.WriteHeader(http.StatusAccepted)
-
 		go func() {
+			retry := 20
+			ok := false
+			for retry > 0 {
+				if ok = ws.Clients.Exists(token); ok {
+					break
+				}
+				retry--
+				time.Sleep(50 * time.Millisecond)
+			}
+
+			if !ok {
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			conn, _ := ws.Clients.Get(token)
+
 			cancel, err := sshutil.StartSession(
 				os.Getenv("PRIVATE_KEY"),
 				os.Getenv("IP"),
