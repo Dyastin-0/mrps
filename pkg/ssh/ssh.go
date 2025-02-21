@@ -116,7 +116,7 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 
 	go func() {
 		<-ctx.Done()
-		log.Info().Str("status", "disconnected").Str("client", wsID).Msg("ssh")
+		log.Info().Str("status", "disconnected").Str("client", wsID[max(0, len(wsID)-10):]).Msg("ssh")
 		session.Close()
 		client.Close()
 	}()
