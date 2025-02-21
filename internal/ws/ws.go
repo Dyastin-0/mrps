@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/Dyastin-0/mrps/internal/config"
+	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
@@ -67,8 +68,10 @@ func Handler(conns ...*sync.Map) http.HandlerFunc {
 			close(closed)
 		}()
 
+		metrics.ActiveWSConns.Inc()
+
 		<-closed
 		log.Info().Str("status", "closed").Str("client", shortToken).Msg("websocket")
-
+		metrics.ActiveWSConns.Dec()
 	}
 }

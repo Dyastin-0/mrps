@@ -10,6 +10,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
@@ -100,6 +101,8 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 	go streamOuput(stdoutPipe, wsConn, "stdout")
 	go streamOuput(stderrPipe, wsConn, "stderr")
 
+	metrics.ActiveSSHConns.Inc()
+
 	go func() {
 		recv, ok := ws.Clients.Listen(wsID)
 		if !ok {
@@ -129,6 +132,7 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 		log.Info().Str("status", "disconnected").Str("client", "..."+wsID[max(0, len(wsID)-10):]).Msg("ssh")
 		session.Close()
 		client.Close()
+		metrics.ActiveSSHConns.Dec()
 	}()
 
 	return cancel, nil

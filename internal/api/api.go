@@ -353,40 +353,38 @@ func ssh() http.HandlerFunc {
 		token := r.Header.Get("Authorization")
 		token = token[7:]
 
-		go func() {
-			retry := 20
-			ok := false
-			for retry > 0 {
-				if ok = ws.Clients.Exists(token); ok {
-					break
-				}
-				retry--
-				time.Sleep(50 * time.Millisecond)
+		retry := 20
+		ok := false
+		for retry > 0 {
+			if ok = ws.Clients.Exists(token); ok {
+				break
 			}
+			retry--
+			time.Sleep(50 * time.Millisecond)
+		}
 
-			if !ok {
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
-			w.WriteHeader(http.StatusOK)
-			conn, _ := ws.Clients.Get(token)
+		w.WriteHeader(http.StatusOK)
+		conn, _ := ws.Clients.Get(token)
 
-			cancel, err := sshutil.StartSession(
-				os.Getenv("PRIVATE_KEY"),
-				os.Getenv("IP"),
-				os.Getenv("HOST_KEY"),
-				os.Getenv("USER"),
-				token,
-				conn,
-			)
-			if err != nil {
-				log.Error().Err(err).Msg("ssh")
-			}
+		cancel, err := sshutil.StartSession(
+			os.Getenv("PRIVATE_KEY"),
+			os.Getenv("IP"),
+			os.Getenv("HOST_KEY"),
+			os.Getenv("USER"),
+			token,
+			conn,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("ssh")
+		}
 
-			log.Info().Str("status", "connected").Str("client", "..."+token[max(0, len(token)-10):]).Msg("ssh")
-			sessionCancelMap[token] = cancel
-		}()
+		log.Info().Str("status", "connected").Str("client", "..."+token[max(0, len(token)-10):]).Msg("ssh")
+		sessionCancelMap[token] = cancel
 	}
 }
 
@@ -395,8 +393,12 @@ func cancelSSH() http.HandlerFunc {
 		token := r.Header.Get("Authorization")
 		token = token[7:]
 
-		sessionCancelMap[token]()
-		delete(sessionCancelMap, token)
+		cancel := sessionCancelMap[token]
+
+		if cancel != nil {
+			cancel()
+			delete(sessionCancelMap, token)
+		}
 
 		w.WriteHeader(http.StatusOK)
 	}

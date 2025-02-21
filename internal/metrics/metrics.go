@@ -40,12 +40,28 @@ var (
 			Help: "Number of active HTTP requests",
 		},
 	)
+
+	ActiveSSHConns = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "ssh_active_connections",
+			Help: "Number of active SSH connections",
+		},
+	)
+
+	ActiveWSConns = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "ws_active_connections",
+			Help: "Number of active WS connections",
+		},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(RequestCount)
 	prometheus.MustRegister(RequestDuration)
 	prometheus.MustRegister(ActiveRequests)
+	prometheus.MustRegister(ActiveSSHConns)
+	prometheus.MustRegister(ActiveWSConns)
 }
 
 func Handler() http.HandlerFunc {
