@@ -29,7 +29,8 @@ var Clients = NewHub()
 
 func Handler(conns ...*sync.Map) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.URL.Query().Get("t")
+		token := r.Header.Get("Authorization")
+		token = token[7:]
 
 		if token == "" {
 			log.Error().Err(fmt.Errorf("unauthorized")).Msg("websocket")

@@ -113,6 +113,7 @@ func auth() http.HandlerFunc {
 func jwt(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
+
 		if token == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -201,7 +202,8 @@ func refresh() http.HandlerFunc {
 func setEnabled() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		domain := chi.URLParam(r, "domain")
-		token := r.URL.Query().Get("t")
+		token := r.Header.Get("Authorization")
+		token = token[7:]
 
 		var req struct {
 			Enabled bool `json:"enabled"`
@@ -249,7 +251,8 @@ func setEnabled() http.HandlerFunc {
 
 func getHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.URL.Query().Get("t")
+		token := r.Header.Get("Authorization")
+		token = token[7:]
 
 		data := struct {
 			Type   string                     `json:"type"`
@@ -314,7 +317,8 @@ func getUptime() http.HandlerFunc {
 
 func getLogs() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.URL.Query().Get("t")
+		token := r.Header.Get("Authorization")
+		token = token[7:]
 
 		readyChan := make(chan bool)
 
