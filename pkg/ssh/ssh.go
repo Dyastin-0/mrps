@@ -47,11 +47,23 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 		return nil, fmt.Errorf("failed to connect to ssh server: %w", err)
 	}
 
+	modes := sshUtil.TerminalModes{
+		sshUtil.ECHO:          1,
+		sshUtil.TTY_OP_ISPEED: 14400,
+		sshUtil.TTY_OP_OSPEED: 14400,
+	}
+
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
 		cancel()
 		return nil, fmt.Errorf("failed to start ssh session: %w", err)
+	}
+
+	if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
+		client.Close()
+		cancel()
+		return nil, fmt.Errorf("failed to request pty: %w", err)
 	}
 
 	stdinPipe, err := session.StdinPipe()
@@ -102,11 +114,9 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 				continue
 			}
 
-			log.Info().Str("command", cmdMsg.SSHCommand).Msg("ssh")
-
-			_, err := stdinPipe.Write([]byte(cmdMsg.SSHCommand + "\n"))
+			_, err := stdinPipe.Write([]byte(cmdMsg.SSHCommand))
 			if err != nil {
-				log.Error().Err(err).Msg("ssh")
+				log.Error().Err(err).Msg("failed to write to stdin")
 				break
 			}
 		}
