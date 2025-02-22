@@ -86,12 +86,7 @@ type YAML struct {
 	Domains   DomainsConfig   `yaml:"domains,omitempty"`
 	Misc      MiscConfig      `yaml:"misc,omitempty"`
 	RateLimit RateLimitConfig `yaml:"rate_limit,omitempty"`
-	HTTP      HTTP            `yaml:"http,omitempty"`
-}
-
-type HTTP struct {
-	Routes       RouteConfig
-	SortedRoutes []string `yaml:"-"`
+	HTTP      Config          `yaml:"http,omitempty"`
 }
 
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {

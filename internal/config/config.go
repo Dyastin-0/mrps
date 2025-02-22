@@ -19,7 +19,7 @@ import (
 
 var (
 	Domains         []string
-	HTTP            types.HTTP
+	HTTP            types.Config
 	DomainTrie      *types.DomainTrieConfig
 	ClientMngr      = sync.Map{}
 	GlobalRateLimit types.RateLimitConfig
