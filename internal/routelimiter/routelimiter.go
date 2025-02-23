@@ -13,6 +13,7 @@ import (
 func Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
+
 		routeConfig := config.DomainTrie.Match(host)
 		if routeConfig == nil {
 			next.ServeHTTP(w, r)
