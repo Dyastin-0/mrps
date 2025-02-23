@@ -66,36 +66,10 @@ func Load(ctx context.Context, filename string) error {
 
 		Domains = append(Domains, domain)
 
-		//This slice is used to access the Routes sequentially based on the number of path segments
-		sortedRoutes := make([]string, 0, len(cfg.Routes))
-		for path, config := range cfg.Routes {
-			if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
-				return fmt.Errorf("invalid path: %s", path)
-			}
-
-			config.Balancer, err = loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, domain)
-			if err != nil {
-				log.Fatal().Err(err).Msg("config")
-			}
-			cfg.Routes[path] = config
-			sortedRoutes = append(sortedRoutes, path)
+		sortedRoutes, err := sortRoutes(ctx, cfg.Routes)
+		if err != nil {
+			return err
 		}
-
-		// Sort the routes by the number of "/" and then by string length
-		sort.Slice(sortedRoutes, func(i, j int) bool {
-			countI := strings.Count(sortedRoutes[i], "/")
-			countJ := strings.Count(sortedRoutes[j], "/")
-
-			// First sort by the number of "/"
-			if countI != countJ {
-				return countI > countJ
-			}
-
-			// If they have the same number of "/", sort by string length
-			return len(sortedRoutes[i]) > len(sortedRoutes[j])
-		})
-
-		cfg.SortedRoutes = sortedRoutes
 
 		sortedConfig := make(types.RouteConfig)
 		for _, route := range sortedRoutes {
@@ -109,37 +83,49 @@ func Load(ctx context.Context, filename string) error {
 
 	if configData.HTTP.Routes != nil {
 		HTTP := configData.HTTP
-		sortedRoutes := make([]string, 0, len(configData.HTTP.Routes))
 
-		for path, config := range configData.HTTP.Routes {
-			if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
-				return fmt.Errorf("invalid path: %s", path)
-			}
-
-			config.Balancer, err = loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, "http")
-			if err != nil {
-				log.Fatal().Err(err).Msg("config")
-			}
-			configData.HTTP.Routes[path] = config
-			sortedRoutes = append(sortedRoutes, path)
+		HTTP.SortedRoutes, err = sortRoutes(ctx, HTTP.Routes)
+		if err != nil {
+			return err
 		}
 
-		sort.Slice(sortedRoutes, func(i, j int) bool {
-			countI := strings.Count(sortedRoutes[i], "/")
-			countJ := strings.Count(sortedRoutes[j], "/")
-
-			if countI != countJ {
-				return countI > countJ
-			}
-
-			return len(sortedRoutes[i]) > len(sortedRoutes[j])
-		})
-
-		HTTP.SortedRoutes = sortedRoutes
 		DomainTrie.Insert(Misc.IP, &HTTP)
 	}
 
 	return nil
+}
+
+func sortRoutes(ctx context.Context, routes types.RouteConfig) ([]string, error) {
+	sortedRoutes := make([]string, 0, len(routes))
+
+	for path, config := range routes {
+		if !regexp.MustCompile(`^\/([a-zA-Z0-9\-._~]+(?:\/[a-zA-Z0-9\-._~]+)*)?\/?$`).MatchString(path) {
+			return nil, fmt.Errorf("invalid path: %s", path)
+		}
+
+		balancer, err := loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, "http")
+		if err != nil {
+			return nil, err
+		}
+
+		config.Balancer = balancer
+
+		routes[path] = config
+		sortedRoutes = append(sortedRoutes, path)
+	}
+
+	sort.Slice(sortedRoutes, func(i, j int) bool {
+		countI := strings.Count(sortedRoutes[i], "/")
+		countJ := strings.Count(sortedRoutes[j], "/")
+
+		if countI != countJ {
+			return countI > countJ
+		}
+
+		return len(sortedRoutes[i]) > len(sortedRoutes[j])
+	})
+
+	return sortedRoutes, nil
 }
 
 func ParseToYAML() {
