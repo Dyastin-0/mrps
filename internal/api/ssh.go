@@ -1,0 +1,82 @@
+package api
+
+import (
+	"context"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/Dyastin-0/mrps/internal/ws"
+	sshutil "github.com/Dyastin-0/mrps/pkg/ssh"
+	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
+)
+
+var sessionCancelMap = make(map[string]context.CancelFunc)
+
+func ssh() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		token = token[7:]
+
+		retry := 20
+		ok := false
+		for retry > 0 {
+			if ok = ws.Clients.Exists(token); ok {
+				break
+			}
+			retry--
+			time.Sleep(50 * time.Millisecond)
+		}
+
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		conn, _ := ws.Clients.Get(token)
+
+		cancel, err := sshutil.StartSession(
+			os.Getenv("PRIVATE_KEY"),
+			os.Getenv("IP"),
+			os.Getenv("HOST_KEY"),
+			os.Getenv("USER"),
+			token,
+			conn,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("ssh")
+		}
+
+		log.Info().Str("status", "connected").Str("client", "..."+token[max(0, len(token)-10):]).Msg("ssh")
+		sessionCancelMap[token] = cancel
+	}
+}
+
+func cancelSSH() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		token = token[7:]
+
+		cancel := sessionCancelMap[token]
+
+		if cancel != nil {
+			cancel()
+			delete(sessionCancelMap, token)
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func sshRoute() *chi.Mux {
+	router := chi.NewRouter()
+
+	router.Use(jwt)
+
+	router.Post("/", ssh())
+	router.Delete("/", cancelSSH())
+
+	return router
+}
