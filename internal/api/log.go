@@ -76,7 +76,7 @@ func logRoute() *chi.Mux {
 
 	router.Handle("/uptime", getUptime())
 	router.Handle("/health/ws", getHealth())
-	router.Handle("/logs/ws", getLogs())
+	router.Handle("/ws", getLogs())
 
 	return router
 }

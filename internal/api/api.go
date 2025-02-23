@@ -18,7 +18,7 @@ func Start() {
 	router.Mount("/", authRoute())
 	router.Mount("/config", configRoute())
 	router.Mount("/ssh", sshRoute())
-	router.Mount("/log", logRoute())
+	router.Mount("/logs", logRoute())
 
 	log.Info().Str("status", "running").Str("port", config.Misc.MetricsPort).Msg("api")
 	err := http.ListenAndServe(":"+config.Misc.ConfigAPIPort, router)
