@@ -39,7 +39,7 @@ func http() *chi.Mux {
 	router.Use(logger.Handler)
 	router.Use(metrics.UpdateHandler)
 	router.Use(limiter.Handler)
-	// router.Use(routelimiter.Handler)
+	router.Use(routelimiter.Handler)
 	router.Use(reverseproxy.HTTPHandler)
 
 	router.Get("/", func(w nhttp.ResponseWriter, r *nhttp.Request) {
