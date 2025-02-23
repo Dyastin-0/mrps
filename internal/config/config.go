@@ -66,14 +66,9 @@ func Load(ctx context.Context, filename string) error {
 
 		Domains = append(Domains, domain)
 
-		sortedRoutes, err := sortRoutes(ctx, cfg.Routes)
+		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes)
 		if err != nil {
 			return err
-		}
-
-		sortedConfig := make(types.RouteConfig)
-		for _, route := range sortedRoutes {
-			sortedConfig[route] = cfg.Routes[route]
 		}
 
 		cfg.RateLimit.DefaultCooldown = time.Second
