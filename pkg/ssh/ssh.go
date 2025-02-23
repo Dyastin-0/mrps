@@ -98,8 +98,8 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 		return nil, fmt.Errorf("failed to start shell: %w", err)
 	}
 
-	go streamOuput(stdoutPipe, wsConn, "stdout")
-	go streamOuput(stderrPipe, wsConn, "stderr")
+	go streamOuput(stdoutPipe, wsID, "stdout")
+	go streamOuput(stderrPipe, wsID, "stderr")
 
 	go func() {
 		recv, ok := ws.Clients.Listen(wsID)
@@ -115,6 +115,20 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 			if err := json.Unmarshal(msg, &cmdMsg); err != nil {
 				log.Error().Err(err).Msg("ssh")
 				continue
+			}
+
+			if cmdMsg.SSHCommand == "\u0004" {
+				notif := struct {
+					Type    string `json:"type"`
+					Message string `json:"message"`
+				}{
+					Type:    "notif",
+					Message: "ssh disconnected",
+				}
+				notifByte, _ := json.Marshal(notif)
+
+				ws.Clients.Send(wsID, notifByte)
+				break
 			}
 
 			_, err := stdinPipe.Write([]byte(cmdMsg.SSHCommand))
@@ -138,7 +152,7 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 	return cancel, nil
 }
 
-func streamOuput(reader io.Reader, wsConn *websocket.Conn, streamType string) {
+func streamOuput(reader io.Reader, wsID, streamType string) {
 	buf := make([]byte, 1024)
 	for {
 		n, err := reader.Read(buf)
@@ -156,10 +170,7 @@ func streamOuput(reader io.Reader, wsConn *websocket.Conn, streamType string) {
 				fmt.Println("failed to marshal message", err)
 			}
 
-			if err := wsConn.WriteMessage(websocket.TextMessage, byteMessage); err != nil {
-				fmt.Println("Failed to send message to WebSocket:", err)
-				break
-			}
+			ws.Clients.Send(wsID, byteMessage)
 		}
 		if err != nil {
 			if err != io.EOF {
