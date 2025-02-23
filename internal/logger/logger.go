@@ -3,7 +3,6 @@ package logger
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -109,15 +108,7 @@ func InitNotifier(ctx context.Context) {
 	}
 }
 
-func CatchUp(key string, readyChan chan bool) {
-	ready := <-readyChan
-	close(readyChan)
-
-	if !ready {
-		log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", "..."+key[max(0, len(key)-10):]).Msg("websocket")
-		return
-	}
-
+func CatchUp(key string) {
 	t, err := tail.TailFile("./logs/mrps.log", tail.Config{
 		Follow: false,
 		Logger: tail.DiscardingLogger,

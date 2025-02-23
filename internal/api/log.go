@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func getUptime() http.HandlerFunc {
@@ -48,10 +50,6 @@ func getLogs() http.HandlerFunc {
 
 		logger.LeftBehind.Store(token, readyChan)
 
-		go logger.CatchUp(token, readyChan)
-
-		w.WriteHeader(http.StatusOK)
-
 		retry := 20
 		ok := false
 		for retry > 0 {
@@ -61,7 +59,15 @@ func getLogs() http.HandlerFunc {
 			retry--
 			time.Sleep(50 * time.Millisecond)
 		}
-		readyChan <- ok
+
+		if !ok {
+			log.Error().Err(fmt.Errorf("failed to load logs")).Str("client", "..."+token[max(0, len(token)-10):]).Msg("logger")
+			w.WriteHeader(http.StatusNotAcceptable)
+			return
+		}
+
+		w.WriteHeader(http.StatusAccepted)
+		go logger.CatchUp(token)
 	}
 }
 
