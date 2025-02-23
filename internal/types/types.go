@@ -19,11 +19,17 @@ type ClientLimiter struct {
 	Cooldown time.Time
 }
 
+const (
+	HTTPProtocol  = "http"
+	HTTPSProtocol = "https"
+)
+
 type Config struct {
 	Enabled      bool            `yaml:"enabled"`
 	Routes       RouteConfig     `yaml:"routes,omitempty"`
 	SortedRoutes []string        `yaml:"-"`
 	RateLimit    RateLimitConfig `yaml:"rate_limit,omitempty"`
+	Protocol     string          `yaml:"protocol,omitempty"`
 }
 
 type RouteConfig map[string]PathConfig
@@ -61,6 +67,7 @@ type MiscConfig struct {
 	ConfigAPIPort  string   `yaml:"api_port,omitempty"`
 	AllowedOrigins []string `yaml:"allowed_origins,omitempty"`
 	Domain         string   `yaml:"domain,omitempty"`
+	IP             string   `yaml:"ip,omitempty"`
 }
 
 type TrieNode struct {

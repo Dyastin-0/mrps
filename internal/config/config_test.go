@@ -297,18 +297,6 @@ rate_limit:
 			{"dyastin.tech", "/", rewriter.RewriteRule{Type: "", Value: "", ReplaceVal: ""}},
 		}
 
-		t.Run("Validate HTTP Config", func(t *testing.T) {
-			expectedRoutes := []string{
-				"/",
-			}
-
-			for idx, route := range HTTP.SortedRoutes {
-				if route != expectedRoutes[idx] {
-					t.Fatalf("Invalid route: %s", route)
-				}
-			}
-		})
-
 		for _, test := range tests {
 			routeConfigPtr := DomainTrie.Match(test.domain)
 			if routeConfigPtr == nil {

@@ -19,7 +19,6 @@ import (
 
 var (
 	Domains         []string
-	HTTP            types.Config
 	DomainTrie      *types.DomainTrieConfig
 	ClientMngr      = sync.Map{}
 	GlobalRateLimit types.RateLimitConfig
@@ -109,7 +108,7 @@ func Load(ctx context.Context, filename string) error {
 	}
 
 	if configData.HTTP.Routes != nil {
-		HTTP = configData.HTTP
+		HTTP := configData.HTTP
 		sortedRoutes := make([]string, 0, len(configData.HTTP.Routes))
 
 		for path, config := range configData.HTTP.Routes {
@@ -137,6 +136,7 @@ func Load(ctx context.Context, filename string) error {
 		})
 
 		HTTP.SortedRoutes = sortedRoutes
+		DomainTrie.Insert(Misc.IP, &HTTP)
 	}
 
 	return nil

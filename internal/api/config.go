@@ -13,9 +13,6 @@ import (
 
 func get(w http.ResponseWriter, r *http.Request) {
 	domains := config.DomainTrie.GetAll()
-	if config.HTTP.Routes != nil {
-		domains["HTTP"] = config.HTTP
-	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(domains)
