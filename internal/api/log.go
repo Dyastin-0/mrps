@@ -46,9 +46,7 @@ func getLogs() http.HandlerFunc {
 		token := r.Header.Get("Authorization")
 		token = token[7:]
 
-		readyChan := make(chan bool)
-
-		logger.LeftBehind.Store(token, readyChan)
+		logger.LeftBehind.Store(token, true)
 
 		retry := 20
 		ok := false
