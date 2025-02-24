@@ -65,8 +65,8 @@ func (h *Hub) Run(ctx context.Context) {
 			h.clients[reg.id] = c
 			h.mu.Unlock()
 
-			go h.writeWorker(reg.id, c)
-			go h.readWorker(reg.id, c)
+			go h.writeWorker(ctx, reg.id, c)
+			go h.readWorker(ctx, reg.id, c)
 
 		case id := <-h.unregister:
 			h.mu.Lock()
@@ -92,28 +92,56 @@ func (h *Hub) Run(ctx context.Context) {
 	}
 }
 
-func (h *Hub) writeWorker(id string, c *client) {
-	for msg := range c.send {
-		if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-			log.Error().Str("type", "writer").Err(err).Str("client", "..."+id[max(0, len(id)-10):]).Msg("websocket")
-			h.unregister <- id
+func (h *Hub) writeWorker(ctx context.Context, id string, c *client) {
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info().Str("type", "writer").Str("client", id).Msg("websocket")
 			return
+
+		case <-c.closech:
+			log.Info().Str("type", "writer").Str("client", id).Msg("websocket")
+			return
+
+		case msg, ok := <-c.send:
+			if !ok {
+				log.Warn().Str("type", "writer").Str("client", id).Msg("websocket")
+				return
+			}
+
+			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				log.Error().Str("type", "writer").Err(err).Str("client", id).Msg("websocket")
+				h.unregister <- id
+				return
+			}
 		}
 	}
 }
 
-func (h *Hub) readWorker(id string, c *client) {
+func (h *Hub) readWorker(ctx context.Context, id string, c *client) {
 	for {
-		_, msg, err := c.conn.ReadMessage()
-		if err != nil {
-			log.Error().Str("type", "reader").Err(err).Str("client", "..."+id[max(0, len(id)-10):]).Msg("websocket")
-			h.unregister <- id
-			return
-		}
-
 		select {
-		case c.recv <- msg:
+		case <-ctx.Done():
+			log.Info().Str("type", "reader").Str("client", id).Msg("websocket")
+			return
+
+		case <-c.closech:
+			log.Info().Str("type", "reader").Str("client", id).Msg("websocket")
+			return
+
 		default:
+			_, msg, err := c.conn.ReadMessage()
+			if err != nil {
+				log.Error().Str("type", "reader").Err(err).Str("client", id).Msg("websocket")
+				h.unregister <- id
+				return
+			}
+
+			select {
+			case c.recv <- msg:
+			default:
+				log.Warn().Str("type", "reader").Str("status", "full").Str("client", id).Msg("websocket")
+			}
 		}
 	}
 }

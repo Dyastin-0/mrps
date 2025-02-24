@@ -12,6 +12,7 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/ws"
+	"github.com/Dyastin-0/mrps/pkg/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	sshUtil "golang.org/x/crypto/ssh"
@@ -19,6 +20,12 @@ import (
 
 type CommandMessage struct {
 	SSHCommand string `json:"SSHCommand"`
+	SessionID  string `json:"SessionID"`
+}
+
+type message struct {
+	Type    string `json:"type"`
+	Message string `json:"message"`
 }
 
 func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *websocket.Conn) (context.CancelFunc, error) {
@@ -103,12 +110,22 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 
 	go func() {
 		recv, ok := ws.Clients.Listen(wsID)
+		shortenWSid := "..." + wsID[max(0, len(wsID)-10):]
 		if !ok {
-			log.Error().Str("type", "connection").Str("status", "failed").Str("client", "..."+wsID[max(0, len(wsID)-10):]).Msg("ssh")
+			log.Error().Str("type", "connection").Str("status", "failed").Str("client", shortenWSid).Msg("ssh")
 			return
 		}
 
 		metrics.ActiveSSHConns.Inc()
+
+		newSessionID := uuid.New()
+		session := message{
+			Type:    "sshSessionID",
+			Message: newSessionID,
+		}
+		sessionBytes, _ := json.Marshal(session)
+
+		ws.Clients.Send(wsID, sessionBytes)
 
 		for msg := range recv {
 			var cmdMsg CommandMessage
@@ -117,11 +134,14 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 				continue
 			}
 
+			if cmdMsg.SessionID != newSessionID {
+				shortenSession := "..." + cmdMsg.SessionID[max(0, len(cmdMsg.SessionID)-10):]
+				log.Error().Err(fmt.Errorf("mismatched session id")).Str("status", "closed").Str("session", shortenSession).Str("client", shortenWSid).Msg("ssh")
+				break
+			}
+
 			if cmdMsg.SSHCommand == "\u0004" {
-				notif := struct {
-					Type    string `json:"type"`
-					Message string `json:"message"`
-				}{
+				notif := message{
 					Type:    "notif",
 					Message: "ssh disconnected",
 				}
