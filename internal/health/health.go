@@ -13,7 +13,7 @@ import (
 
 var Subscribers = sync.Map{}
 
-func InitHealthBroadcaster(ctx context.Context) {
+func InitBroadcaster(ctx context.Context) {
 	log.Info().Str("status", "running").Msg("health")
 
 	ticker := time.NewTicker(10 * time.Second)

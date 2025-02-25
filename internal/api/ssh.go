@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	sshutil "github.com/Dyastin-0/mrps/internal/ssh"
 	"github.com/Dyastin-0/mrps/internal/ws"
-	sshutil "github.com/Dyastin-0/mrps/pkg/ssh"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 )

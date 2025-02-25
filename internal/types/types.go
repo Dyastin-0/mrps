@@ -68,6 +68,7 @@ type MiscConfig struct {
 	AllowedOrigins []string `yaml:"allowed_origins,omitempty"`
 	Domain         string   `yaml:"domain,omitempty"`
 	IP             string   `yaml:"ip,omitempty"`
+	AllowHTTP      bool     `yaml:"allow_http,omitempty"`
 }
 
 type TrieNode struct {

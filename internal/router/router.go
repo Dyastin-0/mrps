@@ -16,7 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func https() chi.Router {
+func httpsRouter() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(logger.Handler)
@@ -33,7 +33,7 @@ func https() chi.Router {
 	return router
 }
 
-func http() *chi.Mux {
+func httpRouter() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(logger.Handler)
@@ -49,39 +49,52 @@ func http() *chi.Mux {
 	return router
 }
 
-func Start(ctx context.Context) {
+func startHTTPS(ctx context.Context) {
+
+	magic := certmagic.NewDefault()
+
+	if config.Misc.Email != "" {
+		certmagic.DefaultACME.Email = config.Misc.Email
+	}
+	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
+
+	err := magic.ManageSync(ctx, config.Domains)
+	if err != nil {
+		log.Fatal().Err(err).Msg("https")
+	}
+
+	httpsServer := &nhttp.Server{
+		Addr:      ":443",
+		TLSConfig: magic.TLSConfig(),
+		Handler:   httpsRouter(),
+	}
+
+	log.Info().Str("status", "listening").Msg("https")
+	err = httpsServer.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatal().Err(err).Msg("https")
+	}
+}
+
+func startHTTP() {
 	log.Info().Str("status", "running").Msg("proxy")
 
 	httpServer := &nhttp.Server{
 		Addr:    ":80",
-		Handler: http(),
+		Handler: httpRouter(),
 	}
 
-	go func() {
-		log.Info().Str("status", "listening").Msg("http")
-		err := httpServer.ListenAndServe()
-		if err != nil {
-			log.Fatal().Err(err).Msg("http")
-		}
-	}()
+	log.Info().Str("status", "listening").Msg("http")
+	err := httpServer.ListenAndServe()
+	if err != nil {
+		log.Fatal().Err(err).Msg("http")
+	}
+}
 
-	if len(config.Domains) != 0 {
-		magic := certmagic.NewDefault()
-		err := magic.ManageSync(ctx, config.Domains)
-		if err != nil {
-			log.Fatal().Err(err).Msg("https")
-		}
-
-		httpsServer := &nhttp.Server{
-			Addr:      ":443",
-			TLSConfig: magic.TLSConfig(),
-			Handler:   https(),
-		}
-
-		log.Info().Str("status", "listening").Msg("https")
-		err = httpsServer.ListenAndServeTLS("", "")
-		if err != nil {
-			log.Fatal().Err(err).Msg("https")
-		}
+func Start(ctx context.Context) {
+	go startHTTPS(ctx)
+	if config.Misc.AllowHTTP {
+		go startHTTP()
 	}
 }

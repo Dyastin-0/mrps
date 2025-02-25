@@ -43,7 +43,7 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) Run(ctx context.Context) {
+func (h *Hub) Start(ctx context.Context) {
 	for {
 		select {
 		case reg := <-h.register:
@@ -93,24 +93,25 @@ func (h *Hub) Run(ctx context.Context) {
 }
 
 func (h *Hub) writeWorker(ctx context.Context, id string, c *client) {
+	shortenID := "..." + id[max(0, len(id)-10):]
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info().Str("type", "writer").Str("client", id).Msg("websocket")
+			log.Info().Str("type", "writer").Str("client", shortenID).Msg("websocket")
 			return
 
 		case <-c.closech:
-			log.Info().Str("type", "writer").Str("client", id).Msg("websocket")
+			log.Info().Str("type", "writer").Str("client", shortenID).Msg("websocket")
 			return
 
 		case msg, ok := <-c.send:
 			if !ok {
-				log.Warn().Str("type", "writer").Str("client", id).Msg("websocket")
+				log.Warn().Str("type", "writer").Str("client", shortenID).Msg("websocket")
 				return
 			}
 
 			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-				log.Error().Str("type", "writer").Err(err).Str("client", id).Msg("websocket")
+				log.Error().Str("type", "writer").Err(err).Str("client", shortenID).Msg("websocket")
 				h.unregister <- id
 				return
 			}
@@ -119,20 +120,21 @@ func (h *Hub) writeWorker(ctx context.Context, id string, c *client) {
 }
 
 func (h *Hub) readWorker(ctx context.Context, id string, c *client) {
+	shortenID := "..." + id[max(0, len(id)-10):]
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info().Str("type", "reader").Str("client", id).Msg("websocket")
+			log.Info().Str("type", "reader").Str("client", shortenID).Msg("websocket")
 			return
 
 		case <-c.closech:
-			log.Info().Str("type", "reader").Str("client", id).Msg("websocket")
+			log.Info().Str("type", "reader").Str("client", shortenID).Msg("websocket")
 			return
 
 		default:
 			_, msg, err := c.conn.ReadMessage()
 			if err != nil {
-				log.Error().Str("type", "reader").Err(err).Str("client", id).Msg("websocket")
+				log.Error().Str("type", "reader").Err(err).Str("client", shortenID).Msg("websocket")
 				h.unregister <- id
 				return
 			}
@@ -140,7 +142,7 @@ func (h *Hub) readWorker(ctx context.Context, id string, c *client) {
 			select {
 			case c.recv <- msg:
 			default:
-				log.Warn().Str("type", "reader").Str("status", "full").Str("client", id).Msg("websocket")
+				log.Warn().Str("type", "reader").Str("status", "full").Str("client", shortenID).Msg("websocket")
 			}
 		}
 	}

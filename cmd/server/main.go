@@ -11,7 +11,6 @@ import (
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/router"
 	"github.com/Dyastin-0/mrps/internal/ws"
-	"github.com/caddyserver/certmagic"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 
@@ -44,20 +43,14 @@ func main() {
 		log.Fatal().Err(err).Msg("env")
 	}
 
-	if config.Misc.Email != "" {
-		certmagic.DefaultACME.Email = config.Misc.Email
-	}
-	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
-
 	config.StartTime = time.Now()
 
 	logger.Init()
 
 	// go config.Watch(ctx, *configPath)
-	go health.InitHealthBroadcaster(ctx)
+	go health.InitBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
-	go ws.Clients.Run(ctx)
+	go ws.Clients.Start(ctx)
 	go router.Start(ctx)
 
 	if config.Misc.MetricsEnabled {

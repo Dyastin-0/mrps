@@ -12,7 +12,7 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer"
 	"github.com/Dyastin-0/mrps/internal/types"
-	"github.com/Dyastin-0/mrps/internal/watcher"
+	"github.com/Dyastin-0/mrps/pkg/watcher"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
