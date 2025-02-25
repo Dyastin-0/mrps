@@ -60,15 +60,15 @@ type RateLimitConfig struct {
 
 type MiscConfig struct {
 	Email          string   `yaml:"email,omitempty"`
-	Secure         bool     `yaml:"secure,omitempty"`
-	MetricsEnabled bool     `yaml:"enable_metrics,omitempty"`
+	Secure         bool     `yaml:"secure"`
+	MetricsEnabled bool     `yaml:"enable_metrics"`
 	MetricsPort    string   `yaml:"metrics_port,omitempty"`
 	APIEnabled     bool     `yaml:"enable_api,omitempty"`
 	ConfigAPIPort  string   `yaml:"api_port,omitempty"`
 	AllowedOrigins []string `yaml:"allowed_origins,omitempty"`
 	Domain         string   `yaml:"domain,omitempty"`
 	IP             string   `yaml:"ip,omitempty"`
-	AllowHTTP      bool     `yaml:"allow_http,omitempty"`
+	AllowHTTP      bool     `yaml:"allow_http"`
 }
 
 type TrieNode struct {
@@ -126,7 +126,7 @@ func (t *DomainTrieConfig) Insert(domain string, config *Config) {
 		}
 	}
 
-	// Assign the configuration at the final node, exact math
+	// Assign the configuration at the final node, exact match
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	node.Config = config
