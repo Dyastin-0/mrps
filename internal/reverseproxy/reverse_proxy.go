@@ -6,7 +6,6 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/types"
-	"github.com/rs/zerolog/log"
 )
 
 func routeAndServe(routes types.RouteConfig, sortedRoutes []string, w http.ResponseWriter, r *http.Request) bool {
@@ -48,8 +47,11 @@ func Handler(next http.Handler) http.Handler {
 func HTTPHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
-		log.Debug().Str("host", r.Host).Msg("HOST")
 		if dest := config.DomainTrie.Match(host); dest != nil {
+			if dest.Protocol != types.HTTPProtocol {
+				http.Redirect(w, r, "https://"+host, http.StatusPermanentRedirect)
+				return
+			}
 			if routeAndServe(dest.Routes, dest.SortedRoutes, w, r) {
 				return
 			}
