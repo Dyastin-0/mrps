@@ -64,9 +64,7 @@ func Load(ctx context.Context, filename string) error {
 			return fmt.Errorf("wildcard must be at the end of the domain: %s", domain)
 		}
 
-		if cfg.HandleCert {
-			Domains = append(Domains, domain)
-		}
+		Domains = append(Domains, domain)
 
 		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes)
 		if err != nil {
