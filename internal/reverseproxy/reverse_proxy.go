@@ -48,10 +48,10 @@ func HTTPHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
 		if dest := config.DomainTrie.Match(host); dest != nil {
-			if dest.Protocol != types.HTTPProtocol {
-				http.Redirect(w, r, "https://"+host, http.StatusPermanentRedirect)
-				return
-			}
+			// if dest.Protocol != types.HTTPProtocol {
+			// 	http.Redirect(w, r, "https://"+host, http.StatusPermanentRedirect)
+			// 	return
+			// }
 			if routeAndServe(dest.Routes, dest.SortedRoutes, w, r) {
 				return
 			}
