@@ -26,6 +26,7 @@ const (
 
 type Config struct {
 	Enabled      bool            `yaml:"enabled"`
+	HandleCert   bool            `yaml:"handle_cert"`
 	Routes       RouteConfig     `yaml:"routes,omitempty"`
 	SortedRoutes []string        `yaml:"-"`
 	RateLimit    RateLimitConfig `yaml:"rate_limit,omitempty"`
