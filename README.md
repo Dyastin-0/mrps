@@ -38,6 +38,7 @@ Configurations are stored on the root's `config.yaml`.
 ```yaml
 Misc:
   email: your@mail.com       # Used for certmagic (optional)
+  allow_http: true           # Allow traffic on port 80
   enable_metrics: true
   metrics_port: 5000         # Default 7070
   enable_api: true
@@ -59,10 +60,10 @@ domains:
     routes:
       /api:
         dests:
-        - http://localhost:3000
+        - url: http://localhost:3000
       /:
         dests:
-        - http://localhost:9090
+        - url: http://localhost:9090
 ```
 
 #### Rate Limiting Configuration
@@ -109,31 +110,31 @@ domains:
       routes:                                  
         /api/v1:                               
             dests:
-            - http://localhost:3001
+            - url: http://localhost:3001
             rewrite:
               type: regex
               value: ^/api/v1/(.*)$          # <- will be rewritten to /
               replace_val: /$1
         /metrics:
             dests:
-            - http://localhost:8080  
+            - url: http://localhost:8080  
   sub.domain.com:                                                       
       routes:                                  
         /api/v1:                               
             dests:
-            - http://localhost:3001
+            - url: http://localhost:3001
             rewrite:
               type: prefix
               value: /api/v1                 # <- will be rewritten to /new/path
               replace_val: /new/path
         /metrics:
             dests:
-            - http://localhost:8080" 
+            - url: http://localhost:8080" 
 ```
 
 ### Load-balancing
 
-There are three (3) load-balancing algorithm available: `rr`, `wrr`, and `iphash`; respectively, round robin, weighted round robin, and IP hash.
+There are three (3) load-balancing algorithms available: `rr`, `wrr`, and `iphash`; respectively, round robin, weighted round robin, and IP hash.
 
 ```yaml
 domains:                                       
@@ -141,22 +142,22 @@ domains:
       routes:                                  
         /api/v1:                               
             dests: 
-              - http://localhost:3001
-              - http://172.44.38.89
+              - url: http://localhost:3001
+              - url: http://172.44.38.89
             balancer: rr
         /metrics:
             dests:
-              - http://localhost:8080
+              - url: http://localhost:8080
                 weight: 3
-              - http://172.44.38.89
+              - url: http://172.44.38.89
                 weight: 2
             balancer: wrr
   sub.domain.com:                                                       
       routes:                                  
         /api/v1:                               
             dests:
-              - http://localhost:3001
-              - http://172.44.38.89
+              - url: http://localhost:3001
+              - url: http://172.44.38.89
             balancer: iphash
 ```
 
