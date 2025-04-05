@@ -56,6 +56,11 @@ var (
 	)
 )
 
+type ResponseWriter struct {
+	http.ResponseWriter
+	StatusCode int
+}
+
 func init() {
 	prometheus.MustRegister(RequestCount)
 	prometheus.MustRegister(RequestDuration)

@@ -38,7 +38,7 @@ func Load(ctx context.Context, filename string) error {
 	configData := types.YAML{}
 
 	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(&configData); err != nil {
+	if err = decoder.Decode(&configData); err != nil {
 		return fmt.Errorf("could not decode YAML: %v", err)
 	}
 

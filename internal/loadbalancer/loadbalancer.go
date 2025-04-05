@@ -20,9 +20,6 @@ type Balancer interface {
 	StopHealthChecks()
 }
 
-type Default interface {
-}
-
 func new(btype string, ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) (Balancer, error) {
 	switch btype {
 	case "rr", "":
