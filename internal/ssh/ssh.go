@@ -12,7 +12,7 @@ import (
 
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/ws"
-	"github.com/Dyastin-0/mrps/pkg/uuid"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 	sshUtil "golang.org/x/crypto/ssh"
@@ -121,7 +121,7 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 		newSessionID := uuid.New()
 		session := message{
 			Type:    "sshSessionID",
-			Message: newSessionID,
+			Message: newSessionID.String(),
 		}
 		sessionBytes, _ := json.Marshal(session)
 
@@ -134,7 +134,7 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 				continue
 			}
 
-			if cmdMsg.SessionID != newSessionID {
+			if cmdMsg.SessionID != newSessionID.String() {
 				shortenSession := "..." + cmdMsg.SessionID[max(0, len(cmdMsg.SessionID)-10):]
 				log.Error().Err(fmt.Errorf("mismatched session id")).Str("status", "closed").Str("session", shortenSession).Str("client", shortenWSid).Msg("ssh")
 				break
