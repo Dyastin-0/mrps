@@ -1,6 +1,6 @@
 APP := Reverse Proxy
 OUTPUT_DIR := /opt/mrps
-MAIN_PACKAGE := ./cmd/server/main.go
+MAIN_PACKAGE := ./cmd/main.go
 BINARY_NAME := mrps
 YAML_FILE := ./mrps.yaml
 YAML_PATH := $(OUTPUT_DIR)/mrps.yaml
