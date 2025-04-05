@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/api"
@@ -13,10 +16,6 @@ import (
 	"github.com/Dyastin-0/mrps/internal/ws"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
-
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/Dyastin-0/mrps/internal/config"
 )
