@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/common"
-	"github.com/Dyastin-0/mrps/internal/util"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"golang.org/x/time/rate"
 )
@@ -196,9 +195,10 @@ func (t *DomainTrieConfig) remove(node *TrieNode, parts []string, idx int) bool 
 func (t *DomainTrieConfig) GetAll() DomainsConfig {
 	result := DomainsConfig{}
 
-	traverse := func(node *TrieNode, path []string) {
+	var traverse func(node *TrieNode, path []string)
+	traverse = func(node *TrieNode, path []string) {
 		if node.Config != nil {
-			key := strings.Join(util.ReverseSlice(path), ".")
+			key := strings.Join(reverseSlice(path), ".")
 			result[key] = *node.Config
 		}
 		for part, child := range node.Children {
@@ -211,6 +211,14 @@ func (t *DomainTrieConfig) GetAll() DomainsConfig {
 
 	traverse(t.Root, []string{})
 	return result
+}
+
+func reverseSlice(slice []string) []string {
+	reversed := make([]string, len(slice))
+	for i, v := range slice {
+		reversed[len(slice)-1-i] = v
+	}
+	return reversed
 }
 
 func (t *DomainTrieConfig) SetEnabled(domain string, enabled bool) bool {
@@ -231,9 +239,10 @@ func (t *DomainTrieConfig) SetEnabled(domain string, enabled bool) bool {
 func (t *DomainTrieConfig) GetHealth() map[string]map[string]bool {
 	healthStatus := make(map[string]map[string]bool)
 
-	traverse := func(node *TrieNode, path []string) {
+	var traverse func(node *TrieNode, path []string)
+	traverse = func(node *TrieNode, path []string) {
 		if node.Config != nil && node.Config.Routes != nil {
-			domain := strings.Join(ReverseSlice(path), ".")
+			domain := strings.Join(reverseSlice(path), ".")
 			healthStatus[domain] = make(map[string]bool)
 
 			for _, routeConfig := range node.Config.Routes {
@@ -264,7 +273,8 @@ func (t *DomainTrieConfig) StopHealthChecks() {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	traverse := func(node *TrieNode, path []string) {
+	var traverse func(node *TrieNode, path []string)
+	traverse = func(node *TrieNode, path []string) {
 		if node.Config != nil {
 			for _, config := range node.Config.Routes {
 				config.Balancer.StopHealthChecks()
