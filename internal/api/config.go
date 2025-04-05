@@ -11,28 +11,30 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func get(w http.ResponseWriter, r *http.Request) {
+func handleGet(w http.ResponseWriter, r *http.Request) {
 	domains := config.DomainTrie.GetAll()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(domains)
 }
 
-func sync(w http.ResponseWriter, r *http.Request) {
+func handleSync(w http.ResponseWriter, r *http.Request) {
 	config.ParseToYAML()
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func setEnabled(w http.ResponseWriter, r *http.Request) {
+type enableRequest struct {
+	Enabled bool `json:"enabled"`
+}
+
+func handleEnable(w http.ResponseWriter, r *http.Request) {
 	domain := chi.URLParam(r, "domain")
 	token := r.Header.Get("Authorization")
 	token = token[7:]
 
-	var req struct {
-		Enabled bool `json:"enabled"`
-	}
-
 	decoder := json.NewDecoder(r.Body)
+	req := enableRequest{}
+
 	err := decoder.Decode(&req)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -69,7 +71,6 @@ func setEnabled(w http.ResponseWriter, r *http.Request) {
 	go ws.Clients.Send(token, configBytes)
 
 	w.WriteHeader(http.StatusOK)
-
 }
 
 func configRoute() *chi.Mux {
@@ -77,9 +78,9 @@ func configRoute() *chi.Mux {
 
 	router.Use(jwt)
 
-	router.Get("/", get)
-	router.Post("/sync", sync)
-	router.Post("/{domain}/enabled", setEnabled)
+	router.Get("/", handleGet)
+	router.Post("/sync", handleSync)
+	router.Post("/{domain}/enable", handleEnable)
 
 	return router
 }
