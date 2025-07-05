@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	nhttp "net/http"
+	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/allowedhost"
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -50,7 +51,6 @@ func httpRouter() *chi.Mux {
 }
 
 func startHTTPS(ctx context.Context) {
-
 	magic := certmagic.NewDefault()
 
 	if config.Misc.Email != "" {
@@ -60,8 +60,10 @@ func startHTTPS(ctx context.Context) {
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
 	err := magic.ManageSync(ctx, config.Domains)
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "too many failed authorizations") {
 		log.Fatal().Err(err).Msg("https")
+	} else {
+		log.Warn().Err(err).Msg("https")
 	}
 
 	httpsServer := &nhttp.Server{
