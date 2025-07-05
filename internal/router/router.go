@@ -3,7 +3,6 @@ package router
 import (
 	"context"
 	nhttp "net/http"
-	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/allowedhost"
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -60,9 +59,7 @@ func startHTTPS(ctx context.Context) {
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
 	err := magic.ManageSync(ctx, config.Domains)
-	if err != nil && strings.Contains(err.Error(), "too many failed authorizations") {
-		log.Fatal().Err(err).Msg("https")
-	} else {
+	if err != nil {
 		log.Warn().Err(err).Msg("https")
 	}
 
