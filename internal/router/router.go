@@ -52,8 +52,8 @@ func httpRouter() *chi.Mux {
 }
 
 func startHTTPS(ctx context.Context) {
-	if config.Misc.Email != "" {
-		certmagic.DefaultACME.Email = config.Misc.Email
+	if config.Misc.Email == "" {
+		log.Fatal().Msg("Email is required for ACME registration")
 	}
 
 	apiToken := os.Getenv("CLOUDFLARE_API_TOKEN")
@@ -61,26 +61,28 @@ func startHTTPS(ctx context.Context) {
 		log.Fatal().Msg("CLOUDFLARE_API_TOKEN environment variable is required")
 	}
 
-	magic := certmagic.NewDefault()
-
 	provider := &cf.Provider{
 		APIToken: apiToken,
 	}
 
-	solver := &certmagic.DNS01Solver{}
-	solver.DNSProvider = provider
-	certmagic.DefaultACME.DNS01Solver = solver
+	certmagic.DefaultACME.Email = config.Misc.Email
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
-	err := magic.ManageSync(ctx, config.Domains)
+	certmagic.DefaultACME.DNS01Solver = &certmagic.DNS01Solver{
+		DNSManager: certmagic.DNSManager{
+			DNSProvider: provider,
+		},
+	}
+
+	err := certmagic.ManageSync(ctx, config.Domains)
 	if err != nil {
-		log.Warn().Err(err).Msg("https")
+		log.Fatal().Err(err).Msg("failed to obtain certificates")
 	}
 
 	httpsServer := &nhttp.Server{
 		Addr:      ":443",
-		TLSConfig: magic.TLSConfig(),
+		TLSConfig: certmagic.Default.TLSConfig(),
 		Handler:   httpsRouter(),
 	}
 
