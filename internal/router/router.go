@@ -86,11 +86,6 @@ func startHTTPS(ctx context.Context) {
 		Handler:   httpsRouter(),
 	}
 
-	go func() {
-		<-ctx.Done()
-		httpsServer.Shutdown(context.Background())
-	}()
-
 	log.Info().Str("status", "listening").Msg("https")
 	err = httpsServer.ListenAndServeTLS("", "")
 	if err != nil {
