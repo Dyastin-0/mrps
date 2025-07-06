@@ -75,7 +75,7 @@ func startHTTPS(ctx context.Context) {
 		},
 	}
 
-	err := certmagic.ManageSync(ctx, config.Domains)
+	err := certmagic.Default.ManageSync(ctx, config.Domains)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to obtain certificates")
 	}
