@@ -65,8 +65,11 @@ func startHTTPS(ctx context.Context) {
 		APIToken: apiToken,
 	}
 
+	magic := certmagic.NewDefault()
+
 	certmagic.DefaultACME.Email = config.Misc.Email
 	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.DisableHTTPChallenge = true
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
 	certmagic.DefaultACME.DNS01Solver = &certmagic.DNS01Solver{
@@ -75,14 +78,14 @@ func startHTTPS(ctx context.Context) {
 		},
 	}
 
-	err := certmagic.ManageSync(ctx, config.Domains)
+	err := magic.ManageSync(ctx, config.Domains)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to obtain certificates")
 	}
 
 	httpsServer := &nhttp.Server{
 		Addr:      ":443",
-		TLSConfig: certmagic.Default.TLSConfig(),
+		TLSConfig: magic.TLSConfig(),
 		Handler:   httpsRouter(),
 	}
 
