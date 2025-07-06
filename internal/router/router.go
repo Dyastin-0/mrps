@@ -77,7 +77,7 @@ func startHTTPS(ctx context.Context) {
 
 	err := certmagic.Default.ManageSync(ctx, config.Domains)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to obtain certificates")
+		log.Warn().Err(err).Msg("failed to obtain certificates")
 	}
 
 	httpsServer := &nhttp.Server{
@@ -85,6 +85,11 @@ func startHTTPS(ctx context.Context) {
 		TLSConfig: certmagic.Default.TLSConfig(),
 		Handler:   httpsRouter(),
 	}
+
+	go func() {
+		<-ctx.Done()
+		httpsServer.Shutdown(context.Background())
+	}()
 
 	log.Info().Str("status", "listening").Msg("https")
 	err = httpsServer.ListenAndServeTLS("", "")
