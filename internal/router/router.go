@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	nhttp "net/http"
+	"os"
 
 	"github.com/Dyastin-0/mrps/internal/allowedhost"
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -13,6 +14,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/routelimiter"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
+	cf "github.com/libdns/cloudflare"
 	"github.com/rs/zerolog/log"
 )
 
@@ -50,11 +52,24 @@ func httpRouter() *chi.Mux {
 }
 
 func startHTTPS(ctx context.Context) {
-	magic := certmagic.NewDefault()
-
 	if config.Misc.Email != "" {
 		certmagic.DefaultACME.Email = config.Misc.Email
 	}
+
+	apiToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	if apiToken == "" {
+		log.Fatal().Msg("CLOUDFLARE_API_TOKEN environment variable is required")
+	}
+
+	magic := certmagic.NewDefault()
+
+	provider := &cf.Provider{
+		APIToken: apiToken,
+	}
+
+	solver := &certmagic.DNS01Solver{}
+	solver.DNSProvider = provider
+	certmagic.DefaultACME.DNS01Solver = solver
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 
@@ -68,6 +83,11 @@ func startHTTPS(ctx context.Context) {
 		TLSConfig: magic.TLSConfig(),
 		Handler:   httpsRouter(),
 	}
+
+	go func() {
+		<-ctx.Done()
+		httpsServer.Shutdown(context.Background())
+	}()
 
 	log.Info().Str("status", "listening").Msg("https")
 	err = httpsServer.ListenAndServeTLS("", "")
