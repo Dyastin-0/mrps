@@ -12,7 +12,6 @@ import (
 
 func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
 	targetURL, err := url.Parse(target)
-
 	if err != nil {
 		log.Fatal().Err(err).Msg("proxy")
 	}
@@ -28,7 +27,6 @@ func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
 	proxy.Transport = transport
 	proxy.Director = func(req *http.Request) {
 		req.URL.Scheme = targetURL.Scheme
-		req.URL.Host = targetURL.Host
 
 		rw := rewriter.New(rr)
 
@@ -44,7 +42,7 @@ func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
 			req.Header.Set("Connection", "keep-alive")
 		}
 
-		req.Header.Set("X-Forwared-For", req.RemoteAddr)
+		req.Header.Set("X-Forwarded-For", req.RemoteAddr)
 		req.Header.Set("X-Forwarded-Host", req.Host)
 		req.Header.Set("X-Real-IP", req.RemoteAddr)
 	}
