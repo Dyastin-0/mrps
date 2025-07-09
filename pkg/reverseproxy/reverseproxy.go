@@ -27,6 +27,7 @@ func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
 	proxy.Transport = transport
 	proxy.Director = func(req *http.Request) {
 		req.URL.Scheme = targetURL.Scheme
+		req.URL.Host = targetURL.Host
 
 		rw := rewriter.New(rr)
 

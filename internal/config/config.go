@@ -66,7 +66,7 @@ func Load(ctx context.Context, filename string) error {
 
 		Domains = append(Domains, domain)
 
-		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes)
+		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes, domain)
 		if err != nil {
 			return err
 		}
@@ -79,7 +79,7 @@ func Load(ctx context.Context, filename string) error {
 	if configData.HTTP.Routes != nil {
 		HTTP := configData.HTTP
 
-		HTTP.SortedRoutes, err = sortRoutes(ctx, HTTP.Routes)
+		HTTP.SortedRoutes, err = sortRoutes(ctx, HTTP.Routes, Misc.Domain)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func Load(ctx context.Context, filename string) error {
 	return nil
 }
 
-func sortRoutes(ctx context.Context, routes types.RouteConfig) ([]string, error) {
+func sortRoutes(ctx context.Context, routes types.RouteConfig, domain string) ([]string, error) {
 	sortedRoutes := make([]string, 0, len(routes))
 
 	for path, config := range routes {
@@ -98,7 +98,7 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig) ([]string, error)
 			return nil, fmt.Errorf("invalid path: %s", path)
 		}
 
-		balancer, err := loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, "http")
+		balancer, err := loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, domain)
 		if err != nil {
 			return nil, err
 		}
