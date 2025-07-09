@@ -34,7 +34,6 @@ func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
 		rewrittenPath := rw.RewritePath(req.URL.Path)
 
 		req.URL.Path = rewrittenPath
-		req.Host = targetURL.Host
 
 		if req.Header.Get("Upgrade") != "" {
 			req.Header.Set("Connection", "Upgrade")
