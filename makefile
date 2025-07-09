@@ -16,7 +16,8 @@ install:  copy_config build reload restart status
 build:
 	@echo "$(APP): Building the binary..."
 	@sudo mkdir -p $(OUTPUT_DIR)
-	@go build -v -o $(OUTPUT_DIR)/$(BINARY_NAME) $(MAIN_PACKAGE)
+	@go build -v -o ./bin $(MAIN_PACKAGE)
+	@sudo mv ./bin $(OUTPUT_DIR)/$(BINARY_NAME)
 	@if [ $$? -eq 0 ]; then \
 		echo "$(APP): Build successful. Binary located at $(OUTPUT_DIR)/$(BINARY_NAME)"; \
 	else \
