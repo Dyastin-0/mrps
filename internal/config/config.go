@@ -105,20 +105,34 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain str
 			return nil, fmt.Errorf("invalid path: %s", path)
 		}
 
-		balancer, err := loadbalancer.New(
-			ctx,
-			config.Dests,
-			config.RewriteRule,
-			proto,
-			config.BalancerType,
-			path,
-			domain,
-		)
-		if err != nil {
-			return nil, err
-		}
+		switch proto {
+		case types.HTTPProtocol:
+			balancer, err := loadbalancer.New(
+				ctx,
+				config.Dests,
+				config.RewriteRule,
+				proto,
+				config.BalancerType,
+				path,
+				domain,
+			)
+			if err != nil {
+				return nil, err
+			}
 
-		config.Balancer = balancer
+			config.Balancer = balancer
+		case types.TCPProtocol:
+			balancer, err := loadbalancer.NewTCP(
+				ctx,
+				config.Dests,
+				config.BalancerType,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			config.BalancerTCP = balancer
+		}
 
 		routes[path] = config
 		sortedRoutes = append(sortedRoutes, path)

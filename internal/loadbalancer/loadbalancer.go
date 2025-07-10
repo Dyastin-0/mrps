@@ -29,10 +29,10 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 	return new(btype, ctx, dests, rewriteRule, path, host)
 }
 
-func newTCP(ctx context.Context, dests []types.Dest, btype, host string) (common.BalancerTCP, error) {
+func NewTCP(ctx context.Context, dests []types.Dest, btype string) (common.BalancerTCP, error) {
 	switch btype {
 	case "ih":
-		return iphash.NewTCP(ctx, dests, host), nil
+		return iphash.NewTCP(ctx, dests), nil
 
 	default:
 		return nil, fmt.Errorf("")

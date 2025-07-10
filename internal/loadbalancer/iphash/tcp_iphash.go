@@ -19,7 +19,7 @@ type IPHashTCP struct {
 	cancel context.CancelFunc
 }
 
-func NewTCP(ctx context.Context, dests []types.Dest, host string) common.BalancerTCP {
+func NewTCP(ctx context.Context, dests []types.Dest) common.BalancerTCP {
 	healthctx, cancel := context.WithCancel(ctx)
 
 	iptcp := &IPHashTCP{
