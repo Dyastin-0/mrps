@@ -15,11 +15,11 @@ func TestLoadComplexConfig(t *testing.T) {
 domains:
   dyastin.tech:
     enabled: true
-    protocol: http
+    protocol: TCP
     routes:
       /:
         dests:
-        - url: http://localhost:4002
+        - url: localhost:4002
         rewrite:
           type: ""
           value: ""
@@ -35,7 +35,7 @@ domains:
     routes:
       /:
         dests:
-        - url: http://localhost:5005
+        - url: localhost:5005
         rewrite:
           type: ""
           value: ""
@@ -43,7 +43,7 @@ domains:
         balancer: ""
       /api/v2:
         dests:
-        - url: http://localhost:3004
+        - url: localhost:3004
         rewrite:
           type: ""
           value: ""
@@ -59,7 +59,7 @@ domains:
     routes:
       /:
         dests:
-        - url: http://localhost:5002
+        - url: localhost:5002
         rewrite:
           type: ""
           value: ""
@@ -67,7 +67,7 @@ domains:
         balancer: ""
       /api:
         dests:
-        - url: http://localhost:5001
+        - url: localhost:5001
         rewrite:
           type: ""
           value: ""
@@ -75,7 +75,7 @@ domains:
         balancer: ""
       /socket.io:
         dests:
-        - url: http://localhost:5001
+        - url: localhost:5001
         rewrite:
           type: ""
           value: ""
@@ -91,7 +91,7 @@ domains:
     routes:
       /:
         dests:
-        - url: http://localhost:4001
+        - url: localhost:4001
         rewrite:
           type: ""
           value: ""
@@ -99,7 +99,7 @@ domains:
         balancer: ""
       /api/v1:
         dests:
-        - url: http://localhost:4000
+        - url: localhost:4000
         rewrite:
           type: regex
           value: ^/api/v1/(.*)$
@@ -115,7 +115,7 @@ domains:
     routes:
       /:
         dests:
-        - url: http://localhost:3000
+        - url: localhost:3000
         rewrite:
           type: ""
           value: ""
@@ -131,7 +131,7 @@ domains:
     routes:
       /:
         dests:
-        - url: http://localhost:5050
+        - url: localhost:5050
         rewrite:
           type: ""
           value: ""
@@ -139,7 +139,7 @@ domains:
         balancer: ""
       /api:
         dests:
-        - url: http://localhost:6060
+        - url: localhost:6060
         rewrite:
           type: regex
           value: ^/api/(.*)$
@@ -155,7 +155,7 @@ domains:
     routes:
       /:
         dests:
-        - url: http://localhost:4004
+        - url: localhost:4004
         rewrite:
           type: ""
           value: ""
@@ -171,7 +171,7 @@ domains:
     routes:
       /free-wall:
         dests:
-        - url: http://localhost:9001
+        - url: localhost:9001
         rewrite:
           type: regex
           value: ^/free-wall/(.*)$
@@ -179,7 +179,7 @@ domains:
         balancer: ""
       /free-wall/api:
         dests:
-        - url: http://localhost:5000
+        - url: localhost:5000
         rewrite:
           type: regex
           value: ^/free-wall/api/(.*)$
@@ -193,7 +193,7 @@ http:
   routes:
     /:
       dests:
-      - url: http://localhost:9001
+      - url: localhost:9001
 misc:
   email: mail@dyastin.tech
   enable_metrics: true
@@ -202,7 +202,7 @@ misc:
   api_port: "6060"
   allowed_origins:
   - https://mrps.dyastin.tech
-  - http://localhost:5173
+  - localhost:5173
   domain: .mrps.dyastin.tech
 rate_limit:
   burst: 100
@@ -237,16 +237,16 @@ rate_limit:
 			path         string
 			expectedDest string
 		}{
-			{"gitsense.dyastin.tech", "/api/v1", "http://localhost:4000"},
-			{"gitsense.dyastin.tech", "/", "http://localhost:4001"},
-			{"filespace.dyastin.tech", "/api/v2", "http://localhost:3004"},
-			{"filespace.dyastin.tech", "/", "http://localhost:5005"},
-			{"omnisense.dyastin.tech", "/", "http://localhost:4004"},
-			{"filmpin.dyastin.tech", "/socket.io", "http://localhost:5001"},
-			{"filmpin.dyastin.tech", "/api", "http://localhost:5001"},
-			{"filmpin.dyastin.tech", "/", "http://localhost:5002"},
-			{"metrics.dyastin.tech", "/", "http://localhost:3000"},
-			{"dyastin.tech", "/", "http://localhost:4002"},
+			{"gitsense.dyastin.tech", "/api/v1", "localhost:4000"},
+			{"gitsense.dyastin.tech", "/", "localhost:4001"},
+			{"filespace.dyastin.tech", "/api/v2", "localhost:3004"},
+			{"filespace.dyastin.tech", "/", "localhost:5005"},
+			{"omnisense.dyastin.tech", "/", "localhost:4004"},
+			{"filmpin.dyastin.tech", "/socket.io", "localhost:5001"},
+			{"filmpin.dyastin.tech", "/api", "localhost:5001"},
+			{"filmpin.dyastin.tech", "/", "localhost:5002"},
+			{"metrics.dyastin.tech", "/", "localhost:3000"},
+			{"dyastin.tech", "/", "localhost:4002"},
 		}
 
 		for _, test := range tests {

@@ -20,7 +20,7 @@ type ClientLimiter struct {
 
 const (
 	HTTPProtocol = "http"
-	TCPProtocol  = "tcp"
+	TCPProtocol  = "TCP"
 )
 
 type Config struct {
