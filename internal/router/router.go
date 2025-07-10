@@ -133,9 +133,9 @@ func startTLS(ctx context.Context) {
 }
 
 func Start(ctx context.Context) {
-	// go startHTTPS(ctx)
+	go startHTTPS(ctx)
 	go startTLS(ctx)
-	//if config.Misc.AllowHTTP {
-	//	go startHTTP(ctx)
-	//}
+	if config.Misc.AllowHTTP {
+		go startHTTP(ctx)
+	}
 }
