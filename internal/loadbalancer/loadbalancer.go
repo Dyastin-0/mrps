@@ -31,10 +31,10 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 
 func NewTCP(ctx context.Context, dests []types.Dest, btype string) (common.BalancerTCP, error) {
 	switch btype {
-	case "ih":
+	case "ih", "":
 		return iphash.NewTCP(ctx, dests), nil
 
 	default:
-		return nil, fmt.Errorf("")
+		return nil, fmt.Errorf("unsupported balancer type: %s", btype)
 	}
 }
