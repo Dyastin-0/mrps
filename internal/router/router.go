@@ -4,6 +4,7 @@ import (
 	"context"
 	nhttp "net/http"
 	"os"
+	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/allowedhost"
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -12,6 +13,7 @@ import (
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/reverseproxy"
 	"github.com/Dyastin-0/mrps/internal/routelimiter"
+	"github.com/Dyastin-0/mrps/internal/tls"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
 	cf "github.com/libdns/cloudflare"
@@ -101,13 +103,16 @@ func startHTTPS(ctx context.Context) {
 	}
 }
 
-func startHTTP() {
-	log.Info().Str("status", "running").Msg("proxy")
-
+func startHTTP(ctx context.Context) {
 	httpServer := &nhttp.Server{
 		Addr:    ":80",
 		Handler: httpRouter(),
 	}
+
+	go func() {
+		<-ctx.Done()
+		httpServer.Shutdown(context.Background())
+	}()
 
 	log.Info().Str("status", "listening").Msg("http")
 	err := httpServer.ListenAndServe()
@@ -116,9 +121,21 @@ func startHTTP() {
 	}
 }
 
-func Start(ctx context.Context) {
-	go startHTTPS(ctx)
-	if config.Misc.AllowHTTP {
-		go startHTTP()
+func startTLS(ctx context.Context) {
+	log.Info().Str("status", "listening").Msg("tcp")
+
+	s := tls.New(":8443", strings.TrimPrefix(config.Misc.Domain, "."))
+
+	err := s.Start(ctx)
+	if err != nil {
+		log.Fatal().Err(err).Msg("tcp")
 	}
+}
+
+func Start(ctx context.Context) {
+	// go startHTTPS(ctx)
+	go startTLS(ctx)
+	//if config.Misc.AllowHTTP {
+	//	go startHTTP(ctx)
+	//}
 }

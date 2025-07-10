@@ -15,6 +15,7 @@ func TestLoadComplexConfig(t *testing.T) {
 domains:
   dyastin.tech:
     enabled: true
+    protocol: http
     routes:
       /:
         dests:
@@ -30,6 +31,7 @@ domains:
       cooldown: 60000
   filespace.dyastin.tech:
     enabled: true
+    protocol: http
     routes:
       /:
         dests:
@@ -53,6 +55,7 @@ domains:
       cooldown: 60000
   filmpin.dyastin.tech:
     enabled: false
+    protocol: http
     routes:
       /:
         dests:
@@ -84,6 +87,7 @@ domains:
       cooldown: 60000
   gitsense.dyastin.tech:
     enabled: true
+    protocol: http
     routes:
       /:
         dests:
@@ -107,6 +111,7 @@ domains:
       cooldown: 60000
   metrics.dyastin.tech:
     enabled: false
+    protocol: http
     routes:
       /:
         dests:
@@ -122,6 +127,7 @@ domains:
       cooldown: 60000
   mrps.dyastin.tech:
     enabled: true
+    protocol: http
     routes:
       /:
         dests:
@@ -145,6 +151,7 @@ domains:
       cooldown: 60000
   omnisense.dyastin.tech:
     enabled: true
+    protocol: http
     routes:
       /:
         dests:
@@ -160,6 +167,7 @@ domains:
       cooldown: 60000
   sandbox.dyastin.tech:
     enabled: true
+    protocol: http
     routes:
       /free-wall:
         dests:

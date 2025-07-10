@@ -2,10 +2,9 @@ package loadbalancer
 
 import (
 	"context"
-	"errors"
-	"net/http"
+	"fmt"
 
-	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
+	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/iphash"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/wrr"
@@ -13,14 +12,7 @@ import (
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 )
 
-type Balancer interface {
-	Serve(w http.ResponseWriter, r *http.Request, retries int) bool
-	First() *lbcommon.Dest
-	GetDests() []*lbcommon.Dest
-	StopHealthChecks()
-}
-
-func new(btype string, ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) (Balancer, error) {
+func new(btype string, ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) (common.Balancer, error) {
 	switch btype {
 	case "rr", "":
 		return rr.New(ctx, dests, rewriteRule, path, host), nil
@@ -29,10 +21,20 @@ func new(btype string, ctx context.Context, dests []types.Dest, rewriteRule rewr
 	case "ih":
 		return iphash.New(ctx, dests, rewriteRule, path, host), nil
 	default:
-		return nil, errors.New("unsupported balancer type")
+		return nil, fmt.Errorf("unsupported balancer type: %s", btype)
 	}
 }
 
-func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, btype, path, host string) (Balancer, error) {
+func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, proto, btype, path, host string) (common.Balancer, error) {
 	return new(btype, ctx, dests, rewriteRule, path, host)
+}
+
+func newTCP(ctx context.Context, dests []types.Dest, btype, host string) (common.BalancerTCP, error) {
+	switch btype {
+	case "ih":
+		return iphash.NewTCP(ctx, dests, host), nil
+
+	default:
+		return nil, fmt.Errorf("")
+	}
 }

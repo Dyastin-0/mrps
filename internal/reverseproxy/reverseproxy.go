@@ -48,7 +48,7 @@ func HTTPHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
 		if dest := config.DomainTrie.Match(host); dest != nil {
-			if dest.Protocol == types.HTTPSProtocol {
+			if dest.EnableHTTP {
 				http.Redirect(w, r, "https://"+host, http.StatusPermanentRedirect)
 				return
 			}

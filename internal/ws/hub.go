@@ -79,11 +79,11 @@ func (h *Hub) Start(ctx context.Context) {
 			}
 			h.mu.Unlock()
 
-		case check := <-h.exists:
+		case ck := <-h.exists:
 			h.mu.Lock()
-			_, exists := h.clients[check.id]
+			_, exists := h.clients[ck.id]
 			h.mu.Unlock()
-			check.result <- exists
+			ck.result <- exists
 
 		case <-ctx.Done():
 			log.Info().Str("status", "stopping").Msg("websocket")

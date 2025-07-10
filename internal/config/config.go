@@ -66,12 +66,19 @@ func Load(ctx context.Context, filename string) error {
 
 		Domains = append(Domains, domain)
 
-		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes, domain)
+		// if protocol is undefined, assume it's http
+		if cfg.Protocol == "" {
+			cfg.Protocol = types.HTTPProtocol
+		}
+
+		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes, cfg.Protocol, domain)
 		if err != nil {
 			return err
 		}
 
 		cfg.RateLimit.DefaultCooldown = time.Second
+
+		configData.Domains[domain] = cfg
 
 		DomainTrie.Insert(domain, &cfg)
 	}
@@ -79,7 +86,7 @@ func Load(ctx context.Context, filename string) error {
 	if configData.HTTP.Routes != nil {
 		HTTP := configData.HTTP
 
-		HTTP.SortedRoutes, err = sortRoutes(ctx, HTTP.Routes, Misc.Domain)
+		HTTP.SortedRoutes, err = sortRoutes(ctx, HTTP.Routes, "http", Misc.Domain)
 		if err != nil {
 			return err
 		}
@@ -90,7 +97,7 @@ func Load(ctx context.Context, filename string) error {
 	return nil
 }
 
-func sortRoutes(ctx context.Context, routes types.RouteConfig, domain string) ([]string, error) {
+func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain string) ([]string, error) {
 	sortedRoutes := make([]string, 0, len(routes))
 
 	for path, config := range routes {
@@ -98,7 +105,15 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, domain string) ([
 			return nil, fmt.Errorf("invalid path: %s", path)
 		}
 
-		balancer, err := loadbalancer.New(ctx, config.Dests, config.RewriteRule, config.BalancerType, path, domain)
+		balancer, err := loadbalancer.New(
+			ctx,
+			config.Dests,
+			config.RewriteRule,
+			proto,
+			config.BalancerType,
+			path,
+			domain,
+		)
 		if err != nil {
 			return nil, err
 		}

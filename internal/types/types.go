@@ -1,12 +1,11 @@
 package types
 
 import (
-	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/loadbalancer/common"
+	"github.com/Dyastin-0/mrps/internal/common"
 	"github.com/Dyastin-0/mrps/pkg/rewriter"
 	"golang.org/x/time/rate"
 )
@@ -20,9 +19,8 @@ type ClientLimiter struct {
 }
 
 const (
-	HTTPProtocol  = "http"
-	HTTPSProtocol = "https"
-	TCPProtocol   = "tcp"
+	HTTPProtocol = "http"
+	TCPProtocol  = "tcp"
 )
 
 type Config struct {
@@ -31,6 +29,7 @@ type Config struct {
 	SortedRoutes []string        `yaml:"-"`
 	RateLimit    RateLimitConfig `yaml:"rate_limit,omitempty"`
 	Protocol     string          `yaml:"protocol,omitempty"`
+	EnableHTTP   bool            `yaml:"enable_http,omitempty"`
 }
 
 type RouteConfig map[string]PathConfig
@@ -39,12 +38,8 @@ type PathConfig struct {
 	Dests        []Dest               `json:"Dests,omitempty" yaml:"dests,omitempty"`
 	RewriteRule  rewriter.RewriteRule `yaml:"rewrite,omitempty"`
 	BalancerType string               `yaml:"balancer,omitempty"`
-	Balancer     interface {
-		GetDests() []*common.Dest
-		Serve(w http.ResponseWriter, r *http.Request, retries int) bool
-		First() *common.Dest
-		StopHealthChecks()
-	} `yaml:"-"`
+	Balancer     common.Balancer      `yaml:"-"`
+	BalancerTCP  common.BalancerTCP   `yaml:"-"`
 }
 
 type Dest struct {
@@ -157,6 +152,13 @@ func (t *DomainTrieConfig) Match(domain string) *Config {
 	}
 
 	return node.Config
+}
+
+func (t *DomainTrieConfig) MatchWithProto(domain, proto string) *Config {
+	if cfg := t.Match(domain); cfg != nil && cfg.Protocol == proto {
+		return cfg
+	}
+	return nil
 }
 
 func (t *DomainTrieConfig) Remove(domain string) bool {

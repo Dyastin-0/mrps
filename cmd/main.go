@@ -49,7 +49,6 @@ func main() {
 	// go config.Watch(ctx, *configPath)
 	go health.InitBroadcaster(ctx)
 	go logger.InitNotifier(ctx)
-	go ws.Clients.Start(ctx)
 	go router.Start(ctx)
 
 	if config.Misc.MetricsEnabled {
@@ -57,6 +56,7 @@ func main() {
 	}
 
 	if config.Misc.APIEnabled {
+		go ws.Clients.Start(ctx)
 		go api.Start()
 	}
 

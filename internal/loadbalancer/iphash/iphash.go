@@ -25,7 +25,7 @@ type IPHash struct {
 func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) *IPHash {
 	context, cancel := context.WithCancel(ctx)
 
-	rr := &IPHash{
+	ip := &IPHash{
 		Dests:  make([]*lbcommon.Dest, len(dests)),
 		cancel: cancel,
 	}
@@ -34,15 +34,15 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 		newDest := &lbcommon.Dest{URL: dst.URL}
 		go newDest.Check(context, host, 10*time.Second)
 		newDest.Proxy = reverseproxy.New(dst.URL, path, rewriteRule)
-		rr.Dests[idx] = newDest
+		ip.Dests[idx] = newDest
 	}
 
-	log.Info().Str("path", path).Str("status", "initialized").Int("count", len(rr.Dests)).Msg("balancer")
-	return rr
+	log.Info().Str("path", path).Str("status", "initialized").Int("count", len(ip.Dests)).Msg("balancer")
+	return ip
 }
 
 func (ih *IPHash) Serve(w http.ResponseWriter, r *http.Request, retries int) bool {
-	if len(ih.Dests) == 0 || retries <= 0 {
+	if len(ih.Dests) == 0 {
 		return false
 	}
 
