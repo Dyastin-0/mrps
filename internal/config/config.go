@@ -59,7 +59,7 @@ func Load(ctx context.Context, filename string) error {
 		if !regexp.MustCompile(`^([a-zA-Z0-9\*]+(-[a-zA-Z0-9\*]+)*\.)+[a-zA-Z0-9]{2,}$`).MatchString(domain) {
 			return fmt.Errorf("invalid domain: %s", domain)
 		}
-		if strings.Contains(domain, "*") && strings.Index(domain, "*") == 0 {
+		if strings.Contains(domain, "*") && strings.Index(domain, "*") != 0 {
 			return fmt.Errorf("wildcard must be at the end of the domain: %s", domain)
 		}
 
