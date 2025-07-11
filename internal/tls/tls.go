@@ -55,6 +55,7 @@ func (t *TLS) Start(ctx context.Context) error {
 		conn, err := ln.Accept()
 		if err != nil {
 			log.Err(err).Msg("tcp")
+			continue
 		}
 
 		go t.handleConn(conn)
