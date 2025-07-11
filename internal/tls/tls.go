@@ -62,10 +62,13 @@ func (t *TLS) Start(ctx context.Context) error {
 		log.Info().Msg("listener hit")
 
 		go func() {
+			log.Info().Msg("listener go")
 			err := t.handleConn(conn)
 			if err != nil {
 				log.Error().Err(err).Msg("tcp handleConn")
 			}
+
+			log.Info().Msg("listener done")
 		}()
 	}
 }
