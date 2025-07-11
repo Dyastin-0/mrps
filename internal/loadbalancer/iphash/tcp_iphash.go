@@ -2,6 +2,7 @@ package iphash
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -29,6 +30,7 @@ func NewTCP(ctx context.Context, dests []types.Dest) common.BalancerTCP {
 
 	for idx, dst := range dests {
 		newDest := &lbcommon.Dest{URL: dst.URL}
+		fmt.Println("url: " + dst.URL)
 		go newDest.CheckTCP(healthctx, dst.URL, 10*time.Second)
 		newDest.ProxyTCP = &reverseproxy.TCPProxy{
 			Addr: dst.URL,

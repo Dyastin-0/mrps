@@ -104,34 +104,8 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain str
 			return nil, fmt.Errorf("invalid path: %s", path)
 		}
 
-		switch proto {
-		case types.HTTPProtocol:
-			balancer, err := loadbalancer.New(
-				ctx,
-				config.Dests,
-				config.RewriteRule,
-				proto,
-				config.BalancerType,
-				path,
-				domain,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			config.Balancer = balancer
-		case types.TCPProtocol:
-			balancer, err := loadbalancer.NewTCP(
-				ctx,
-				config.Dests,
-				config.BalancerType,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			config.BalancerTCP = balancer
-		}
+		// doing it here so i don't loop over routes twice
+		setBalancer(ctx, &config, proto, domain, path)
 
 		routes[path] = config
 		sortedRoutes = append(sortedRoutes, path)
@@ -149,6 +123,40 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain str
 	})
 
 	return sortedRoutes, nil
+}
+
+func setBalancer(ctx context.Context, config *types.PathConfig, proto, domain, path string) error {
+	switch proto {
+	case types.HTTPProtocol:
+		balancer, err := loadbalancer.New(
+			ctx,
+			config.Dests,
+			config.RewriteRule,
+			proto,
+			config.BalancerType,
+			path,
+			domain,
+		)
+		if err != nil {
+			return err
+		}
+
+		config.Balancer = balancer
+
+	case types.TCPProtocol:
+		balancer, err := loadbalancer.NewTCP(
+			ctx,
+			config.Dests,
+			config.BalancerType,
+		)
+		if err != nil {
+			return err
+		}
+
+		config.BalancerTCP = balancer
+	}
+
+	return nil
 }
 
 func ParseToYAML() {

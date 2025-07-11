@@ -32,7 +32,7 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 	for _, dst := range dests {
 		newDest := &lbcommon.Dest{URL: dst.URL, Weight: dst.Weight, CurrentWeight: 0}
 		go newDest.Check(context, host, 10*time.Second)
-		newDest.Proxy = reverseproxy.New(dst.URL, path, rewriteRule)
+		newDest.Proxy = reverseproxy.New(dst.URL, rewriteRule)
 		wrr.Dests = append(wrr.Dests, newDest)
 		wrr.totalWeight += dst.Weight
 	}

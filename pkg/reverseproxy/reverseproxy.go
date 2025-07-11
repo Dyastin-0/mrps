@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func New(target string, path string, rr rewriter.RewriteRule) http.Handler {
+func New(target string, rr rewriter.RewriteRule) http.Handler {
 	targetURL, err := url.Parse(target)
 	if err != nil {
 		log.Fatal().Err(err).Msg("proxy")

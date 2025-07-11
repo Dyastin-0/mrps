@@ -16,8 +16,8 @@ type Dest struct {
 	Alive         bool
 	Weight        int
 	CurrentWeight int
-	Proxy         http.Handler `yaml:"-" json:"-"`
-	ProxyTCP      *reverseproxy.TCPProxy
+	Proxy         http.Handler           `yaml:"-" json:"-"`
+	ProxyTCP      *reverseproxy.TCPProxy `yaml:"-" json:"-"`
 }
 
 func (d *Dest) Check(ctx context.Context, host string, delay time.Duration) {
@@ -62,11 +62,10 @@ func (d *Dest) pingTCP(host string) {
 		log.Warn().Str("host", host).Str("url", d.URL).Str("proto", "tcp").Str("status", "down").Msg("health")
 		d.Alive = false
 	} else {
+		conn.Close()
 		d.Alive = true
 		log.Warn().Str("host", host).Str("url", d.URL).Str("proto", "tcp").Str("status", "up").Msg("health")
 	}
-
-	conn.Close()
 }
 
 func (d *Dest) ping(host string) {

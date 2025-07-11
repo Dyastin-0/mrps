@@ -249,13 +249,22 @@ func (t *DomainTrieConfig) GetHealth() map[string]map[string]bool {
 			healthStatus[domain] = make(map[string]bool)
 
 			for _, routeConfig := range node.Config.Routes {
-				if routeConfig.Balancer == nil {
+				if routeConfig.Balancer == nil && routeConfig.BalancerTCP == nil {
 					continue
 				}
 
-				dests := routeConfig.Balancer.GetDests()
-				for _, dest := range dests {
-					healthStatus[domain][dest.URL] = dest.Alive
+				switch node.Config.Protocol {
+				case HTTPProtocol:
+					dests := routeConfig.Balancer.GetDests()
+					for _, dest := range dests {
+						healthStatus[domain][dest.URL] = dest.Alive
+					}
+
+				case TCPProtocol:
+					dests := routeConfig.BalancerTCP.GetDests()
+					for _, dest := range dests {
+						healthStatus[domain][dest.URL] = dest.Alive
+					}
 				}
 			}
 		}
