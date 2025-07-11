@@ -46,16 +46,17 @@ func (t *TLS) Start(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		<-ctx.Done()
-		ln.Close()
-	}()
-
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Err(err).Msg("tcp")
-			continue
+			select {
+			case <-ctx.Done():
+				log.Info().Str("context", "cancelled").Msg("tcp")
+				return nil
+			default:
+				log.Err(err).Msg("tcp")
+				continue
+			}
 		}
 
 		go t.handleConn(conn)
