@@ -3,6 +3,7 @@ package tls
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -70,19 +71,21 @@ func (t *TLS) Start(ctx context.Context) error {
 
 func (t *TLS) handleConn(conn net.Conn) error {
 	sni := getSNI(conn)
+
 	config := config.DomainTrie.MatchWithProto(sni, types.TCPProtocol)
 
-	log.Debug().Str("sni", sni).Msg("SNI")
-
+	// TODO: connection routing, where to get the route? first bytes?
 	route := config.Routes["/"]
+
+	if route.BalancerTCP == nil {
+		return fmt.Errorf("nil tcp balancer")
+	}
 
 	if route.BalancerType != "" {
 		route.BalancerTCP.Serve(conn)
 	} else {
 		dst := route.BalancerTCP.First()
-		log.Debug().Str("AT", "first").Msg("TCP")
 		err := dst.ProxyTCP.Forward(conn)
-		log.Debug().Str("AT", "forward").Msg("TCP")
 		if err != nil {
 			log.Error().Err(err).Msg("tcp err")
 		}
