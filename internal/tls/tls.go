@@ -72,6 +72,8 @@ func (t *TLS) handleConn(conn net.Conn) error {
 	sni := getSNI(conn)
 	config := config.DomainTrie.MatchWithProto(sni, types.TCPProtocol)
 
+	log.Debug().Str("sni", sni).Msg("SNI")
+
 	route := config.Routes[sni]
 
 	if route.BalancerType != "" {
