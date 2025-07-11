@@ -62,6 +62,7 @@ func (d *Dest) pingTCP(host string) {
 		log.Warn().Str("host", host).Str("url", d.URL).Str("proto", "tcp").Str("status", "down").Msg("health")
 		d.Alive = false
 	} else {
+		d.Alive = true
 		log.Warn().Str("host", host).Str("url", d.URL).Str("proto", "tcp").Str("status", "up").Msg("health")
 	}
 
