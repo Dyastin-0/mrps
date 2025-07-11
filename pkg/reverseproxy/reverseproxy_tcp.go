@@ -16,6 +16,7 @@ func (t *TCPProxy) Forward(src net.Conn) error {
 	log.Logger.Debug().Str("addr", t.Addr).Msg("forward hit")
 	dst, err := net.Dial("tcp", t.Addr)
 	if err != nil {
+		src.Close()
 		return err
 	}
 
