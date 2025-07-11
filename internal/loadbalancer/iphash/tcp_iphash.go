@@ -11,7 +11,6 @@ import (
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/hash"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
-	"github.com/rs/zerolog/log"
 )
 
 type IPHashTCP struct {
@@ -57,8 +56,6 @@ func (ip *IPHashTCP) Serve(conn net.Conn) bool {
 
 	dest.ProxyTCP.Forward(conn)
 
-	log.Debug().Msg("serve hit")
-
 	return true
 }
 
@@ -69,8 +66,6 @@ func (ip *IPHashTCP) First() *lbcommon.Dest {
 	if len(ip.Dests) == 0 {
 		return nil
 	}
-
-	log.Debug().Msg("first hit")
 
 	return ip.Dests[0]
 }

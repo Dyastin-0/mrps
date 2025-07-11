@@ -122,6 +122,7 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain str
 
 			config.Balancer = balancer
 		case types.TCPProtocol:
+			log.Debug().Str("proto", proto).Msg("tcp hit")
 			balancer, err := loadbalancer.NewTCP(
 				ctx,
 				config.Dests,

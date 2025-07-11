@@ -64,8 +64,6 @@ func (t *TLS) Start(ctx context.Context) error {
 			if err != nil {
 				log.Error().Err(err).Msg("tcp handleConn")
 			}
-
-			log.Info().Msg("listener done")
 		}()
 	}
 }
@@ -80,9 +78,7 @@ func (t *TLS) handleConn(conn net.Conn) error {
 		route.BalancerTCP.Serve(conn)
 	} else {
 		dst := route.BalancerTCP.First()
-		log.Info().Msg("A")
 		err := dst.ProxyTCP.Forward(conn)
-		log.Info().Msg("B")
 		if err != nil {
 			log.Error().Err(err).Msg("tcp err")
 		}
