@@ -3,8 +3,7 @@ package reverseproxy
 import (
 	"io"
 	"net"
-
-	"github.com/rs/zerolog/log"
+	"sync"
 )
 
 type TCPProxy struct {
@@ -13,24 +12,52 @@ type TCPProxy struct {
 }
 
 func (t *TCPProxy) Forward(src net.Conn) error {
-	log.Logger.Debug().Str("addr", t.Addr).Msg("forward hit")
 	dst, err := net.Dial("tcp", t.Addr)
 	if err != nil {
 		src.Close()
 		return err
 	}
 
-	go t.stream(src, dst)
-	go t.stream(dst, src)
+	defer func() {
+		src.Close()
+		dst.Close()
+	}()
+
+	errch := make(chan error, 2)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		t.stream(&wg, src, dst, errch)
+	}()
+
+	go func() {
+		t.stream(&wg, dst, src, errch)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(errch)
+	}()
+
+	for err := range errch {
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
 
-func (t *TCPProxy) stream(dst, src net.Conn) {
-	defer dst.Close()
-	defer src.Close()
+func (t *TCPProxy) stream(wg *sync.WaitGroup, src, dst net.Conn, errch chan error) {
+	defer wg.Done()
 
-	log.Info().Msg("stream hit")
+	_, err := io.Copy(dst, src)
+	if err != nil {
+		errch <- err
+	}
 
-	io.Copy(dst, src)
+	if conn, ok := dst.(*net.TCPConn); ok {
+		conn.CloseWrite()
+	}
 }
