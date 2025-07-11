@@ -15,7 +15,7 @@ func TestLoadComplexConfig(t *testing.T) {
 domains:
   dyastin.tech:
     enabled: true
-    protocol: TCP
+    protocol: tcp
     routes:
       /:
         dests:
