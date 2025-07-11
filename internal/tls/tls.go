@@ -59,6 +59,8 @@ func (t *TLS) Start(ctx context.Context) error {
 			}
 		}
 
+		log.Info().Msg("listener hit")
+
 		go t.handleConn(conn)
 	}
 }
