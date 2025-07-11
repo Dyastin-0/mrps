@@ -78,13 +78,13 @@ func (t *TLS) handleConn(conn net.Conn) error {
 		route.BalancerTCP.Serve(conn)
 	} else {
 		dst := route.BalancerTCP.First()
+		log.Debug().Str("AT", "first").Msg("TCP")
 		err := dst.ProxyTCP.Forward(conn)
+		log.Debug().Str("AT", "forward").Msg("TCP")
 		if err != nil {
 			log.Error().Err(err).Msg("tcp err")
 		}
 	}
-
-	log.Info().Msg("D")
 
 	return nil
 }
