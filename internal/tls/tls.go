@@ -75,6 +75,8 @@ func (t *TLS) handleConn(conn net.Conn) error {
 		route.BalancerTCP.First().ProxyTCP.Forward(conn)
 	}
 
+	log.Info().Str("sni", sni).Msg("tcp hit")
+
 	return nil
 }
 
