@@ -59,10 +59,7 @@ func (t *TLS) Start(ctx context.Context) error {
 			}
 		}
 
-		log.Info().Msg("listener hit")
-
 		go func() {
-			log.Info().Msg("listener go")
 			err := t.handleConn(conn)
 			if err != nil {
 				log.Error().Err(err).Msg("tcp handleConn")
@@ -74,21 +71,26 @@ func (t *TLS) Start(ctx context.Context) error {
 }
 
 func (t *TLS) handleConn(conn net.Conn) error {
+	log.Info().Msg("tcp hit")
+
 	sni := getSNI(conn)
 	config := config.DomainTrie.MatchWithProto(sni, types.TCPProtocol)
 
 	route := config.Routes[sni]
 
+	log.Info().Msg("B")
+
 	if route.BalancerType != "" {
 		route.BalancerTCP.Serve(conn)
 	} else {
+		log.Info().Msg("C")
 		err := route.BalancerTCP.First().ProxyTCP.Forward(conn)
 		if err != nil {
 			log.Error().Err(err).Msg("tcp err")
 		}
 	}
 
-	log.Info().Str("sni", sni).Msg("tcp hit")
+	log.Info().Msg("D")
 
 	return nil
 }
