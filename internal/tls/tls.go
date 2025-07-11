@@ -74,7 +74,7 @@ func (t *TLS) handleConn(conn net.Conn) error {
 
 	log.Debug().Str("sni", sni).Msg("SNI")
 
-	route := config.Routes[sni]
+	route := config.Routes["/"]
 
 	if route.BalancerType != "" {
 		route.BalancerTCP.Serve(conn)
