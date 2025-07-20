@@ -7,7 +7,9 @@ import (
 )
 
 type TCPProxy struct {
-	Addr       string
+	Addr string
+	// optional for tls
+	WithTLS    bool
 	ServerName string
 }
 

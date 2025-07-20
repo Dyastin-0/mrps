@@ -118,7 +118,6 @@ func jwt(next http.Handler) http.Handler {
 		_, err := jwtv5.ParseWithClaims(token, claims, func(t *jwtv5.Token) (interface{}, error) {
 			return []byte(os.Getenv("ACCESS_TOKEN_KEY")), nil
 		})
-
 		if err != nil {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return

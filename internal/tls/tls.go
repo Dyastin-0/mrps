@@ -3,6 +3,7 @@ package tls
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -72,16 +73,13 @@ func (t *TLS) Start(ctx context.Context) error {
 
 func (t *TLS) handleConn(conn net.Conn) error {
 	sni := getSNI(conn)
+	if sni == "" {
+		return errors.New("missing sni")
+	}
 
 	config := config.DomainTrie.MatchWithProto(sni, types.TCPProtocol)
 
-	path, err := t.handshake(conn)
-	if err != nil {
-		conn.Close()
-		return err
-	}
-
-	route := config.Routes[path]
+	route := config.Routes["/"]
 
 	if route.BalancerTCP == nil {
 		conn.Close()
