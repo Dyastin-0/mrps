@@ -67,7 +67,7 @@ func startHTTPS(ctx context.Context) {
 		APIToken: apiToken,
 	}
 
-	magic := certmagic.NewDefault()
+	magic := certmagic.Default
 
 	certmagic.DefaultACME.Email = config.Misc.Email
 	certmagic.DefaultACME.Agreed = true
