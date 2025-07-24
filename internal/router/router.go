@@ -54,10 +54,6 @@ func httpRouter() *chi.Mux {
 }
 
 func startHTTPS(ctx context.Context) {
-	if config.Misc.Email == "" {
-		log.Fatal().Msg("Email is required for ACME registration")
-	}
-
 	apiToken := os.Getenv("CLOUDFLARE_API_TOKEN")
 	if apiToken == "" {
 		log.Fatal().Msg("CLOUDFLARE_API_TOKEN environment variable is required")
@@ -67,9 +63,8 @@ func startHTTPS(ctx context.Context) {
 		APIToken: apiToken,
 	}
 
-	magic := certmagic.Default
+	magic := certmagic.NewDefault()
 
-	certmagic.DefaultACME.Email = config.Misc.Email
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.DisableHTTPChallenge = true
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
