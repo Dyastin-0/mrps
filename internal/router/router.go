@@ -63,17 +63,16 @@ func startHTTPS(ctx context.Context) {
 		APIToken: apiToken,
 	}
 
-	magic := certmagic.NewDefault()
-
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.DisableHTTPChallenge = true
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
-
 	certmagic.DefaultACME.DNS01Solver = &certmagic.DNS01Solver{
 		DNSManager: certmagic.DNSManager{
 			DNSProvider: provider,
 		},
 	}
+
+	magic := certmagic.NewDefault()
 
 	err := magic.ManageSync(ctx, config.Domains)
 	if err != nil {
