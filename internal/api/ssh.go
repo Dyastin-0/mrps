@@ -34,7 +34,6 @@ func ssh() http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
 		conn, _ := ws.Clients.Get(token)
 
 		cancel, err := sshutil.StartSession(
@@ -47,10 +46,13 @@ func ssh() http.HandlerFunc {
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("ssh")
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 
 		log.Info().Str("status", "connected").Str("client", "..."+token[max(0, len(token)-10):]).Msg("ssh")
 		sessionCancelMap[token] = cancel
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
