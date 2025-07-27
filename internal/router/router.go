@@ -118,7 +118,7 @@ func startHTTP(ctx context.Context) {
 func startTLS(ctx context.Context) {
 	log.Info().Str("status", "listening").Msg("tcp")
 
-	s := tls.New(":8443", config.Misc.TLSDomain)
+	s := tls.New(":8443", config.Misc.Domain)
 
 	err := s.Start(ctx)
 	if err != nil {
