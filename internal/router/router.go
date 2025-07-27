@@ -63,6 +63,7 @@ func startHTTPS(ctx context.Context) {
 		APIToken: apiToken,
 	}
 
+	certmagic.DefaultACME.Email = config.Misc.Email
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.DisableHTTPChallenge = true
 	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
