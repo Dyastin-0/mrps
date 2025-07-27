@@ -4,7 +4,6 @@ import (
 	"context"
 	nhttp "net/http"
 	"os"
-	"strings"
 
 	"github.com/Dyastin-0/mrps/internal/allowedhost"
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -119,7 +118,7 @@ func startHTTP(ctx context.Context) {
 func startTLS(ctx context.Context) {
 	log.Info().Str("status", "listening").Msg("tcp")
 
-	s := tls.New(":8443", strings.TrimPrefix(config.Misc.Domain, "."))
+	s := tls.New(":8443", config.Misc.TLSDomain)
 
 	err := s.Start(ctx)
 	if err != nil {

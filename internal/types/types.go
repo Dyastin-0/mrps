@@ -63,6 +63,7 @@ type MiscConfig struct {
 	ConfigAPIPort  string   `yaml:"api_port,omitempty"`
 	AllowedOrigins []string `yaml:"allowed_origins,omitempty"`
 	Domain         string   `yaml:"domain,omitempty"`
+	TLSDomain      string   `yaml:"tls_domain,omitempty"`
 	IP             string   `yaml:"ip,omitempty"`
 	AllowHTTP      bool     `yaml:"allow_http"`
 }
