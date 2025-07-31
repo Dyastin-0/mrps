@@ -31,11 +31,6 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 		return fmt.Errorf("failed to dial tls: %v", err)
 	}
 
-	defer func() {
-		src.Close()
-		dst.Close()
-	}()
-
 	errch := make(chan error, 2)
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -72,13 +67,6 @@ func (t *TCPProxy) Forward(dst net.Conn) error {
 		return err
 	}
 
-	log.Debug().Msg("E")
-
-	defer func() {
-		src.Close()
-		dst.Close()
-	}()
-
 	errch := make(chan error, 2)
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -108,13 +96,11 @@ func (t *TCPProxy) Forward(dst net.Conn) error {
 }
 
 func (t *TCPProxy) stream(src, dst net.Conn) error {
+	defer dst.Close()
+
 	_, err := io.Copy(dst, src)
 	if err != nil {
 		return err
-	}
-
-	if conn, ok := dst.(*net.TCPConn); ok {
-		conn.CloseWrite()
 	}
 
 	return nil
