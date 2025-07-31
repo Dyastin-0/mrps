@@ -15,6 +15,10 @@ type TCPProxy struct {
 }
 
 func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
+	if sni == "" {
+		return fmt.Errorf("tls missing sni")
+	}
+
 	tlsconfig := &tls.Config{
 		ServerName: sni,
 	}
