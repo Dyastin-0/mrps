@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/rr"
 	"github.com/Dyastin-0/mrps/internal/types"
@@ -43,7 +44,7 @@ func TestRoundRobinBasic(t *testing.T) {
 	}
 
 	path := "/api/v1"
-	rrInstance := rr.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
+	rrInstance := rr.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost", 1000*time.Millisecond)
 
 	assert.Len(t, rrInstance.Dests, 3, "should initialize with 3 destinations")
 

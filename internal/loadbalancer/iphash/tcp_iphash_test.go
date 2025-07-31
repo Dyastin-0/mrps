@@ -49,7 +49,7 @@ func TestIPHashTCPForward(t *testing.T) {
 		{URL: "127.0.0.1:9002"},
 	}
 
-	balancer := NewTCP(context.Background(), dests)
+	balancer := NewTCP(context.Background(), dests, 1000*time.Millisecond)
 
 	clientConn, serverConn := net.Pipe()
 

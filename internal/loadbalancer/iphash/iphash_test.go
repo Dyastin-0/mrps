@@ -45,7 +45,7 @@ func TestIPHashBasic(t *testing.T) {
 	}
 	path := "/api/v1"
 
-	ipHashInstance := iphash.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
+	ipHashInstance := iphash.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost", 1000*time.Millisecond)
 
 	assert.Equal(t, 3, len(ipHashInstance.Dests), "should initialize with 3 destinations")
 

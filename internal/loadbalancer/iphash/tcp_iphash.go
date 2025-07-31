@@ -20,7 +20,11 @@ type IPHashTCP struct {
 	cancel context.CancelFunc
 }
 
-func NewTCP(ctx context.Context, dests []types.Dest) common.BalancerTCP {
+func NewTCP(
+	ctx context.Context,
+	dests []types.Dest,
+	healthCheckInterval time.Duration,
+) common.BalancerTCP {
 	healthctx, cancel := context.WithCancel(ctx)
 
 	iptcp := &IPHashTCP{
@@ -31,7 +35,11 @@ func NewTCP(ctx context.Context, dests []types.Dest) common.BalancerTCP {
 	for idx, dst := range dests {
 		newDest := &lbcommon.Dest{URL: dst.URL}
 		fmt.Println("url: " + dst.URL)
-		go newDest.CheckTCP(healthctx, dst.URL, 10*time.Second)
+		go newDest.CheckTCP(
+			healthctx,
+			dst.URL,
+			healthCheckInterval,
+		)
 		newDest.ProxyTCP = &reverseproxy.TCPProxy{
 			Addr: dst.URL,
 		}

@@ -21,7 +21,13 @@ type RR struct {
 	cancel context.CancelFunc
 }
 
-func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) *RR {
+func New(
+	ctx context.Context,
+	dests []types.Dest,
+	rewriteRule rewriter.RewriteRule,
+	path, host string,
+	HealthCheckInterval time.Duration,
+) *RR {
 	context, cancel := context.WithCancel(ctx)
 
 	rr := &RR{
@@ -31,7 +37,11 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 
 	for idx, dst := range dests {
 		newDest := &lbcommon.Dest{URL: dst.URL}
-		go newDest.Check(context, host, 10*time.Second)
+		go newDest.Check(
+			context,
+			host,
+			HealthCheckInterval,
+		)
 		newDest.Proxy = reverseproxy.New(dst.URL, rewriteRule)
 		rr.Dests[idx] = newDest
 	}

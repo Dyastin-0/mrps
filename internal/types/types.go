@@ -55,16 +55,17 @@ type RateLimitConfig struct {
 }
 
 type MiscConfig struct {
-	Email          string   `yaml:"email,omitempty"`
-	Secure         bool     `yaml:"secure"`
-	MetricsEnabled bool     `yaml:"enable_metrics"`
-	MetricsPort    string   `yaml:"metrics_port,omitempty"`
-	APIEnabled     bool     `yaml:"enable_api,omitempty"`
-	ConfigAPIPort  string   `yaml:"api_port,omitempty"`
-	AllowedOrigins []string `yaml:"allowed_origins,omitempty"`
-	Domain         string   `yaml:"domain,omitempty"`
-	IP             string   `yaml:"ip,omitempty"`
-	AllowHTTP      bool     `yaml:"allow_http"`
+	Email               string   `yaml:"email,omitempty"`
+	Secure              bool     `yaml:"secure"`
+	MetricsEnabled      bool     `yaml:"enable_metrics"`
+	MetricsPort         string   `yaml:"metrics_port,omitempty"`
+	APIEnabled          bool     `yaml:"enable_api,omitempty"`
+	ConfigAPIPort       string   `yaml:"api_port,omitempty"`
+	AllowedOrigins      []string `yaml:"allowed_origins,omitempty"`
+	Domain              string   `yaml:"domain,omitempty"`
+	IP                  string   `yaml:"ip,omitempty"`
+	AllowHTTP           bool     `yaml:"allow_http"`
+	HealthCheckInterval int64    `yaml:"health_check_interval,omitempty"`
 }
 
 type TrieNode struct {
@@ -90,7 +91,6 @@ type YAML struct {
 	Domains   DomainsConfig   `yaml:"domains,omitempty"`
 	Misc      MiscConfig      `yaml:"misc,omitempty"`
 	RateLimit RateLimitConfig `yaml:"rate_limit,omitempty"`
-	HTTP      Config          `yaml:"http,omitempty"`
 }
 
 func (t *DomainTrieConfig) Insert(domain string, config *Config) {

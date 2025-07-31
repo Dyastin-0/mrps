@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Dyastin-0/mrps/internal/loadbalancer/wrr"
 	"github.com/Dyastin-0/mrps/internal/types"
@@ -44,7 +45,7 @@ func TestWeightedRoundRobin(t *testing.T) {
 
 	path := "/api/v1"
 
-	wrrInstance := wrr.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost")
+	wrrInstance := wrr.New(context.Background(), dests, rewriter.RewriteRule{}, path, "localhost", 1000*time.Millisecond)
 
 	assert.Len(t, wrrInstance.Dests, 3, "should initialize with 3 destinations")
 	counts := map[string]int{

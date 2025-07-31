@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Dyastin-0/mrps/internal/config"
 	"github.com/Dyastin-0/mrps/internal/loadbalancer"
@@ -35,8 +36,9 @@ func TestReverseProxyMiddlewareWithDomainTrie(t *testing.T) {
 	config.DomainTrie = types.NewDomainTrie()
 	dests := []types.Dest{{URL: mockService.URL}}
 	dests1 := []types.Dest{{URL: mockService1.URL}}
-	bl, _ := loadbalancer.New(context.Background(), dests1, rewriter.RewriteRule{}, "http", "rr", "/mock", "localhost")
-	bl1, _ := loadbalancer.New(context.Background(), dests, rewriter.RewriteRule{}, "http", "rr", "/api", "localhost")
+	bl, _ := loadbalancer.New(context.Background(), dests1, rewriter.RewriteRule{}, "http", "rr", "/mock", "localhost", 1000*time.Millisecond)
+	bl1, _ := loadbalancer.New(context.Background(), dests, rewriter.RewriteRule{}, "http", "rr", "/api", "localhost", 1000*time.Millisecond)
+
 	conf := &types.Config{
 		Routes: types.RouteConfig{
 			"/api":  types.PathConfig{Dests: dests, Balancer: bl1},

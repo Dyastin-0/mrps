@@ -16,7 +16,7 @@ var Subscribers = sync.Map{}
 func InitBroadcaster(ctx context.Context) {
 	log.Info().Str("status", "running").Msg("health")
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(time.Duration(config.Misc.HealthCheckInterval) * time.Millisecond)
 
 	go func() {
 		defer ticker.Stop()

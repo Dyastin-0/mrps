@@ -21,7 +21,13 @@ type WRR struct {
 	totalWeight int
 }
 
-func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) *WRR {
+func New(
+	ctx context.Context,
+	dests []types.Dest,
+	rewriteRule rewriter.RewriteRule,
+	path, host string,
+	healthCheckInterval time.Duration,
+) *WRR {
 	context, cancel := context.WithCancel(ctx)
 
 	wrr := &WRR{
@@ -31,7 +37,11 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 
 	for _, dst := range dests {
 		newDest := &lbcommon.Dest{URL: dst.URL, Weight: dst.Weight, CurrentWeight: 0}
-		go newDest.Check(context, host, 10*time.Second)
+		go newDest.Check(
+			context,
+			host,
+			healthCheckInterval,
+		)
 		newDest.Proxy = reverseproxy.New(dst.URL, rewriteRule)
 		wrr.Dests = append(wrr.Dests, newDest)
 		wrr.totalWeight += dst.Weight

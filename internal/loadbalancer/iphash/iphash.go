@@ -22,7 +22,12 @@ type IPHash struct {
 	cancel context.CancelFunc
 }
 
-func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRule, path, host string) *IPHash {
+func New(ctx context.Context,
+	dests []types.Dest,
+	rewriteRule rewriter.RewriteRule,
+	path, host string,
+	healthCheckInterval time.Duration,
+) *IPHash {
 	context, cancel := context.WithCancel(ctx)
 
 	ip := &IPHash{
@@ -32,7 +37,10 @@ func New(ctx context.Context, dests []types.Dest, rewriteRule rewriter.RewriteRu
 
 	for idx, dst := range dests {
 		newDest := &lbcommon.Dest{URL: dst.URL}
-		go newDest.Check(context, host, 10*time.Second)
+		go newDest.Check(context,
+			host,
+			healthCheckInterval,
+		)
 		newDest.Proxy = reverseproxy.New(dst.URL, rewriteRule)
 		ip.Dests[idx] = newDest
 	}

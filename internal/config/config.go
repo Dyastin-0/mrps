@@ -52,6 +52,9 @@ func Load(ctx context.Context, filename string) error {
 	if Misc.ConfigAPIPort == "" {
 		Misc.ConfigAPIPort = "6060"
 	}
+	if Misc.HealthCheckInterval == 0 {
+		Misc.HealthCheckInterval = 5000
+	}
 
 	GlobalRateLimit = configData.RateLimit
 
@@ -70,7 +73,13 @@ func Load(ctx context.Context, filename string) error {
 			cfg.Protocol = types.HTTPProtocol
 		}
 
-		cfg.SortedRoutes, err = sortRoutes(ctx, cfg.Routes, cfg.Protocol, domain)
+		cfg.SortedRoutes, err = sortRoutes(
+			ctx,
+			cfg.Routes,
+			cfg.Protocol,
+			domain,
+			time.Duration(Misc.HealthCheckInterval)*time.Millisecond,
+		)
 		if err != nil {
 			return err
 		}
@@ -82,21 +91,15 @@ func Load(ctx context.Context, filename string) error {
 		DomainTrie.Insert(domain, &cfg)
 	}
 
-	if configData.HTTP.Routes != nil {
-		HTTP := configData.HTTP
-
-		HTTP.SortedRoutes, err = sortRoutes(ctx, HTTP.Routes, "http", Misc.Domain)
-		if err != nil {
-			return err
-		}
-
-		DomainTrie.Insert(Misc.IP, &HTTP)
-	}
-
 	return nil
 }
 
-func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain string) ([]string, error) {
+func sortRoutes(
+	ctx context.Context,
+	routes types.RouteConfig,
+	proto, domain string,
+	healthCheckInterval time.Duration,
+) ([]string, error) {
 	sortedRoutes := make([]string, 0, len(routes))
 
 	for path, config := range routes {
@@ -105,7 +108,13 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain str
 		}
 
 		// doing it here so i don't loop over routes twice
-		setBalancer(ctx, &config, proto, domain, path)
+		setBalancer(ctx,
+			&config,
+			proto,
+			domain,
+			path,
+			healthCheckInterval,
+		)
 
 		routes[path] = config
 		sortedRoutes = append(sortedRoutes, path)
@@ -125,7 +134,7 @@ func sortRoutes(ctx context.Context, routes types.RouteConfig, proto, domain str
 	return sortedRoutes, nil
 }
 
-func setBalancer(ctx context.Context, config *types.PathConfig, proto, domain, path string) error {
+func setBalancer(ctx context.Context, config *types.PathConfig, proto, domain, path string, healthCheckInterval time.Duration) error {
 	switch proto {
 	case types.HTTPProtocol:
 		balancer, err := loadbalancer.New(
@@ -136,6 +145,7 @@ func setBalancer(ctx context.Context, config *types.PathConfig, proto, domain, p
 			config.BalancerType,
 			path,
 			domain,
+			healthCheckInterval,
 		)
 		if err != nil {
 			return err
@@ -145,9 +155,10 @@ func setBalancer(ctx context.Context, config *types.PathConfig, proto, domain, p
 
 	case types.TCPProtocol:
 		balancer, err := loadbalancer.NewTCP(
+			config.BalancerType,
 			ctx,
 			config.Dests,
-			config.BalancerType,
+			healthCheckInterval,
 		)
 		if err != nil {
 			return err
