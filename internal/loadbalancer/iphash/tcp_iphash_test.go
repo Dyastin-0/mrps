@@ -63,6 +63,6 @@ func TestIPHashTCPForward(t *testing.T) {
 		clientConn.Close()
 	}()
 
-	ok := balancer.Serve(fakeConn{serverConn})
+	ok := balancer.Serve(fakeConn{serverConn}, "")
 	assert.True(t, ok, "Serve should return true")
 }
