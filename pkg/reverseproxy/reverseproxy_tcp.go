@@ -6,6 +6,8 @@ import (
 	"io"
 	"net"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 type TCPProxy struct {
@@ -30,7 +32,7 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 	}
 
 	state := src.ConnectionState()
-	fmt.Printf("ServerName: '%s'\n", state.ServerName)
+	log.Debug().Msg("ServerName: " + state.ServerName)
 
 	defer func() {
 		src.Close()
