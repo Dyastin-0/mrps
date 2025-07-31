@@ -141,8 +141,5 @@ func getSNI(conn net.Conn) string {
 	}
 
 	state := tlsConn.ConnectionState()
-
-	log.Warn().Msg("sni: " + state.ServerName)
-
 	return state.ServerName
 }
