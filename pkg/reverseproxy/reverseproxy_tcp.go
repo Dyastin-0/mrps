@@ -30,11 +30,13 @@ func (t *TCPProxy) Forward(src net.Conn) error {
 	wg.Add(2)
 
 	go func() {
-		t.stream(&wg, src, dst, errch)
+		errch <- t.stream(src, dst)
+		wg.Done()
 	}()
 
 	go func() {
-		t.stream(&wg, dst, src, errch)
+		errch <- t.stream(dst, src)
+		wg.Done()
 	}()
 
 	go func() {
@@ -51,15 +53,15 @@ func (t *TCPProxy) Forward(src net.Conn) error {
 	return nil
 }
 
-func (t *TCPProxy) stream(wg *sync.WaitGroup, src, dst net.Conn, errch chan error) {
-	defer wg.Done()
-
+func (t *TCPProxy) stream(src, dst net.Conn) error {
 	_, err := io.Copy(dst, src)
 	if err != nil {
-		errch <- err
+		return err
 	}
 
 	if conn, ok := dst.(*net.TCPConn); ok {
 		conn.CloseWrite()
 	}
+
+	return nil
 }
