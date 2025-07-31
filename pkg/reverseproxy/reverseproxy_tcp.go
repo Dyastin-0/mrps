@@ -6,8 +6,6 @@ import (
 	"io"
 	"net"
 	"sync"
-
-	"github.com/rs/zerolog/log"
 )
 
 type TCPProxy struct {
@@ -52,7 +50,6 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 
 	for err := range errch {
 		if err != nil {
-			log.Debug().Msg("WAW: " + err.Error())
 			return err
 		}
 	}
