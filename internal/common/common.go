@@ -15,7 +15,7 @@ type Balancer interface {
 }
 
 type BalancerTCP interface {
-	Serve(conn net.Conn) bool
+	Serve(conn net.Conn, sni string) bool
 	First() *lbcommon.Dest
 	GetDests() []*lbcommon.Dest
 	StopHealthChecks()

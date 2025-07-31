@@ -87,10 +87,16 @@ func (t *TLS) handleConn(conn net.Conn) error {
 	}
 
 	if route.BalancerType != "" {
-		route.BalancerTCP.Serve(conn)
+		route.BalancerTCP.Serve(conn, sni)
 	} else {
 		dst := route.BalancerTCP.First()
-		err := dst.ProxyTCP.Forward(conn)
+
+		var err error
+		if dst.ProxyTCP.WithTLS {
+			err = dst.ProxyTCP.ForwardTLS(conn, sni)
+		} else {
+			err = dst.ProxyTCP.Forward(conn)
+		}
 		if err != nil {
 			log.Error().Err(err).Msg("tcp err")
 		}

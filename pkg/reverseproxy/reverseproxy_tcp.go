@@ -10,13 +10,12 @@ import (
 type TCPProxy struct {
 	Addr string
 	// optional for tls
-	WithTLS    bool
-	ServerName string
+	WithTLS bool
 }
 
-func (t *TCPProxy) ForwardTLS(dst net.Conn) error {
+func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 	tlsconfig := &tls.Config{
-		ServerName: t.ServerName,
+		ServerName: sni,
 	}
 
 	src, err := tls.Dial("tcp", t.Addr, tlsconfig)

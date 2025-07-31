@@ -41,9 +41,8 @@ func NewTCP(
 			healthCheckInterval,
 		)
 		newDest.ProxyTCP = &reverseproxy.TCPProxy{
-			Addr:       dst.URL,
-			WithTLS:    dst.WithTLS,
-			ServerName: dst.ServerName,
+			Addr:    dst.URL,
+			WithTLS: dst.WithTLS,
 		}
 		iptcp.Dests[idx] = newDest
 	}
@@ -51,7 +50,7 @@ func NewTCP(
 	return iptcp
 }
 
-func (ip *IPHashTCP) Serve(conn net.Conn) bool {
+func (ip *IPHashTCP) Serve(conn net.Conn, sni string) bool {
 	if len(ip.Dests) == 0 {
 		return false
 	}
@@ -67,7 +66,7 @@ func (ip *IPHashTCP) Serve(conn net.Conn) bool {
 	dest := ip.Dests[index]
 
 	if dest.ProxyTCP.WithTLS {
-		dest.ProxyTCP.ForwardTLS(conn)
+		dest.ProxyTCP.ForwardTLS(conn, sni)
 
 		return true
 	}
