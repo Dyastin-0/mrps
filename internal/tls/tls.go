@@ -95,8 +95,10 @@ func (t *TLS) handleConn(conn net.Conn) error {
 
 		var err error
 		if dst.ProxyTCP.WithTLS {
+			log.Debug().Msg("C")
 			err = dst.ProxyTCP.ForwardTLS(conn, sni)
 		} else {
+			log.Debug().Msg("D")
 			err = dst.ProxyTCP.Forward(conn)
 		}
 		if err != nil {
