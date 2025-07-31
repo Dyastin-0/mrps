@@ -29,6 +29,9 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 		return fmt.Errorf("failed to dial tls: %v", err)
 	}
 
+	state := src.ConnectionState()
+	fmt.Printf("ServerName: '%s'\n", state.ServerName)
+
 	defer func() {
 		src.Close()
 		dst.Close()
