@@ -12,7 +12,6 @@ import (
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/hash"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
-	"github.com/rs/zerolog/log"
 )
 
 type IPHashTCP struct {
@@ -67,12 +66,9 @@ func (ip *IPHashTCP) Serve(conn net.Conn, sni string) bool {
 	dest := ip.Dests[index]
 
 	if dest.ProxyTCP.WithTLS {
-		log.Debug().Msg("WAS TLS")
 		dest.ProxyTCP.ForwardTLS(conn, sni)
 		return true
 	}
-
-	log.Debug().Msg("WAS NOT TLS")
 
 	dest.ProxyTCP.Forward(conn)
 

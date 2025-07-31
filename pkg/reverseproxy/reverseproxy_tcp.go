@@ -21,8 +21,6 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 		return fmt.Errorf("tls missing sni")
 	}
 
-	log.Debug().Msg("F")
-
 	tlsconfig := &tls.Config{
 		ServerName: sni,
 	}
@@ -32,9 +30,6 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 		dst.Close()
 		return fmt.Errorf("failed to dial tls: %v", err)
 	}
-
-	state := src.ConnectionState()
-	log.Debug().Msg("ServerName: " + state.ServerName)
 
 	defer func() {
 		src.Close()
@@ -62,6 +57,7 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 
 	for err := range errch {
 		if err != nil {
+			log.Debug().Msg("WAW: " + err.Error())
 			return err
 		}
 	}

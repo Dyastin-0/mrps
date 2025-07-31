@@ -98,7 +98,6 @@ func (t *TLS) handleConn(conn net.Conn) error {
 			err = dst.ProxyTCP.Forward(conn)
 		}
 		if err != nil {
-			conn.Close()
 			log.Error().Err(err).Msg("tcp err")
 		}
 	}
