@@ -87,8 +87,10 @@ func (t *TLS) handleConn(conn net.Conn) error {
 	}
 
 	if route.BalancerType != "" {
+		log.Debug().Msg("B")
 		route.BalancerTCP.Serve(conn, sni)
 	} else {
+		log.Debug().Msg("A")
 		dst := route.BalancerTCP.First()
 
 		var err error
