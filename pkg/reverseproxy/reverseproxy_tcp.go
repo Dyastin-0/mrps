@@ -2,6 +2,7 @@ package reverseproxy
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -21,7 +22,7 @@ func (t *TCPProxy) ForwardTLS(dst net.Conn, sni string) error {
 	src, err := tls.Dial("tcp", t.Addr, tlsconfig)
 	if err != nil {
 		dst.Close()
-		return err
+		return fmt.Errorf("failed to dial tls: %v", err)
 	}
 
 	defer func() {

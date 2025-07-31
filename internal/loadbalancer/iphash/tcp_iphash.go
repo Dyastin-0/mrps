@@ -65,13 +65,7 @@ func (ip *IPHashTCP) Serve(conn net.Conn, sni string) bool {
 
 	dest := ip.Dests[index]
 
-	if dest.ProxyTCP.WithTLS {
-		dest.ProxyTCP.ForwardTLS(conn, sni)
-
-		return true
-	}
-
-	dest.ProxyTCP.Forward(conn)
+	dest.ProxyTCP.ForwardTLS(conn, sni)
 
 	return true
 }
