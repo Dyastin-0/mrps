@@ -41,7 +41,9 @@ func NewTCP(
 			healthCheckInterval,
 		)
 		newDest.ProxyTCP = &reverseproxy.TCPProxy{
-			Addr: dst.URL,
+			Addr:       dst.URL,
+			WithTLS:    dst.WithTLS,
+			ServerName: dst.ServerName,
 		}
 		iptcp.Dests[idx] = newDest
 	}

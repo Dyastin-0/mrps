@@ -43,8 +43,10 @@ type PathConfig struct {
 }
 
 type Dest struct {
-	URL    string `yaml:"url"`
-	Weight int    `yaml:"weight,omitempty"`
+	URL        string `yaml:"url"`
+	WithTLS    bool   `yaml:"with_tls"`
+	ServerName string `yaml:"server_name,omitempty"`
+	Weight     int    `yaml:"weight,omitempty"`
 }
 
 type RateLimitConfig struct {
