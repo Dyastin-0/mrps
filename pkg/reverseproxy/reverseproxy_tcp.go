@@ -75,7 +75,9 @@ func (t *TCPProxy) Forward(dst net.Conn) error {
 		dst.Close()
 		return err
 	}
+
 	log.Debug().Msg("E")
+
 	defer func() {
 		src.Close()
 		dst.Close()
