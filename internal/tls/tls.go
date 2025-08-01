@@ -84,6 +84,10 @@ func (t *TLS) handleConn(conn net.Conn) error {
 		return fmt.Errorf("config not found")
 	}
 
+	if config.Routes == nil {
+		return fmt.Errorf("routes not set")
+	}
+
 	route, ok := config.Routes["/"]
 	if !ok {
 		return fmt.Errorf("route not found")
