@@ -1,3 +1,6 @@
+// Package tls implements a tls conection handler, uses the same config structure as http
+// will have to fix the configuration, it doesn't make sense for it to have Routes,
+// currently it uses the root ["/"]
 package tls
 
 import (
@@ -5,7 +8,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 
 	"github.com/Dyastin-0/mrps/internal/config"
@@ -78,8 +80,14 @@ func (t *TLS) handleConn(conn net.Conn) error {
 	}
 
 	config := config.DomainTrie.MatchWithProto(sni, types.TCPProtocol)
+	if config == nil {
+		return fmt.Errorf("config not found")
+	}
 
-	route := config.Routes["/"]
+	route, ok := config.Routes["/"]
+	if !ok {
+		return fmt.Errorf("route not found")
+	}
 
 	if route.BalancerTCP == nil {
 		conn.Close()
@@ -103,30 +111,6 @@ func (t *TLS) handleConn(conn net.Conn) error {
 	}
 
 	return nil
-}
-
-func (t *TLS) handshake(conn net.Conn) (string, error) {
-	lenbuf := make([]byte, 1)
-	_, err := conn.Read(lenbuf)
-	if err != nil {
-		return "", fmt.Errorf("handshake failed: %w", err)
-	}
-
-	pathLen := int(lenbuf[0])
-
-	if pathLen > 255 {
-		return "", fmt.Errorf("handshake failed: invalid path length")
-	}
-
-	pathbuf := make([]byte, pathLen)
-	_, err = io.ReadFull(conn, pathbuf)
-	if err != nil {
-		return "", fmt.Errorf("handshake failed: %w", err)
-	}
-
-	path := string(pathbuf)
-
-	return path, nil
 }
 
 func getSNI(conn net.Conn) string {
