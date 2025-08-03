@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Dyastin-0/mrps/internal/common"
 	lbcommon "github.com/Dyastin-0/mrps/internal/loadbalancer/common"
 	"github.com/Dyastin-0/mrps/internal/types"
 	"github.com/Dyastin-0/mrps/pkg/hash"
@@ -24,7 +23,7 @@ func NewTCP(
 	ctx context.Context,
 	dests []types.Dest,
 	healthCheckInterval time.Duration,
-) common.BalancerTCP {
+) types.BalancerTCP {
 	healthctx, cancel := context.WithCancel(ctx)
 
 	iptcp := &IPHashTCP{

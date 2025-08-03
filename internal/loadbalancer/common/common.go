@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	httputil "github.com/Dyastin-0/mrps/internal/http"
 	"github.com/Dyastin-0/mrps/pkg/reverseproxy"
 	"github.com/rs/zerolog/log"
 )
@@ -18,6 +17,10 @@ type Dest struct {
 	CurrentWeight int
 	Proxy         http.Handler           `yaml:"-" json:"-"`
 	ProxyTCP      *reverseproxy.TCPProxy `yaml:"-" json:"-"`
+}
+
+var httpClient *http.Client = &http.Client{
+	Timeout: 500 * time.Millisecond,
 }
 
 func (d *Dest) Check(ctx context.Context, host string, delay time.Duration) {
@@ -69,7 +72,7 @@ func (d *Dest) pingTCP(host string) {
 }
 
 func (d *Dest) ping(host string) {
-	resp, err := httputil.Client.Get(d.URL)
+	resp, err := httpClient.Get(d.URL)
 	if err != nil {
 		log.Warn().Str("host", host).Str("url", d.URL).Str("proto", "http").Str("status", "down").Msg("health")
 		d.Alive = false
