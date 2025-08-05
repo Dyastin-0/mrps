@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Dyastin-0/mrps/internal/config"
-	"github.com/Dyastin-0/mrps/internal/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 )
@@ -12,7 +11,6 @@ import (
 func Start() {
 	router := chi.NewRouter()
 
-	router.Use(logger.Handler)
 	router.Use(cors)
 
 	router.Mount("/", authRoute())
