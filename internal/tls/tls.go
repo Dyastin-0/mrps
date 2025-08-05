@@ -41,6 +41,11 @@ func (t *TLS) Start(ctx context.Context) error {
 
 	magic := certmagic.NewDefault()
 
+	err := magic.ManageSync(ctx, []string{t.domain})
+	if err != nil {
+		return err
+	}
+
 	ln, err := tls.Listen("tcp", t.addr, magic.TLSConfig())
 	if err != nil {
 		return err
