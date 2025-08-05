@@ -3,7 +3,7 @@ Description=mrps
 After=network.target
 
 [Service]
-User=ubuntu
+User=admin
 WorkingDirectory=/opt/mrps
 ExecStart=/opt/mrps/mrps -config=mrps.yaml
 Restart=always
