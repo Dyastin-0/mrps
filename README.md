@@ -4,7 +4,7 @@ Image is from [MariaLetta/free-gophers-pack/goroutines](https://github.com/Maria
 
 # MRPS
 
-`mrps` is a HTTP->HTTPS reverse proxy server with TCP proxy capabilities through `Let's Encrypt` using [certmagic](https://github.com/caddyserver/certmagic).
+`mrps` is a HTTP->HTTPS reverse proxy server with TCP proxy capabilities. Built with `Let's Encrypt` using [certmagic](https://github.com/caddyserver/certmagic).
 
 ## Features
 
