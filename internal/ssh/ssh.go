@@ -21,6 +21,8 @@ import (
 type CommandMessage struct {
 	SSHCommand string `json:"SSHCommand"`
 	SessionID  string `json:"SessionID"`
+	Rows       int    `json:"Rows"`
+	Cols       int    `json:"Cols"`
 }
 
 type message struct {
@@ -28,28 +30,35 @@ type message struct {
 	Message string `json:"message"`
 }
 
-func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *websocket.Conn) (context.CancelFunc, error) {
-	if privateKey == "" || instanceIP == "" || user == "" {
+type SessionCredentials struct {
+	PrivateKey string
+	InstanceIP string
+	HostKey    string
+	User       string
+}
+
+func StartSession(s *SessionCredentials, wsID string, wsConn *websocket.Conn) (context.CancelFunc, error) {
+	if s.privateKey == "" || s.instanceIP == "" || s.user == "" {
 		return nil, fmt.Errorf("missing required parameters")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	privateKey = strings.ReplaceAll(privateKey, `\n`, "\n")
+	s.privateKey = strings.ReplaceAll(s.privateKey, `\n`, "\n")
 
-	signer, err := sshUtil.ParsePrivateKey([]byte(privateKey))
+	signer, err := sshUtil.ParsePrivateKey([]byte(s.privateKey))
 	if err != nil {
 		return cancel, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
 	config := &sshUtil.ClientConfig{
-		User: user,
+		User: s.user,
 		Auth: []sshUtil.AuthMethod{
 			sshUtil.PublicKeys(signer),
 		},
-		HostKeyCallback: verifyHostKey(hostKey),
+		HostKeyCallback: verifyHostKey(s.hostKey),
 	}
 
-	client, err := sshUtil.Dial("tcp", instanceIP+":22", config)
+	client, err := sshUtil.Dial("tcp", s.instanceIP+":22", config)
 	if err != nil {
 		cancel()
 		return nil, fmt.Errorf("failed to connect to ssh server: %w", err)
@@ -68,7 +77,7 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 		return nil, fmt.Errorf("failed to start ssh session: %w", err)
 	}
 
-	if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
+	if err = session.RequestPty("xterm-256color", 40, 80, modes); err != nil {
 		client.Close()
 		cancel()
 		return nil, fmt.Errorf("failed to request pty: %w", err)
@@ -119,11 +128,11 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 		metrics.ActiveSSHConns.Inc()
 
 		newSessionID := uuid.New()
-		session := message{
+		sess := message{
 			Type:    "sshSessionID",
 			Message: newSessionID.String(),
 		}
-		sessionBytes, _ := json.Marshal(session)
+		sessionBytes, _ := json.Marshal(sess)
 
 		ws.Clients.Send(wsID, sessionBytes)
 
@@ -140,10 +149,15 @@ func StartSession(privateKey, instanceIP, hostKey, user, wsID string, wsConn *we
 				break
 			}
 
+			if cmdMsg.SSHCommand == "resize" {
+				session.WindowChange(cmdMsg.Rows, cmdMsg.Cols)
+				continue
+			}
+
 			if cmdMsg.SSHCommand == "\u0004" {
 				notif := message{
-					Type:    "notif",
-					Message: "ssh disconnected",
+					Type:    "END",
+					Message: "\nssh disconnected, adios.",
 				}
 				notifByte, _ := json.Marshal(notif)
 

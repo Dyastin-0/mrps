@@ -36,11 +36,15 @@ func ssh() http.HandlerFunc {
 
 		conn, _ := ws.Clients.Get(token)
 
+		cred := &sshutil.SessionCredentials{
+			PrivateKey: os.Getenv("PRIVATE_KEY"),
+			InstanceIP: os.Getenv("IP"),
+			HostKey:    os.Getenv("HOST_KEY"),
+			User:       os.Getenv("USER"),
+		}
+
 		cancel, err := sshutil.StartSession(
-			os.Getenv("PRIVATE_KEY"),
-			os.Getenv("IP"),
-			os.Getenv("HOST_KEY"),
-			os.Getenv("USER"),
+			cred,
 			token,
 			conn,
 		)
