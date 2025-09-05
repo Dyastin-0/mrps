@@ -38,27 +38,27 @@ type SessionCredentials struct {
 }
 
 func StartSession(s *SessionCredentials, wsID string, wsConn *websocket.Conn) (context.CancelFunc, error) {
-	if s.privateKey == "" || s.instanceIP == "" || s.user == "" {
+	if s.PrivateKey == "" || s.InstanceIP == "" || s.User == "" {
 		return nil, fmt.Errorf("missing required parameters")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	s.privateKey = strings.ReplaceAll(s.privateKey, `\n`, "\n")
+	s.PrivateKey = strings.ReplaceAll(s.PrivateKey, `\n`, "\n")
 
-	signer, err := sshUtil.ParsePrivateKey([]byte(s.privateKey))
+	signer, err := sshUtil.ParsePrivateKey([]byte(s.PrivateKey))
 	if err != nil {
 		return cancel, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
 	config := &sshUtil.ClientConfig{
-		User: s.user,
+		User: s.User,
 		Auth: []sshUtil.AuthMethod{
 			sshUtil.PublicKeys(signer),
 		},
-		HostKeyCallback: verifyHostKey(s.hostKey),
+		HostKeyCallback: verifyHostKey(s.HostKey),
 	}
 
-	client, err := sshUtil.Dial("tcp", s.instanceIP+":22", config)
+	client, err := sshUtil.Dial("tcp", s.InstanceIP+":22", config)
 	if err != nil {
 		cancel()
 		return nil, fmt.Errorf("failed to connect to ssh server: %w", err)
