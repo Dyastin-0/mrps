@@ -155,13 +155,13 @@ func StartSession(s *SessionCredentials, wsID string, wsConn *websocket.Conn) (c
 			}
 
 			if cmdMsg.SSHCommand == "\u0004" {
-				notif := message{
+				msg := message{
 					Type:    "END",
 					Message: "\nssh disconnected, adios.",
 				}
-				notifByte, _ := json.Marshal(notif)
+				msgBytes, _ := json.Marshal(msg)
 
-				ws.Clients.Send(wsID, notifByte)
+				ws.Clients.Send(wsID, msgBytes)
 				break
 			}
 
@@ -191,15 +191,12 @@ func streamOuput(reader io.Reader, wsID, streamType string) {
 	for {
 		n, err := reader.Read(buf)
 		if n > 0 {
-			message := struct {
-				Type    string `json:"type"`
-				Message string `json:"message"`
-			}{
+			msg := message{
 				Type:    streamType,
 				Message: string(buf[:n]),
 			}
 
-			byteMessage, err := json.Marshal(message)
+			byteMessage, err := json.Marshal(msg)
 			if err != nil {
 				fmt.Println("failed to marshal message", err)
 			}
