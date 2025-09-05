@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/Dyastin-0/mrps/internal/metrics"
 	"github.com/Dyastin-0/mrps/internal/ws"
@@ -162,6 +163,7 @@ func StartSession(s *SessionCredentials, wsID string, wsConn *websocket.Conn) (c
 				msgBytes, _ := json.Marshal(msg)
 
 				ws.Clients.Send(wsID, msgBytes)
+				time.Sleep(time.Millisecond * 100)
 				break
 			}
 
