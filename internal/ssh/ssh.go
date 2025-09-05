@@ -157,7 +157,7 @@ func StartSession(s *SessionCredentials, wsID string, wsConn *websocket.Conn) (c
 
 			if cmdMsg.SSHCommand == "\u0004" {
 				msg := message{
-					Type:    "END",
+					Type:    "notif",
 					Message: "\nssh disconnected, adios.",
 				}
 				msgBytes, _ := json.Marshal(msg)
