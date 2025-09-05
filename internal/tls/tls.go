@@ -65,9 +65,11 @@ func (t *TLS) Start(ctx context.Context) error {
 		}
 
 		go func() {
+			defer conn.Close()
+
 			err := t.handleConn(conn)
 			if err != nil {
-				log.Error().Err(err).Msg("tcp handleConn")
+				log.Error().Err(err).Msg("tcp")
 			}
 		}()
 	}
@@ -82,6 +84,10 @@ func (t *TLS) handleConn(conn net.Conn) error {
 	config := config.DomainTrie.MatchWithProto(sni, types.TCPProtocol)
 	if config == nil {
 		return fmt.Errorf("config not found")
+	}
+
+	if !config.Enabled {
+		return fmt.Errorf("%s is disabled", sni)
 	}
 
 	if config.Routes == nil {

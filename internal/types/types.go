@@ -29,7 +29,6 @@ type Config struct {
 	SortedRoutes []string        `yaml:"-"`
 	RateLimit    RateLimitConfig `yaml:"rate_limit,omitempty"`
 	Protocol     string          `yaml:"protocol,omitempty"`
-	EnableHTTP   bool            `yaml:"enable_http,omitempty"`
 }
 
 type RouteConfig map[string]PathConfig
@@ -44,7 +43,7 @@ type PathConfig struct {
 
 type Dest struct {
 	URL        string `yaml:"url"`
-	WithTLS    bool   `yaml:"with_tls"`
+	WithTLS    bool   `yaml:"with_tls,omitempty"`
 	ServerName string `yaml:"server_name,omitempty"`
 	Weight     int    `yaml:"weight,omitempty"`
 }
