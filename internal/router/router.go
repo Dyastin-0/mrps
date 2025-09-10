@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	nhttp "net/http"
 	"os"
 
@@ -29,8 +30,10 @@ func httpsRouter() *chi.Mux {
 	router.Use(routelimiter.Handler)
 	router.Use(reverseproxy.Handler)
 
-	router.Get("/", func(w nhttp.ResponseWriter, r *nhttp.Request) {
-		w.Write([]byte("Hello, mrps https 🚀\n"))
+	router.Get("/*", func(w nhttp.ResponseWriter, r *nhttp.Request) {
+		host := r.Host
+		resp := fmt.Sprintf("%s is not configured.\n", host)
+		w.Write([]byte(resp))
 	})
 
 	return router
@@ -45,8 +48,10 @@ func httpRouter() *chi.Mux {
 	router.Use(routelimiter.Handler)
 	router.Use(reverseproxy.HTTPHandler)
 
-	router.Get("/", func(w nhttp.ResponseWriter, r *nhttp.Request) {
-		w.Write([]byte("Hello, from mrps http 🚀\n"))
+	router.Get("/*", func(w nhttp.ResponseWriter, r *nhttp.Request) {
+		host := r.Host
+		resp := fmt.Sprintf("%s is not configured.\n", host)
+		w.Write([]byte(resp))
 	})
 
 	return router
