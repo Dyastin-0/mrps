@@ -48,14 +48,13 @@ func HTTPHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := strings.ToLower(r.Host)
 
+		if !config.Misc.AllowHTTP {
+			target := "https://" + r.Host + r.URL.RequestURI()
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+			return
+		}
+
 		if dest := config.DomainTrie.Match(host); dest != nil {
-
-			if !config.Misc.AllowHTTP {
-				target := "https://" + r.Host + r.URL.RequestURI()
-				http.Redirect(w, r, target, http.StatusMovedPermanently)
-				return
-			}
-
 			if routeAndServe(dest.Routes, dest.SortedRoutes, w, r) {
 				return
 			}
