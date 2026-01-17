@@ -108,8 +108,6 @@ func startHTTP(ctx context.Context) {
 		Handler: httpRouter(),
 	}
 
-	log.Debug().Msg("SHESH")
-
 	go func() {
 		<-ctx.Done()
 		httpServer.Shutdown(context.Background())
@@ -136,5 +134,7 @@ func startTLS(ctx context.Context) {
 func Start(ctx context.Context) {
 	go startHTTPS(ctx)
 	go startTLS(ctx)
-	go startHTTP(ctx)
+	if config.Misc.AllowHTTP {
+		go startHTTP(ctx)
+	}
 }
