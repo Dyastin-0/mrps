@@ -12,7 +12,6 @@ type Hub struct {
 	clients    map[string]*client
 	register   chan connection
 	unregister chan string
-	exists     chan check
 	mu         sync.Mutex
 }
 
@@ -39,7 +38,6 @@ func NewHub() *Hub {
 		clients:    make(map[string]*client),
 		register:   make(chan connection),
 		unregister: make(chan string),
-		exists:     make(chan check),
 	}
 }
 
@@ -78,12 +76,6 @@ func (h *Hub) Start(ctx context.Context) {
 				c.closech <- true
 			}
 			h.mu.Unlock()
-
-		case ck := <-h.exists:
-			h.mu.Lock()
-			_, exists := h.clients[ck.id]
-			h.mu.Unlock()
-			ck.result <- exists
 
 		case <-ctx.Done():
 			log.Info().Str("status", "stopping").Msg("websocket")
@@ -162,9 +154,10 @@ func (h *Hub) Send(id string, data []byte) {
 }
 
 func (h *Hub) Exists(id string) bool {
-	result := make(chan bool)
-	h.exists <- check{id, result}
-	return <-result
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	_, exists := h.clients[id]
+	return exists
 }
 
 func (h *Hub) Get(id string) (*websocket.Conn, bool) {

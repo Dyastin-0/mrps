@@ -44,7 +44,7 @@ func New(target string, rr rewriter.RewriteRule) http.Handler {
 
 		req.Header.Set("X-Forwarded-For", req.RemoteAddr)
 		req.Header.Set("X-Forwarded-Host", req.Host)
-		req.Header.Set("X-Real-IP", req.RemoteAddr)
+		req.Header.Set("X-Real-Ip", req.RemoteAddr)
 	}
 
 	return proxy
