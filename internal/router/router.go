@@ -108,6 +108,8 @@ func startHTTP(ctx context.Context) {
 		Handler: httpRouter(),
 	}
 
+	log.Debug().Msg("SHESH")
+
 	go func() {
 		<-ctx.Done()
 		httpServer.Shutdown(context.Background())
